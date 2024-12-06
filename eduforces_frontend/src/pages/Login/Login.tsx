@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import appLogo from '../../assets/logo.webp'
-import './App.css'
+import './Login.css'
 
 function App() {
   return (
