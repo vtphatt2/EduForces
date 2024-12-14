@@ -1,58 +1,48 @@
-import "./ForumPost.css";
-import NavigationBar from "../../share/...";
+import React, { useState } from "react";
+import styles from "./Forum.module.css";
+import { Comment } from "./Comment";
+import { Post } from "./Post";
+import { UserInfo } from "./UserInfo";
+import { ForumPostProps } from "./Type";
 
-function PostTitle(title: string) {
-  return <h1 className="post-title">{title}</h1>;
-}
-
-function PostDescription(description: string) {
-  return <p className="post-description">{description}</p>;
-}
-
-function PostInfo(username: string, date: string) {
+const ForumPost: React.FC<ForumPostProps> = ({
+  post,
+  userInfo,
+  commentList,
+  postTitle,
+}) => {
+  const [comment, setComment] = useState("");
+  const handleCommentChange = (
+    event: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    setComment(event.target.value);
+  };
   return (
-    <h2 className="post-info">
-      posted by {username} at {date}
-    </h2>
-  );
-}
-
-function AuthorAvatar(src: string) {
-  return <img className="author-avatar" src={src} alt="user avatar" />;
-}
-
-function AuthorInfo(elo: number, university: string) {
-  return (
-    <h3 className="author-info">
-      Elo: {elo}
-      <br />
-      {university}
-    </h3>
-  );
-}
-
-function ForumPost() {
-  return (
-    <>
-      <div className="forum-container">
-        {/* <NavigationBar /> */}
-        <div className="post">
-          <div className="main-post">
-            {PostTitle("Why is mathematics important in real life?")}
-            {PostDescription(
-              "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam nec pur"
-            )}
-            {PostInfo("phuloi1512", "17:32 3/12/2024")}
-          </div>
-          <div className="post-author">
-            {AuthorAvatar("https://www.w3schools.com/howto/img_avatar.png")}
-            {AuthorInfo(3200, "University of Science, VNU-HCM")}
-          </div>
+    <main className={styles.forumPost}>
+      <article className={styles.postContent}>
+        <h2 className={styles.postTitle}>{postTitle}</h2>
+        <div className={styles.postLayout}>
+          <Post {...post} />
+          <UserInfo {...userInfo} />
         </div>
-        <hr />
-      </div>
-    </>
+      </article>
+      <section className={styles.commentSection}>
+        {commentList.map((comment, index) => (
+          <Comment key={index} {...comment} />
+        ))}
+      </section>
+      <form className={styles.commentForm}>
+        <textarea
+          className={styles.commentInput}
+          placeholder="Write a comment..."
+          value={comment}
+          onChange={handleCommentChange}
+        />
+        <button className={styles.commentSubmit}>Submit</button>
+        <p className={styles.commentCount}></p>
+      </form>
+    </main>
   );
-}
+};
 
 export default ForumPost;
