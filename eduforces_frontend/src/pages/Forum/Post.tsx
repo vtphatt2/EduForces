@@ -8,10 +8,11 @@ export const Post: React.FC<PostProps> = ({
   timestamp,
 }) => {
   return (
-    <article className={styles.post}>
-      <p className={styles.content}>{content}</p>
-      <p className={styles.author}>
-        Posted by {postAuthor} on {timestamp}
+    <article className={styles.postContentContainer}>
+      <p className={styles.postContent}>{content}</p>
+      <p className={styles.postAuthor}>
+        Posted by <span className={styles.authorName}>{postAuthor} </span>
+        at {timestamp}
       </p>
     </article>
   );

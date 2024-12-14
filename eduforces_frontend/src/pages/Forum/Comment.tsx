@@ -12,13 +12,20 @@ export const Comment: React.FC<CommentProps> = ({
     <article className={styles.commentContainer}>
       <div className={styles.commentContent}>
         <p className={styles.commentText}>{content}</p>
-        <div className={styles.voteCount} aria-label={`${votes} votes`}>
-          {votes}
+        <div className={styles.voteContainer}>
+          <button className={styles.voteButton}>
+            <img src="up_arrow.svg" alt="upvote" />
+          </button>
+          <div className={styles.voteCount}>{votes}</div>
+          <button className={styles.voteButton}>
+            <img src="down_arrow.svg" alt="downvote" />
+          </button>
         </div>
       </div>
       <div className={styles.commentMeta}>
-        <span className={styles.author}>by {author}</span>
-        <time className={styles.timestamp}>{timestamp}</time>
+        <span className={styles.commentAuthor}>by {author}</span>
+        <br />
+        <time className={styles.commentTimestamp}>{timestamp}</time>
       </div>
     </article>
   );
