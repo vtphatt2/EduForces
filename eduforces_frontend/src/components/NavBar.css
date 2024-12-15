@@ -1,0 +1,53 @@
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  background-color: #F2F1FA;
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  gap: 150px;
+}
+
+.app-name-p {
+  font-size: 40px;
+  font-weight: bold;
+  color: #5D5A88;
+}
+
+.logo {
+  width: 50px;
+  height: 50px;
+  margin: -100px;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 15px;
+}
+
+.nav-links a {
+  color: #5D5A88;
+  text-decoration: none;
+  font-size: 18px;
+}
+
+.nav-links a.active {
+  border-bottom: 2px solid #5D5A88;
+}
+
+.auth-icon {
+  display: flex;
+  align-items: center;
+  cursor: pointer; 
+  color: #5D5A88;
+}
+
+.auth-icon:hover {
+  color: #61dafb; 
+}
