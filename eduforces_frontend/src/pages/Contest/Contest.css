@@ -1,0 +1,14 @@
+.contest-container {
+    width: 70vw;
+    margin-bottom: 20px;
+    padding: 20px;
+    background: #F2F1FA;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+  }
+  
+  h2 {
+    color: #3a3a5a;
+    margin-bottom: 10px;
+  }
+  
