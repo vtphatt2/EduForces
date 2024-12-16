@@ -9,9 +9,9 @@ const HomeLeaderboard: React.FC<HomeLeaderboardProps> = ({
 }) => {
   return (
     <tr className={styles.leaderboardRow}>
-      <td>{ranking}</td>
-      <td>{username}</td>
-      <td>{elo}</td>
+      <td className={styles.elementText}>{ranking}</td>
+      <td className={styles.elementText}>{username}</td>
+      <td className={styles.elementText}>{elo}</td>
     </tr>
   );
 };

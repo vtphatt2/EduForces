@@ -3,14 +3,103 @@
     gap: 2rem;
     padding: 2rem;
 }
-  
+
+.homeContestContainer {
+    background-color: #fff;
+    border-radius: 0.75rem;
+    box-sizing: border-box;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); 
+    margin: 0;
+    margin-bottom: 1.5rem;
+    padding: clamp(1rem, 0.25vw, 1.5rem);
+    border: 1px solid #ADABC3;
+}
+
 .recentPosts {
-    flex: 2;
+    flex: 2.5;
+    font-size: clamp(1rem, 1.4vw, 2rem);
+    margin: 0;
+    margin-top: 0.5rem;
+    margin-left: clamp(3.5rem, 3vw, 4.5rem);
+    margin-bottom: 0.75rem; 
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+    color: #5D5A88;
+}
+
+.payAttention{
+    font-size: clamp(2rem, 1.5vw, 3rem);
+    margin: 0;
+    margin-top: 2.5rem;
+    margin-bottom: 0.75rem; 
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+    color: #5D5A88;
+}
+
+.payAttention{
+    font-size: clamp(2rem, 1.5vw, 3rem);
+    margin: 0;
+    margin-top: 2.5rem;
+    margin-bottom: 0.75rem; 
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+    color: #5D5A88;
+}
+
+.incomingContests {
+    font-size: clamp(1.2rem, 1vw, 2rem);
+    margin: 0;
+    margin-top: 0.4rem;
+    margin-bottom: 0.75rem;
+    margin-left: 1rem; 
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+    color: #5D5A88;
 }
   
 .sidebar {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 2rem;
+    margin: 0;
+    margin-right: 2rem;
 }
+
+.elementText {
+    font-size: clamp(1rem, 3vw, 1.25rem);
+    line-height: clamp(1.25rem, 3vw, 1.75rem); 
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+    color: #5D5A88;
+}
+
+
+.leaderboardSection {
+    display: flex;
+    flex-direction: column;
+}
+
+th {
+    text-align: left;
+    padding: 0.5rem;
+}
+
+th:nth-child(1), td:nth-child(1) {
+    width: 20%;
+  }
+  
+  th:nth-child(2), td:nth-child(2) {
+    width: 70%;
+  }
+  
+  th:nth-child(3), td:nth-child(3) {
+    width: 10%;
+  }
+  
+
+
+
+
+

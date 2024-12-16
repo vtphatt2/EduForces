@@ -5,7 +5,6 @@ import HomeContest from "./HomeContest";
 import HomeLeaderboard from "./HomeLeaderboard";
 import styles from "./Home.module.css";
 
-
 const Home: React.FC<HomeProps> = ({
   postList,
   contestList,
@@ -30,9 +29,9 @@ const Home: React.FC<HomeProps> = ({
       <aside className={styles.sidebar}>
         {/* Contest Section */}
         <section className={styles.contestSection}>
-          <h3>Pay Attention!</h3>
-          <div>
-            <h4>Incoming Contests</h4>
+          <h3 className={styles.payAttention}>Pay Attention!</h3>
+          <div className={styles.homeContestContainer}>
+            <h4 className={styles.incomingContests}>Incoming Contests</h4>
             {contestList.map((contest, index) => (
               <HomeContest
                 key={index}
@@ -45,24 +44,25 @@ const Home: React.FC<HomeProps> = ({
 
         {/* Leaderboard Section */}
         <section className={styles.leaderboardSection}>
-          <h3>Top Rated</h3>
+          <h3 className={styles.topRated}>Top Rated</h3>
           <table>
             <thead>
               <tr>
-                <th>Top</th>
-                <th>Username</th>
-                <th>Elo</th>
+                <th className={styles.elementText}>Top</th>
+                <th className={styles.elementText}>Username</th>
+                <th className={styles.elementText}>Elo</th>
               </tr>
             </thead>
             <tbody>
-              {leaderboardList.map((entry, index) => (
-                <HomeLeaderboard
-                  key={index}
-                  ranking={entry.ranking}
-                  username={entry.username}
-                  elo={entry.elo}
-                />
-              ))}
+              {leaderboardList
+                .map((entry, index) => (
+                  <HomeLeaderboard
+                    key={index}
+                    ranking={index + 1}
+                    username={entry.username}
+                    elo={entry.elo}
+                  />
+                ))}
             </tbody>
           </table>
         </section>

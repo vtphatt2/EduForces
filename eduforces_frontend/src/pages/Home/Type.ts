@@ -12,7 +12,7 @@ export interface HomeContestProps {
 
 
 export interface HomeLeaderboardProps {
-    ranking: number;
+    ranking?: number;
     username: string;
     elo: number;
 }  

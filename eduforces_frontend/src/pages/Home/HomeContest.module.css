@@ -3,6 +3,20 @@
     justify-content: space-between;
     margin-bottom: 0.75rem;
 }
+
+.contestTitle {
+    font-size: clamp(0.75rem, 1vw, 1.25rem);
+    font-weight: 400;
+    font-family: 'Poppins', sans-serif;
+    color: #4B23FF;
+}
+
+.contestTimestamp {
+    font-size: clamp(0.5rem, 0.75vw, 1rem);
+    font-weight: 400;
+    font-family: 'Poppins', sans-serif;
+    color: #000000;
+}
   
 .registerButton {
     background-color: #4c4f95;
