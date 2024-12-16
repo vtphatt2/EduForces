@@ -1,8 +1,11 @@
-// src/pages/Login/LoginPage.tsx
 import React from 'react';
 import appLogo from '../../assets/logo_new.webp';
 import './LoginPage.css';
-import { Link } from 'react-router-dom';
+import Button from '../../components/Button';
+
+const handleClick = () => {
+  alert("Button clicked!");
+};
 
 const LoginPage: React.FC = () => {
   return (
@@ -10,9 +13,7 @@ const LoginPage: React.FC = () => {
       <div className='intro-text'>
         <p className="text-main">EduForces</p>
         <p className="text-sub">Choose EduForces − choose the success!</p>
-        <Link to="/login">
-          <button className="btn-signin">Sign in</button>
-        </Link>
+        <Button label="Sign In" onClick={handleClick}></Button>
       </div>
 
       <img src={appLogo} alt="EduForces logo" className="logo" />
