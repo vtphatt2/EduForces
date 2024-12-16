@@ -1,0 +1,14 @@
+.contestItem {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+  
+.registerButton {
+    background-color: #4c4f95;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+}
