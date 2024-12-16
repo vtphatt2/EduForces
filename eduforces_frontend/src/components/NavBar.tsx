@@ -1,7 +1,7 @@
 // NavBar.tsx
 import React from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { FaLock } from 'react-icons/fa'; // Import biểu tượng ổ khóa từ React Icons
+import { FaLock } from 'react-icons/fa'; 
 import './NavBar.css';
 
 const NavBar: React.FC = () => {

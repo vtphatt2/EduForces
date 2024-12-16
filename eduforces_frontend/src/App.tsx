@@ -13,7 +13,7 @@ const App: React.FC = () => {
   return (
     <div>
       <NavBar />
-      <div className="content">
+      <div className="content" style={{ marginTop: "100px" }}>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/" element={<Home />} />
