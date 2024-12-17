@@ -132,6 +132,12 @@
   padding: 4px;
 }
 
+.voteCount {
+  font-size: 18px;
+  color: black;
+  margin: 0px;
+}
+
 .voteButton:hover {
   background-color: #d0d0d0;
 }
@@ -150,6 +156,7 @@
   font-weight: 700;
   color: #c34d4d;
   margin: 0px;
+  text-align: right;
 }
 
 .commentForm {
@@ -174,23 +181,12 @@
   margin-right: 10px;
 }
 
-.commentSubmit {
-  background-color: #5d5a88;
-  color: #ffffff;
-  border: transparent;
-  border-radius: 40px;
-  padding: 11px 26px;
-  font-size: 15px;
+.commentForm Button {
   font-weight: 700;
-  cursor: pointer;
   height: fit-content;
   width: fit-content;
   align-self: center;
   transition: background-color 0.3s;
-}
-
-.commentSubmit:hover {
-  background-color: #5d5a44;
 }
 
 .commentCount {
@@ -203,6 +199,12 @@
   bottom: -24px;
 }
 
-.commentRule {
-  text-align: center;
+.commentGuideline {
+  margin-top: 18px;
+  text-align: right;
+  color: #000000;
+}
+
+#leftAlignText {
+  text-align: left;
 }

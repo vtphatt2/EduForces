@@ -1,5 +1,5 @@
 import React from "react";
-import styles from "./Forum.module.css";
+import styles from "./ForumPost.module.css";
 import { CommentProps } from "./Type";
 
 export const Comment: React.FC<CommentProps> = ({
@@ -11,7 +11,9 @@ export const Comment: React.FC<CommentProps> = ({
   return (
     <article className={styles.commentContainer}>
       <div className={styles.commentContent}>
-        <p className={styles.commentText}>{content}</p>
+        <p className={styles.commentText} id={styles.leftAlignText}>
+          {content}
+        </p>
         <div className={styles.voteContainer}>
           <button className={styles.voteButton}>
             <img src="up_arrow.svg" alt="upvote" />
