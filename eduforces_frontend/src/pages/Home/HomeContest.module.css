@@ -1,0 +1,52 @@
+.homeContestContainer {
+    display: flex;
+    gap: 1rem;
+}
+
+.sidebar {
+    flex: 1;
+    display: flex;
+}
+
+.contestItem {
+    flex: 4;
+    display: flex;
+    flex-direction: column; 
+    position: relative;
+    margin-bottom: 2.5rem;
+    gap: 0.25rem; 
+}
+  
+.contestTitle {
+    font-size: clamp(1.15rem, 0.25vw, 1.5rem);
+    font-weight: 400;
+    font-family: 'Poppins', sans-serif;
+    color: #4B23FF;
+}
+
+.registeredContestTitle {
+    font-size: clamp(1.15rem, 0.25vw, 1.5rem);
+    font-weight: 400;
+    font-family: 'Poppins', sans-serif;
+    color: #00B853;
+}
+  
+.contestTimestampWrapper {
+    margin-left: clamp(2rem, 1vw, 3rem);
+}
+
+.contestTimestamp {
+    font-size: clamp(0.75rem, 0.8vw, 1.25rem);
+    font-weight: 400;
+    font-family: 'Poppins', sans-serif;
+    color: #000000;
+}
+  
+
+.registerButtonWrapper {
+    display: flex;
+    position:relative;
+    border-radius: 2.5rem;
+    height: clamp(3rem, 1.5vw, 4rem);
+    justify-content: flex-end; 
+}
