@@ -6,9 +6,6 @@
 .sidebar {
     flex: 1;
     display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin: 0;
 }
 
 .contestItem {
@@ -16,38 +13,35 @@
     display: flex;
     flex-direction: column; 
     position: relative;
-    margin-bottom: 1rem;
+    margin-bottom: 2.5rem;
     gap: 0.25rem; 
 }
   
 .contestTitle {
-    font-size: 1rem;
+    font-size: clamp(1.15rem, 0.25vw, 1.5rem);
     font-weight: 400;
-    font-size: clamp(0.75rem, 1vw, 1.25rem);
     font-family: 'Poppins', sans-serif;
     color: #4B23FF;
 }
+
+.registeredContestTitle {
+    font-size: clamp(1.15rem, 0.25vw, 1.5rem);
+    font-weight: 400;
+    font-family: 'Poppins', sans-serif;
+    color: #00B853;
+}
   
 .contestTimestampWrapper {
-    font-size: 0.9rem;
-    color: gray;
     margin-left: clamp(2rem, 1vw, 3rem);
 }
 
 .contestTimestamp {
-    font-size: clamp(0.5rem, 0.75vw, 1rem);
+    font-size: clamp(0.75rem, 0.8vw, 1.25rem);
     font-weight: 400;
     font-family: 'Poppins', sans-serif;
     color: #000000;
 }
   
-  /* Button - Vertically centered between the rows */
-.middleButton {
-    align-self: center; 
-    /* Positioned within .contestItem */
-    top: 50%; 
-    transform: translateY(-50%);
-}
 
 .registerButtonWrapper {
     display: flex;
