@@ -1,14 +1,37 @@
-.contestItem {
+.homeContestContainer {
     display: flex;
-    justify-content: space-between;
-    margin-bottom: 0.75rem;
+    gap: 1rem;
 }
 
+.sidebar {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 0;
+}
+
+.contestItem {
+    flex: 4;
+    display: flex;
+    flex-direction: column; 
+    position: relative;
+    margin-bottom: 1rem;
+    gap: 0.25rem; 
+}
+  
 .contestTitle {
-    font-size: clamp(0.75rem, 1vw, 1.25rem);
+    font-size: 1rem;
     font-weight: 400;
+    font-size: clamp(0.75rem, 1vw, 1.25rem);
     font-family: 'Poppins', sans-serif;
     color: #4B23FF;
+}
+  
+.contestTimestampWrapper {
+    font-size: 0.9rem;
+    color: gray;
+    margin-left: clamp(2rem, 1vw, 3rem);
 }
 
 .contestTimestamp {
@@ -18,11 +41,18 @@
     color: #000000;
 }
   
-.registerButton {
-    background-color: #4c4f95;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    padding: 0.5rem 1rem;
-    cursor: pointer;
+  /* Button - Vertically centered between the rows */
+.middleButton {
+    align-self: center; 
+    /* Positioned within .contestItem */
+    top: 50%; 
+    transform: translateY(-50%);
+}
+
+.registerButtonWrapper {
+    display: flex;
+    position:relative;
+    border-radius: 2.5rem;
+    height: clamp(3rem, 1.5vw, 4rem);
+    justify-content: flex-end; 
 }
