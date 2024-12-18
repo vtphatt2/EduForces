@@ -1,0 +1,145 @@
+.forum {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.forumContentContainer {
+  flex: 50%;
+  margin-right: 32px;
+}
+
+.uploadAndRules {
+  flex: 50%;
+}
+
+.forumTitle {
+  font-size: 32px;
+  font-weight: 700;
+  color: #5d5a88;
+  margin-bottom: 12px;
+  text-align: left;
+}
+
+.postContainer {
+  border: solid 1px #adabc3;
+  border-radius: 15px;
+  margin-bottom: 32px;
+  margin-right: 32px;
+  padding: 23px;
+}
+
+.postTitle {
+  font-size: 30px;
+  font-weight: 700;
+  color: #5d5a88;
+  margin: 0px;
+  text-align: left;
+}
+
+.postDescription {
+  font-size: 18px;
+  font-weight: 400;
+  color: #9795b5;
+  margin-top: 4px;
+  text-align: left;
+}
+
+.postAuthor {
+  font-size: 20px;
+  font-weight: 400;
+  color: #5d5a88;
+  margin-top: 0px;
+  text-align: left;
+}
+
+.authorLabel {
+  font-weight: 700;
+}
+
+.uploadText {
+  font-size: 18px;
+  font-weight: 400;
+  color: #4b23ff;
+  text-align: left;
+  margin-bottom: 3px;
+}
+
+.textAreaForm {
+  border: transparent;
+  border-radius: 15px;
+  padding: 12px;
+  background-color: #f9f9ff;
+  position: relative;
+}
+
+.textArea {
+  max-width: 100%;
+  border: transparent;
+  border-radius: 15px;
+  padding: 12px;
+  background-color: transparent;
+  font-size: 16px;
+  font-weight: 400;
+  color: black;
+  resize: none;
+  font-family: sans-serif;
+}
+
+.textCount {
+  font-size: 10px;
+  font-weight: 300;
+  color: #000000;
+  margin: 0px;
+  position: absolute;
+  right: 24px;
+  bottom: -16px;
+}
+
+.uploadRule {
+  font-size: 14px;
+  font-weight: 300;
+  color: black;
+  margin-top: 24px;
+  text-align: right;
+}
+
+.uploadButton {
+  background-color: #5d5a88;
+  position: relative;
+  padding: 20px;
+  padding-left: 40px;
+  padding-right: 40px;
+  border-radius: 40px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.uploadButton:hover {
+  background-color: #777;
+}
+
+.uploadIcon {
+  position: absolute;
+  right: 15px;
+  top: 15px;
+}
+
+.rulesList {
+  font-size: 16px;
+  color: black;
+  margin-top: 12px;
+  text-align: left;
+}
+
+.rulesList li {
+  font-weight: 400;
+}
+
+.rulesList li::marker {
+  font-weight: 700;
+}
+
+.titleOfRule {
+  font-weight: 700;
+}
