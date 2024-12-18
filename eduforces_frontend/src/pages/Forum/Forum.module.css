@@ -84,6 +84,7 @@
   color: black;
   resize: none;
   font-family: sans-serif;
+  margin: 0px;
 }
 
 .textCount {
@@ -142,4 +143,38 @@
 
 .titleOfRule {
   font-weight: 700;
+}
+
+.navPageBar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+}
+
+.navPageLinks {
+  list-style: none;
+  display: flex;
+  padding: 0px;
+  margin: 0px;
+}
+
+.navPageLinks li {
+  margin-right: 10px;
+}
+
+.navPageLinks a {
+  font-size: 20px;
+  font-weight: 700;
+  color: #5d5a88;
+  text-decoration: none;
+}
+
+.navPageLinks a:hover {
+  color: #777;
+  text-decoration: underline;
+}
+
+.navPageLinks .active {
+  text-decoration: underline;
 }

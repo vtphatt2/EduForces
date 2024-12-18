@@ -20,12 +20,7 @@ const NavPage: React.FC<NavPageProps> = ({ pageList }) => {
       <nav className={styles.navPageBar}>
         <ul className={styles.navPageLinks}>
           <li>
-            <NavLink
-              to={`/forum?page=${currentPage - 1}`}
-              className={({ isActive }) =>
-                isActive ? styles.active : undefined
-              }
-            >
+            <NavLink to={`/forum?page=${currentPage - 1}`}>
               <img src="left.svg" alt="prev" />
             </NavLink>
           </li>
@@ -33,8 +28,8 @@ const NavPage: React.FC<NavPageProps> = ({ pageList }) => {
             <li key={page}>
               <NavLink
                 to={`/forum?page=${page}`}
-                className={({ isActive }) =>
-                  isActive ? styles.active : undefined
+                className={() =>
+                  page === currentPage ? styles.active : undefined
                 }
               >
                 {page}
@@ -42,12 +37,7 @@ const NavPage: React.FC<NavPageProps> = ({ pageList }) => {
             </li>
           ))}
           <li>
-            <NavLink
-              to={`/forum?page=${currentPage + 1}`}
-              className={({ isActive }) =>
-                isActive ? styles.active : undefined
-              }
-            >
+            <NavLink to={`/forum?page=${currentPage + 1}`}>
               <img src="right.svg" alt="next" />
             </NavLink>
           </li>
@@ -59,12 +49,7 @@ const NavPage: React.FC<NavPageProps> = ({ pageList }) => {
       <nav className={styles.navPageBar}>
         <ul className={styles.navPageLinks}>
           <li>
-            <NavLink
-              to={`/forum?page=${currentPage - 1}`}
-              className={({ isActive }) =>
-                isActive ? styles.active : undefined
-              }
-            >
+            <NavLink to={`/forum?page=${currentPage - 1}`}>
               <img src="left.svg" alt="prev" />
             </NavLink>
           </li>
@@ -72,8 +57,8 @@ const NavPage: React.FC<NavPageProps> = ({ pageList }) => {
             <li key={page}>
               <NavLink
                 to={`/forum?page=${page}`}
-                className={({ isActive }) =>
-                  isActive ? styles.active : undefined
+                className={() =>
+                  page === currentPage ? styles.active : undefined
                 }
               >
                 {page}
@@ -91,8 +76,8 @@ const NavPage: React.FC<NavPageProps> = ({ pageList }) => {
             <li key={page}>
               <NavLink
                 to={`/forum?page=${page}`}
-                className={({ isActive }) =>
-                  isActive ? styles.active : undefined
+                className={() =>
+                  page === currentPage ? styles.active : undefined
                 }
               >
                 {page}
@@ -100,12 +85,7 @@ const NavPage: React.FC<NavPageProps> = ({ pageList }) => {
             </li>
           ))}
           <li>
-            <NavLink
-              to={`/forum?page=${currentPage + 1}`}
-              className={({ isActive }) =>
-                isActive ? styles.active : undefined
-              }
-            >
+            <NavLink to={`/forum?page=${currentPage + 1}`}>
               <img src="right.svg" alt="next" />
             </NavLink>
           </li>
