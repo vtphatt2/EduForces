@@ -53,10 +53,11 @@ const ForumPost: React.FC = () =>
       event.target.style.height = `${event.target.scrollHeight}px`;
       if (event.target.value.length > 5000) {
         event.target.value = event.target.value.slice(0, 5000);
+        setComment(event.target.value);
       }
       const commentCount = document.getElementById("commentCount");
       if (commentCount) {
-        commentCount.textContent = `${event.target.value.length}/5.000`;
+        commentCount.textContent = `${event.target.value.length}/5000`;
       }
     };
     return (
