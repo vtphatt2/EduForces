@@ -1,13 +1,13 @@
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import NavBar from './components/NavBar';
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+import NavBar from "./components/NavBar";
 
-import LoginPage from './pages/LoginPage/LoginPage';
-import Home from './pages/Home/Home';
-// import Forum from './pages/Forum/Forum';
-import Contest from './pages/Contest/Contest';
-import StudySpace from './pages/StudySpace/StudySpace';
-
+import LoginPage from "./pages/LoginPage/LoginPage";
+import Home from "./pages/Home/Home";
+import ForumPost from "./pages/ForumPost/ForumPost";
+import Forum from "./pages/Forum/Forum";
+import Contest from "./pages/Contest/Contest";
+import StudySpace from "./pages/StudySpace/StudySpace";
 
 const postList = [
   { title: "Hard inequality", content: "Let a + b = 1. Prove that 1 - a = doancongthanh", postAuthor: "congthanh1203" },
@@ -62,8 +62,9 @@ const App: React.FC = () => {
       <div className="content" style={{ marginTop: '50px' }}>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/forum" element={<Forum />} />
+          <Route path="/post" element={<ForumPost />} />
           <Route path="/" element={<Home postList={postList} contestList={processedContestList} leaderboardList={processedLeaderboardList.slice(0, 10)} />} />
-          {/* <Route path="/forum" element={<Forum />} /> */}
           <Route path="/contest" element={<Contest />} />
           <Route path="/study-space" element={<StudySpace />} />
         </Routes>

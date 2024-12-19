@@ -1,25 +1,21 @@
-export interface CommentProps {
-  content: string;
-  votes: number;
-  author: string;
-  timestamp: string;
-}
-
-export interface UserInfoProps {
-  elo: number;
-  university: string;
-  avatarSrc: string;
-}
-
 export interface PostProps {
-  content: string;
-  postAuthor: string;
-  timestamp: string;
+  title: string;
+  shortDescription: string;
+  author: string;
+  id: string;
 }
 
-export interface ForumPostProps {
-  post: PostProps;
-  userInfo: UserInfoProps;
-  commentList: CommentProps[];
-  postTitle: string;
+export interface NavPageProps {
+  pageList: number[];
+}
+
+export interface TextAreaProps {
+  placeholder: string;
+  maxLength: number;
+  id: string;
+}
+
+export interface ForumProps {
+  postList: PostProps[];
+  pageList: number[];
 }

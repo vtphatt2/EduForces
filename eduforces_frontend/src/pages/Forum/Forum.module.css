@@ -1,208 +1,190 @@
-.forumPost {
-  display: flex;
-  flex-direction: column;
-  margin: 49px 105px;
-}
-
-.postTitle {
-  font-size: 50px;
-  font-weight: 700;
-  margin-bottom: 10px;
-  color: #5d5a88;
-  align-items: center;
-  margin-bottom: 52px;
-}
-
-.postLayout {
+.forum {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
 }
 
-.postContentContainer {
-  flex: 10;
+.forumContentContainer {
+  flex: 50%;
   margin-right: 32px;
 }
 
-.userInfoContainer {
-  flex: 3;
-  max-width: 200px;
+.uploadAndRules {
+  flex: 50%;
 }
 
-.postContent {
-  font-size: 24px;
+.forumTitle {
+  font-size: 32px;
+  font-weight: 700;
+  color: #5d5a88;
+  margin-bottom: 12px;
+  text-align: left;
+}
+
+.postContainer {
+  border: solid 1px #adabc3;
+  border-radius: 15px;
+  margin-bottom: 32px;
+  margin-right: 32px;
+  padding: 23px;
+  cursor: pointer;
+}
+
+.postContainer:hover {
+  border: solid 1px #5d5a88;
+}
+
+.postContainer:hover .postTitle {
+  color: #4b23ff;
+  text-decoration: underline;
+}
+
+.postContainer .postTitle {
+  font-size: 30px;
+  font-weight: 700;
+  color: #5d5a88;
+  margin: 0px;
+  text-align: left;
+}
+
+.postDescription {
+  font-size: 18px;
   font-weight: 400;
-  color: #000000;
-  margin-bottom: 0px;
-  white-space: pre-line;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
+  color: #9795b5;
+  margin-top: 4px;
+  text-align: left;
 }
 
 .postAuthor {
-  font-size: 24px;
-  font-weight: 700;
-  color: #000000;
+  font-size: 20px;
+  font-weight: 400;
+  color: #5d5a88;
   margin-top: 0px;
-  text-align: right;
+  text-align: left;
 }
 
-.authorName {
-  color: #ff0000;
-}
-
-.profileImage {
-  width: 200px;
-  height: 200px;
-  border-radius: 1000px;
-  margin-bottom: 9px;
-}
-
-.elo {
-  font-size: 18px;
+.authorLabel {
   font-weight: 700;
-  color: #c34d4d;
-  text-align: center;
-  margin-top: 9px;
 }
 
-.university {
-  font-size: 18px;
-  font-weight: 700;
-  color: #c34d4d;
-  text-align: center;
-  margin-top: 9px;
-}
-
-.divider {
-  margin-top: 16px;
-  margin-bottom: 49px;
-  border: 2px solid #000000;
-  width: 77%;
-  margin-left: 0px;
-}
-
-.commentContainer {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 40px;
-}
-
-.commentContent {
-  border: 1px solid #adabc3;
-  border-radius: 15px;
-  padding: 15px;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-right: 10px;
-  flex: 6;
-  max-width: 80%;
-}
-
-.commentText {
+.uploadText {
   font-size: 18px;
   font-weight: 400;
-  color: #000000;
-  margin: 0px;
-  white-space: pre-line;
-  flex: 8;
-  margin-right: 10px;
-  align-self: center;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  max-width: 88%;
+  color: #4b23ff;
+  text-align: left;
+  margin-bottom: 3px;
 }
 
-.voteContainer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  flex: 1;
-  align-self: center;
-}
-
-.voteButton {
-  background-color: transparent;
+.textAreaForm {
   border: transparent;
-  border-radius: 20%;
-  transition: background-color 0.3s;
-  cursor: pointer;
-  padding: 4px;
-}
-
-.voteButton:hover {
-  background-color: #d0d0d0;
-}
-
-.voteButton img {
-  width: 24px;
-  height: 12px;
-}
-
-.commentMeta {
-  flex: 1;
-  flex-direction: column;
-  align-items: flex-end;
-  align-self: center;
-  font-size: 18px;
-  font-weight: 700;
-  color: #c34d4d;
-  margin: 0px;
-}
-
-.commentForm {
-  border: 1px solid #adabc3;
   border-radius: 15px;
-  padding: 15px;
-  display: flex;
+  padding: 12px;
+  background-color: #f9f9ff;
   position: relative;
 }
 
-.commentInput {
-  display: flex;
-  font-size: 18px;
-  font-weight: 400;
-  color: #000000;
+.textArea {
+  max-width: 100%;
   border: transparent;
+  border-radius: 15px;
+  padding: 12px;
   background-color: transparent;
-  width: 100%;
-  padding: 0px;
-  font-family: sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: black;
   resize: none;
-  margin-right: 10px;
+  font-family: sans-serif;
+  margin: 0px;
 }
 
-.commentSubmit {
-  background-color: #5d5a88;
-  color: #ffffff;
-  border: transparent;
-  border-radius: 40px;
-  padding: 11px 26px;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  height: fit-content;
-  width: fit-content;
-  align-self: center;
-  transition: background-color 0.3s;
-}
-
-.commentSubmit:hover {
-  background-color: #5d5a44;
-}
-
-.commentCount {
-  font-size: 18px;
+.textCount {
+  font-size: 10px;
   font-weight: 300;
   color: #000000;
   margin: 0px;
   position: absolute;
   right: 24px;
-  bottom: -24px;
+  bottom: -16px;
 }
 
-.commentRule {
-  text-align: center;
+.uploadRule {
+  font-size: 14px;
+  font-weight: 300;
+  color: black;
+  margin-top: 24px;
+  text-align: right;
+}
+
+.uploadButton {
+  background-color: #5d5a88;
+  position: relative;
+  padding: 20px;
+  padding-left: 40px;
+  padding-right: 40px;
+  border-radius: 40px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.uploadButton:hover {
+  background-color: #777;
+}
+
+.uploadIcon {
+  position: absolute;
+  right: 15px;
+  top: 15px;
+}
+
+.rulesList {
+  font-size: 16px;
+  color: black;
+  margin-top: 12px;
+  text-align: left;
+}
+
+.rulesList li {
+  font-weight: 400;
+}
+
+.rulesList li::marker {
+  font-weight: 700;
+}
+
+.titleOfRule {
+  font-weight: 700;
+}
+
+.navPageBar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+}
+
+.navPageLinks {
+  list-style: none;
+  display: flex;
+  padding: 0px;
+  margin: 0px;
+}
+
+.navPageLinks li {
+  margin-right: 10px;
+}
+
+.navPageLinks a {
+  font-size: 20px;
+  font-weight: 700;
+  color: #5d5a88;
+  text-decoration: none;
+}
+
+.navPageLinks a:hover {
+  color: #777;
+  text-decoration: underline;
+}
+
+.navPageLinks .active {
+  text-decoration: underline;
 }
