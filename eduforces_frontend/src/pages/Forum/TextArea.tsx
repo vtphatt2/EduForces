@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import styles from "./Forum.module.css";
 import { TextAreaProps } from "./Type";
 
-const TextArea: React.FC<TextAreaProps> = ({ placeholder, maxLength }) => {
+const TextArea: React.FC<TextAreaProps> = ({ placeholder, maxLength, id }) => {
   const [text, setText] = useState("");
   const handleTextChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setText(event.target.value);
@@ -24,6 +24,7 @@ const TextArea: React.FC<TextAreaProps> = ({ placeholder, maxLength }) => {
         placeholder={placeholder}
         value={text}
         onChange={handleTextChange}
+        id={id}
       />
       <p className={styles.textCount}>0/{maxLength}</p>
     </form>
