@@ -27,9 +27,19 @@
   margin-bottom: 32px;
   margin-right: 32px;
   padding: 23px;
+  cursor: pointer;
 }
 
-.postTitle {
+.postContainer:hover {
+  border: solid 1px #5d5a88;
+}
+
+.postContainer:hover .postTitle {
+  color: #4b23ff;
+  text-decoration: underline;
+}
+
+.postContainer .postTitle {
   font-size: 30px;
   font-weight: 700;
   color: #5d5a88;
