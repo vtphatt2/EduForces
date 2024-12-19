@@ -1,0 +1,73 @@
+package main
+
+import (
+	"fmt"
+	"net/http"
+
+	supa "github.com/nedpals/supabase-go"
+)
+
+func helloHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Hello, World!")
+}
+
+	func init() {
+		initializers.LoadEnvVariables()
+		initializers.ConnectToDataBase()
+	}
+func main() {
+	fmt.Println("startman")
+	supabaseUrl := "https://xgyncpnnfapdxykpksmf.supabase.co"
+	supabaseKey := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhneW5jcG5uZmFwZHh5a3Brc21mIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczMzU3NjQ2MywiZXhwIjoyMDQ5MTUyNDYzfQ.XzifHNRz9RPBmp5y1CopDMpKNZz5ZPBwNFeas7UfgqA"
+	// supabaseKey := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhneW5jcG5uZmFwZHh5a3Brc21mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzM1NzY0NjMsImV4cCI6MjA0OTE1MjQ2M30.QW_dAtF4TRAKN1I9HFtvJDvzadOKikCPLRa20Sqeogc"
+	supabase := supa.CreateClient(supabaseUrl, supabaseKey)
+
+	var results map[string]interface{}
+	err := supabase.DB.From("Account").Select("*").Single().Execute(&results)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(results)
+}
+
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"log"
+	"net/http"
+
+	supa "github.com/nedpals/supabase-go"
+)
+
+type Account struct {
+	ID       int    `json:"id"`
+	Username string `json:"user_name"`
+	Role     string `json:"role"`
+}
+
+func helloHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Hello, World!")
+}
+
+func getAccountsHandler(w http.ResponseWriter, r *http.Request) {
+	supabaseUrl := "https://xgyncpnnfapdxykpksmf.supabase.co"
+	supabaseKey := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhneW5jcG5uZmFwZHh5a3Brc21mIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczMzU3NjQ2MywiZXhwIjoyMDQ5MTUyNDYzfQ.XzifHNRz9RPBmp5y1CopDMpKNZz5ZPBwNFeas7UfgqA"
+	supabase := supa.CreateClient(supabaseUrl, supabaseKey)
+
+	var accounts []Account
+	err := supabase.DB.From("Account").Select("*").Execute(&accounts)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	json.NewEncoder(w).Encode(accounts)
+}
+
+func main() {
+	http.HandleFunc("/", helloHandler)
+	http.HandleFunc("/accounts", getAccountsHandler)
+
+	log.Fatal(http.ListenAndServe(":8080", nil))
+}

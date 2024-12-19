@@ -1,5 +1,5 @@
 import React from "react";
-import styles from "./Forum.module.css";
+import styles from "./ForumPost.module.css";
 import { UserInfoProps } from "./Type";
 
 export const UserInfo: React.FC<UserInfoProps> = ({

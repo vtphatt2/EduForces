@@ -1,18 +1,29 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "./Forum.module.css";
 import { PostProps } from "./Type";
 
 export const Post: React.FC<PostProps> = ({
-  content,
-  postAuthor,
-  timestamp,
+  title,
+  shortDescription,
+  author,
+  id,
 }) => {
+  const navigate = useNavigate();
+  const handlePostClick = async () => {
+    try {
+      navigate(`/post?id=${id}`);
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
-    <article className={styles.postContentContainer}>
-      <p className={styles.postContent}>{content}</p>
+    <article className={styles.postContainer} onClick={handlePostClick}>
+      <h2 className={styles.postTitle}>{title}</h2>
+      <p className={styles.postDescription}>{shortDescription}</p>
       <p className={styles.postAuthor}>
-        Posted by <span className={styles.authorName}>{postAuthor} </span>
-        at {timestamp}
+        <span className={styles.authorLabel}>Source: </span>
+        {author}
       </p>
     </article>
   );

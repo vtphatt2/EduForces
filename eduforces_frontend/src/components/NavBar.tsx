@@ -2,9 +2,12 @@
 import React from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { FaLock } from 'react-icons/fa'; 
+import { useAuth } from '../context/AuthContext';
 import './NavBar.css';
 
 const NavBar: React.FC = () => {
+  const { user } = useAuth();
+  
   return (
     <nav className="navbar">
       <div className="logo">
@@ -64,11 +67,14 @@ const NavBar: React.FC = () => {
         </li>
       </ul>
       <div className="auth-icon">
-        <FaLock size={16}/> 
-        <span style={{ 
-              fontSize: '16px', 
-              marginLeft: '5px',
-            }} >Login</span>
+        {user ? (
+          <span style={{ fontSize: '16px' }}>{user.name}</span>
+        ) : (
+          <>
+            <FaLock size={16}/> 
+            <span style={{ fontSize: '16px', marginLeft: '5px' }}>Login</span>
+          </>
+        )}
       </div>
 
     </nav>
