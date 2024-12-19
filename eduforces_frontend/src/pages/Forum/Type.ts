@@ -12,6 +12,7 @@ export interface NavPageProps {
 export interface TextAreaProps {
   placeholder: string;
   maxLength: number;
+  id: string;
 }
 
 export interface ForumProps {

@@ -50,6 +50,41 @@ const Forum: React.FC = () =>
       },
     ];
     const pageList = [1, 2, 3, 4, 5];
+    const uploadPost = async () => {
+      // const title = (
+      //   document.getElementById("titleTextArea") as HTMLTextAreaElement
+      // ).value;
+      // const content = (
+      //   document.getElementById("contentTextArea") as HTMLTextAreaElement
+      // ).value;
+      // if (title === "" || content === "") {
+      //   alert("Please fill in both title and content");
+      //   return;
+      // }
+      // const jsonData = JSON.stringify({
+      //   title: title,
+      //   content: content,
+      //   author: "", // User's id
+      //   timestamp: new Date().toLocaleString(),
+      // });
+      // try {
+      //   const response = await fetch("http://localhost:3001/forum/upload", {
+      //     method: "POST",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //     },
+      //     body: jsonData,
+      //   });
+      //   if (response.ok) {
+      //     alert("Upload successful");
+      //   } else {
+      //     alert("Upload failed");
+      //   }
+      // } catch (error) {
+      //   console.error(error);
+      // }
+      return;
+    };
     return (
       <main>
         <NavBar />
@@ -71,13 +106,21 @@ const Forum: React.FC = () =>
           <aside className={styles.uploadAndRules}>
             <h1 className={styles.forumTitle}>Quick upload</h1>
             <h2 className={styles.uploadText}>Title</h2>
-            <TextArea placeholder="Enter your title here" maxLength={500} />
+            <TextArea
+              placeholder="Enter your title here"
+              maxLength={500}
+              id="titleTextArea"
+            />
             <h2 className={styles.uploadText}>Content</h2>
-            <TextArea placeholder="Enter your content here" maxLength={5000} />
+            <TextArea
+              placeholder="Enter your content here"
+              maxLength={5000}
+              id="contentTextArea"
+            />
             <p className={styles.uploadRule}>
               Please read the forum rules carefully.
             </p>
-            <button className={styles.uploadButton}>
+            <button className={styles.uploadButton} onClick={uploadPost}>
               Upload
               <img
                 src="upload_icon.svg"
