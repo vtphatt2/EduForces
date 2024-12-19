@@ -2,6 +2,7 @@ export interface PostProps {
   title: string;
   shortDescription: string;
   author: string;
+  id: string;
 }
 
 export interface NavPageProps {

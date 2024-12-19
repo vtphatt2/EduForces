@@ -18,30 +18,35 @@ const Forum: React.FC = () =>
         title: "Hard inequality",
         shortDescription: "Let a + b = 1. Prove that...",
         author: "congthanh1203",
+        id: "h4578t9h495u8ujrre8",
       },
       {
         title: "Why is mathematics important in real life?",
         shortDescription:
           "Mathematics is integral to real life because it provides tools and frameworks for solving problems, making decisions, and understanding the world around us. Here are key reasons why mathematics is essential in everyday life:",
         author: "phuloi1512",
+        id: "5478yt894t9ht9th9r8",
       },
       {
         title: "Projectile Motion",
         shortDescription:
           "A ball is thrown with an initial velocity of 20 m/s at an angle of 30∘ to the horizontal. Calculate:",
         author: "congthanh1203",
+        id: "fjh489jt8jj93tj4308tj",
       },
       {
         title: "Free Fall",
         shortDescription:
           "A stone is dropped from the top of a 45-meter-high building. Calculate:",
         author: "hoangky1802",
+        id: "lsmjfklojf849j8j9j8",
       },
       {
         title: "Atomic Structure",
         shortDescription:
           "Write the electron configuration for the following elements:",
         author: "thinhphat544",
+        id: "f8j4w9jf88jjfg0439j",
       },
     ];
     const pageList = [1, 2, 3, 4, 5];
@@ -57,6 +62,7 @@ const Forum: React.FC = () =>
                   title={post.title}
                   shortDescription={post.shortDescription}
                   author={post.author}
+                  id={post.id}
                 />
               ))}
             </section>
