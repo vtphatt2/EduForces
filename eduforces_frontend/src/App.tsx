@@ -10,6 +10,7 @@ import Forum from "./pages/Forum/Forum";
 import Contest from "./pages/Contest/Contest";
 import StudySpace from "./pages/StudySpace/StudySpace";
 
+
 const App: React.FC = () => {
   return (
     <AuthProvider>
