@@ -1,0 +1,14 @@
+.leaderboardRow td {
+    padding: 0.5rem;
+    border-bottom: 1px solid #ddd;
+}
+
+.elementText {
+    font-size: clamp(1rem, 3.5vw, 1.25rem);
+    line-height: clamp(1.5rem, 4vw, 2.125rem);
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+    color: #5D5A88;
+}
+
+
