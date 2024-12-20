@@ -27,6 +27,19 @@
     color: #5D5A88;
 }
 
+.recentPostsText {
+    font-size: clamp(2.5rem, 1.5vw, 3.5rem);
+    margin: 0;
+    margin-top: 1.25rem;
+    margin-bottom: 0.75rem;
+    margin-left: 2rem; 
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+    color: #5D5A88;
+}
+
+
+
 .payAttention{
     font-size: clamp(2rem, 1.5vw, 3rem);
     margin: 0;

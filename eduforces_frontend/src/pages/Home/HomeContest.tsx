@@ -28,7 +28,7 @@ const HomeContest: React.FC<HomeContestProps> = ({ title, timestamp }) => {
       </section>
 
       <aside className={styles.sidebar}>
-        <section className={styles.registerButtonWrapper}>
+        <section>
           <Button
             label={isRegistered ? "Cancel" : "Register"}
             onClick={handleRegisterClick}

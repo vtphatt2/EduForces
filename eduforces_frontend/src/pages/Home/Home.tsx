@@ -14,7 +14,7 @@ const Home: React.FC<HomeProps> = ({
     <div className={styles.homeContainer}>
       {/* Left Section: Recent Posts */}
       <section className={styles.recentPosts}>
-        <h2>Recent Posts</h2>
+        <h2 className={styles.recentPostsText}>Recent Posts</h2>
         {postList.map((post, index) => (
           <HomePost
             key={index}
