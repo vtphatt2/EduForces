@@ -6,7 +6,7 @@ export interface PostProps {
 }
 
 export interface NavPageProps {
-  pageList: number[];
+  numPages: number;
 }
 
 export interface TextAreaProps {
@@ -17,5 +17,5 @@ export interface TextAreaProps {
 
 export interface ForumProps {
   postList: PostProps[];
-  pageList: number[];
+  numPages: number;
 }
