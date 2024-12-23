@@ -1,27 +1,42 @@
 package initializers
 
 import (
+	"database/sql"
+	"log"
 	"os"
 
-	"github.com/vtphatt2/EduForces/models"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
+	"github.com/joho/godotenv" // For loading .env files
+	_ "github.com/lib/pq"      // PostgreSQL driver
 )
 
-var DB *gorm.DB
+var DB *sql.DB
 
-func ConnectToDataBase() {
-	println("Start DB")
-	var err error
-
-	dsn := os.Getenv("DB_URL")
-	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
-
+func ConnectToDatabase() {
+	// Load .env file
+	err := godotenv.Load()
 	if err != nil {
-		panic("failed to connect database")
+		log.Println(".env file not found or could not be loaded, proceeding with system environment variables")
 	}
 
-	println("Connected to database")
+	log.Println("Starting database connection...")
 
-	DB.AutoMigrate(&models.Account{})
+	// Get the database connection string
+	dsn := os.Getenv("DB_URL")
+	if dsn == "" {
+		log.Fatal("Environment variable DB_URL is not set")
+	}
+
+	// Connect to the database
+	DB, err = sql.Open("postgres", dsn)
+	if err != nil {
+		log.Fatalf("Failed to connect to the database: %v", err)
+	}
+
+	// Verify the connection
+	err = DB.Ping()
+	if err != nil {
+		log.Fatalf("Failed to connect to the database: %v", err)
+	}
+
+	log.Println("Connected to the database successfully")
 }

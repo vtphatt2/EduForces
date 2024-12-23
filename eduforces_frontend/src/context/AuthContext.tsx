@@ -1,41 +1,76 @@
-import React, { createContext, useState, useEffect, ReactNode, useContext } from 'react';
+import { get } from "http";
+import React, { createContext, useState, useEffect, useContext } from "react";
 
 interface AuthContextType {
-  user: { email: string; name: string } | null;
-  setUser: React.Dispatch<React.SetStateAction<{ email: string; name: string } | null>>;
+  isLoggedIn: boolean;
+  username: string | null;
+  setIsLoggedIn: (loggedIn: boolean) => void;
+  setUsername: (username: string | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-interface AuthProviderProps {
-  children: ReactNode;
-}
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [username, setUsername] = useState<string | null>(null);
 
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<{ email: string; name: string } | null>(null);
-
+  // Persist login state across page reloads using sessionID
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await fetch('http://localhost:8080/api/user', {
-          credentials: 'include', // Include cookies in the request
-        });
-        if (response.ok) {
-            console.log('Response is ok');
-            const userData = await response.json();
-            console.log('User data:', userData);
-            setUser(userData);
-          }
-      } catch (error) {
-        console.error('Failed to fetch user:', error);
-      }
-    };
+    const storedSessionID = getSessionID();
+    // Log the session_id
+    console.log("ssid:", storedSessionID);
 
-    fetchUser();
-  }, []);
+    if (storedSessionID) {
+      // If session_id exists in local storage, validate the session
+      validateSession(storedSessionID)
+        .then((data) => {
+          // If session is valid, update context state
+          setIsLoggedIn(true);
+          setUsername(getUsername());
+        })
+        .catch(() => {
+          // Session is invalid, clear local storage
+          console.log("Invalid session, clearing...");
+          clearSession();
+        });
+    }
+  }); // Only run once on component mount
+
+  const validateSession = async (sessionID: string): Promise<{ user: any }> => {
+    try {
+      const response = await fetch("http://localhost:8080/api/auth/validate-session", {
+        method: "GET",
+        headers: { Authorization: `${sessionID}` },
+      });
+
+      if (!response.ok) {
+        throw new Error("Invalid session");
+      }
+
+      const userData = await response.json();
+      return userData;
+    } catch (error) {
+      console.error("Session validation failed:", error);
+      throw new Error("Invalid session");
+    }
+  };
+
+  const getSessionID = (): string | null => {
+    return localStorage.getItem("session_id");
+  };
+
+  const getUsername = (): string | null => {
+    return localStorage.getItem("username");
+  }
+
+  const clearSession = () => {
+    localStorage.removeItem("session_id"); // Clear session ID from local storage
+    setIsLoggedIn(false);
+    setUsername(null);
+  };
 
   return (
-    <AuthContext.Provider value={{ user, setUser }}>
+    <AuthContext.Provider value={{ isLoggedIn, username, setIsLoggedIn, setUsername }}>
       {children}
     </AuthContext.Provider>
   );
@@ -43,8 +78,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };

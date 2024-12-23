@@ -1,22 +1,29 @@
 package routes
 
 import (
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 	"github.com/vtphatt2/EduForces/controllers"
+	"github.com/vtphatt2/EduForces/middleware"
+	"github.com/vtphatt2/EduForces/sessions"
 )
 
-// RegisterRoutes sets up all the routes for the application.
-func RegisterRoutes(r *mux.Router) {
-	// Authentication routes
-	r.HandleFunc("/callback", controllers.GoogleCallback).Methods("GET")
+// RegisterRoutes sets up all feature-specific routes and returns the router.
+func RegisterRoutes(
+	authCtrl *controllers.AuthController,
+	sessionManager *sessions.SessionManager, // Pass the session manager here
+) *gin.Engine {
+	// Create a new Gin router
+	router := gin.Default()
 
-	// Route for getting user information
-	r.HandleFunc("/api/user", controllers.GetUser).Methods("GET")
+	// Apply global middlewares if needed (e.g., CORS, logging)
+	router.Use(middleware.CORSMiddleware())
 
-	// CRUD routes for items
-	r.HandleFunc("/api/items", controllers.GetItems).Methods("GET")
-	r.HandleFunc("/api/items/{id}", controllers.GetItem).Methods("GET")
-	r.HandleFunc("/api/items", controllers.CreateItem).Methods("POST")
-	r.HandleFunc("/api/items/{id}", controllers.UpdateItem).Methods("PUT")
-	r.HandleFunc("/api/items/{id}", controllers.DeleteItem).Methods("DELETE")
+	// Preconfigure the session middleware
+	sessionMiddleware := middleware.SessionMiddleware(sessionManager)
+
+	// Register feature-specific routes
+	RegisterAuthRoutes(router, authCtrl, sessionMiddleware)
+
+	// Return the fully initialized router
+	return router
 }

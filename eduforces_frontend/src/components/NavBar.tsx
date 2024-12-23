@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { FaLock } from 'react-icons/fa'; 
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from "../context/AuthContext";
 import './NavBar.css';
 
 const NavBar: React.FC = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { isLoggedIn, username, setIsLoggedIn, setUsername } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const username = 'minhkhoa123';
 
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
@@ -17,7 +16,9 @@ const NavBar: React.FC = () => {
 
   const handleLogout = () => {
     setIsLoggedIn(false);
-    setIsDropdownOpen(false);
+    setUsername(null);
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("username");
   };
 
   useEffect(() => {

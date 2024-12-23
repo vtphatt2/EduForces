@@ -1,181 +1,115 @@
 package controllers
 
 import (
-	"encoding/base64"
-	"encoding/json"
+	"context"
 	"fmt"
 	"net/http"
-	"os"
-	"strings"
 
-	"github.com/gorilla/sessions"
-	"github.com/joho/godotenv"
+	"github.com/gin-gonic/gin"
+	"github.com/vtphatt2/EduForces/services"
+	"github.com/vtphatt2/EduForces/sessions"
 )
 
-var store *sessions.CookieStore
-
-type GoogleUserInfo struct {
-	Email string `json:"email"`
-	Name  string `json:"name"`
+type AuthController struct {
+	service *services.AuthService
+	session *sessions.SessionManager
 }
 
-type GoogleTokenResponse struct {
-	IDToken string `json:"id_token"`
+func NewAuthController(service *services.AuthService, session *sessions.SessionManager) *AuthController {
+	return &AuthController{service: service, session: session}
 }
 
-func init() {
-	// Load environment variables from .env file
-	err := godotenv.Load()
+// GoogleAuthHandler handles Google OAuth login
+func (ctrl *AuthController) GoogleAuthHandler(c *gin.Context) {
+	var request struct {
+		Code string `json:"code" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "Invalid request body"})
+		return
+	}
+
+	// Step 1: Exchange code for user info
+	userInfo, err := ctrl.service.ExchangeGoogleCode(context.Background(), request.Code)
 	if err != nil {
-		fmt.Println("Error loading .env file")
-	}
-
-	sessionKey := os.Getenv("SESSION_KEY")
-	if sessionKey == "" {
-		fmt.Println("SESSION_KEY not set in environment")
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Failed to authenticate with Google"})
 		return
 	}
 
-	store = sessions.NewCookieStore([]byte(sessionKey))
-}
-
-func GoogleCallback(w http.ResponseWriter, r *http.Request) {
-	code := r.URL.Query().Get("code")
-	if code == "" {
-		http.Error(w, "Authorization code not found", http.StatusBadRequest)
-		return
-	}
-
-	// Exchange the authorization code for tokens
-	// fmt.Println("code", code)
-	tokenResp, err := exchangeCodeForTokens(code)
+	// Step 2: Create or find user in the database
+	userID, err := ctrl.service.CreateOrFindUser(context.Background(), userInfo)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to exchange code for tokens: %v", err), http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Failed to create or find user"})
 		return
 	}
 
-	// Decode the ID Token
-	userInfo, err := getUserInfoFromIDToken(tokenResp.IDToken)
+	// Step 3: Generate session
+	sessionID, err := ctrl.session.CreateSession(userID)
+	fmt.Println("Session ID: ", sessionID)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to decode ID token: %v", err), http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Failed to create session"})
 		return
 	}
 
-	// Debug: Log user info
-	fmt.Printf("User Info: %+v\n", userInfo)
-
-	err = UpdateOrCreateAccount(userInfo)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to update or create account: %v", err), http.StatusInternalServerError)
-		return
-	}
-
-	//Create a new session and set user info
-	err = createSession(w, r, userInfo)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to create session: %v", err), http.StatusInternalServerError)
-		return
-	}
-
-	//Redirect to frontend home page
-	frontendURL := os.Getenv("FRONTEND_URL")
-	http.Redirect(w, r, frontendURL, http.StatusSeeOther)
-}
-
-func createSession(w http.ResponseWriter, r *http.Request, userInfo *GoogleUserInfo) error {
-	session, _ := store.Get(r, "session-name")
-	session.Values["email"] = userInfo.Email
-	session.Values["name"] = userInfo.Name
-	return session.Save(r, w)
-}
-func exchangeCodeForTokens(code string) (*GoogleTokenResponse, error) {
-	clientID := os.Getenv("GOOGLE_CLIENT_ID")
-	clientSecret := os.Getenv("GOOGLE_CLIENT_SECRET")
-	redirectURL := os.Getenv("GOOGLE_REDIRECT_URL")
-
-	// fmt.Println("clientID", clientID)
-	// fmt.Println("clientSecret", clientSecret)
-	// fmt.Println("redirectURL", redirectURL)
-
-	resp, err := http.PostForm("https://oauth2.googleapis.com/token", map[string][]string{
-		"client_id":     {clientID},
-		"client_secret": {clientSecret},
-		"code":          {code},
-		"grant_type":    {"authorization_code"},
-		"redirect_uri":  {redirectURL},
+	// Return the user profile information and session details to the frontend
+	c.JSON(http.StatusOK, gin.H{
+		"success":    true,
+		"message":    "Login successful",
+		"session_id": sessionID,
+		"user": gin.H{
+			"email":    userInfo.Email,
+			"name":     userInfo.Name,
+			"username": userInfo.Name,
+		},
 	})
-	// fmt.Println("resp", resp)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	var tokenResp GoogleTokenResponse
-	err = json.NewDecoder(resp.Body).Decode(&tokenResp)
-	if err != nil {
-		return nil, err
-	}
-
-	// Debug: Check the response
-	// fmt.Printf("Token Response: %+v\n", tokenResp)
-
-	return &tokenResp, nil
 }
 
-func getUserInfoFromIDToken(idToken string) (*GoogleUserInfo, error) {
-	if idToken == "" {
-		return nil, fmt.Errorf("ID token is empty")
+// LogoutHandler clears the session
+func (ctrl *AuthController) LogoutHandler(c *gin.Context) {
+	// Retrieve the session ID from the request body
+	var request struct {
+		SessionID string `json:"session_id" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "Invalid request body"})
+		return
 	}
 
-	// Split the ID Token into parts
-	parts := strings.Split(idToken, ".")
-	if len(parts) < 3 {
-		return nil, fmt.Errorf("invalid ID token format")
-	}
-
-	// Decode the payload (second part of the token)
-	payload, err := base64.RawStdEncoding.DecodeString(parts[1])
+	// Delete the session
+	err := ctrl.session.DeleteSession(request.SessionID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to decode ID token payload: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Failed to logout"})
+		return
 	}
 
-	// Parse the JSON payload
-	var userInfo GoogleUserInfo
-	err = json.Unmarshal(payload, &userInfo)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse ID token payload: %v", err)
-	}
-
-	return &userInfo, nil
+	c.JSON(http.StatusOK, gin.H{"success": true, "message": "Logged out successfully"})
 }
 
-func GetUser(w http.ResponseWriter, r *http.Request) {
-	session, err := store.Get(r, "session-name")
-	if err != nil {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+// ValidateSessionHandler checks if the session is valid
+func (ctrl *AuthController) ValidateSessionHandler(c *gin.Context) {
+	// Retrieve the session ID from the Authorization header
+	sessionID := c.GetHeader("Authorization")
+	if sessionID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "message": "No session found"})
 		return
 	}
 
-	// Print the session ID
-	fmt.Println("Session ID:", session)
+	// Validate the session using the session manager
+	session, exists := ctrl.session.GetSession(sessionID)
 
-	email, ok := session.Values["email"].(string)
-	if !ok {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+	fmt.Println("Session ID: ", sessionID)
+	fmt.Println("exists: ", exists)
+
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"success": false, "message": "Invalid session"})
 		return
 	}
 
-	name, ok := session.Values["name"].(string)
-	if !ok {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-
-	userInfo := map[string]string{
-		"email": email,
-		"name":  name,
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(userInfo)
+	// If the session is valid, return the user information
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"user": gin.H{
+			"username": session.UserID,
+		},
+	})
 }

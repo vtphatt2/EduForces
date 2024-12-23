@@ -1,30 +1,38 @@
 package controllers
 
 import (
-	"github.com/vtphatt2/EduForces/initializers"
-	"github.com/vtphatt2/EduForces/models"
-	"gorm.io/gorm"
+	"context"
+	"net/http"
+
+	"github.com/vtphatt2/EduForces/services"
+
+	"github.com/gin-gonic/gin"
 )
 
-func UpdateOrCreateAccount(userInfo *GoogleUserInfo) error {
-	db := initializers.DB
-	var account models.Account
+type AccountController struct {
+	service *services.AccountService
+}
 
-	// Check if account exists
-	err := db.First(&account, "email = ?", userInfo.Email).Error
-	if err == gorm.ErrRecordNotFound {
-		// Create a new account
-		account = models.Account{
-			Email: userInfo.Email,
-			Name:  userInfo.Name,
-			Role:  models.RoleUser,
-		}
-		return db.Create(&account).Error
-	} else if err != nil {
-		return err
+func NewAccountController(service *services.AccountService) *AccountController {
+	return &AccountController{service: service}
+}
+
+// CreateAccountIfNotExistHandler handles account creation if it doesn't already exist
+func (ctrl *AccountController) CreateAccountIfNotExistHandler(c *gin.Context) {
+	var payload struct {
+		Email string `json:"email" binding:"required"`
+		Name  string `json:"name" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&payload); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input data"})
+		return
 	}
 
-	// Update existing account
-	account.Name = userInfo.Name
-	return db.Save(&account).Error
+	err := ctrl.service.CreateAccountIfNotExist(context.Background(), payload.Email, payload.Name)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Account created successfully or already exists"})
 }
