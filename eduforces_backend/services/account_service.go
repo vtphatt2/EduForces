@@ -4,14 +4,14 @@ import (
 	"context"
 
 	"github.com/vtphatt2/EduForces/models/sqlc"
-	"github.com/vtphatt2/EduForces/repository"
+	"github.com/vtphatt2/EduForces/repositories"
 )
 
 type AccountService struct {
-	repo *repository.AccountRepository
+	repo *repositories.AccountRepository
 }
 
-func NewAccountService(repo *repository.AccountRepository) *AccountService {
+func NewAccountService(repo *repositories.AccountRepository) *AccountService {
 	return &AccountService{repo: repo}
 }
 

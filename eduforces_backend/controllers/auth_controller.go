@@ -30,6 +30,7 @@ func (ctrl *AuthController) GoogleAuthHandler(c *gin.Context) {
 	}
 
 	// Step 1: Exchange code for user info
+	fmt.Println("request.Code: ", request.Code)
 	userInfo, err := ctrl.service.ExchangeGoogleCode(context.Background(), request.Code)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "Failed to authenticate with Google"})
@@ -109,7 +110,7 @@ func (ctrl *AuthController) ValidateSessionHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"user": gin.H{
-			"username": session.UserID,
+			"user_id": session.UserID,
 		},
 	})
 }

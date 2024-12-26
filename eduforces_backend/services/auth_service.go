@@ -9,14 +9,14 @@ import (
 	"os"
 
 	"github.com/vtphatt2/EduForces/models/sqlc"
-	"github.com/vtphatt2/EduForces/repository"
+	"github.com/vtphatt2/EduForces/repositories"
 )
 
 type AuthService struct {
-	repo *repository.AccountRepository
+	repo *repositories.AccountRepository
 }
 
-func NewAuthService(repo *repository.AccountRepository) *AuthService {
+func NewAuthService(repo *repositories.AccountRepository) *AuthService {
 	return &AuthService{repo: repo}
 }
 
@@ -39,6 +39,7 @@ func (s *AuthService) ExchangeGoogleCode(ctx context.Context, code string) (*Goo
 	fmt.Println("ID=", clientID, clientSecret, redirectURI)
 
 	tokenURL := "https://oauth2.googleapis.com/token"
+	fmt.Println("code=", code)
 	body := map[string]string{
 		"code":          code,
 		"client_id":     clientID,

@@ -6,7 +6,7 @@ import (
 )
 
 func RegisterAuthRoutes(router *gin.Engine, authCtrl *controllers.AuthController, sessionMiddleware gin.HandlerFunc) {
-	authRoutes := router.Group("/api/auth")
+	authRoutes := router.Group("/api/v1/auth")
 	{
 		authRoutes.POST("/google", authCtrl.GoogleAuthHandler)
 		authRoutes.GET("/logout", sessionMiddleware, authCtrl.LogoutHandler)

@@ -38,7 +38,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const validateSession = async (sessionID: string): Promise<{ user: any }> => {
     try {
-      const response = await fetch("http://localhost:8080/api/auth/validate-session", {
+      const response = await fetch("http://localhost:8080/api/v1/auth/validate-session", {
         method: "GET",
         headers: { Authorization: `${sessionID}` },
       });

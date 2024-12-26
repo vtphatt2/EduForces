@@ -3,29 +3,27 @@ package main
 import (
 	"log"
 
-	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/vtphatt2/EduForces/controllers"
 	"github.com/vtphatt2/EduForces/initializers"
-	"github.com/vtphatt2/EduForces/middleware"
 	"github.com/vtphatt2/EduForces/models/sqlc"
-	"github.com/vtphatt2/EduForces/repository"
+	"github.com/vtphatt2/EduForces/repositories"
 	"github.com/vtphatt2/EduForces/routes"
 	"github.com/vtphatt2/EduForces/services"
 	"github.com/vtphatt2/EduForces/sessions"
 )
 
 func init() {
-	// Initialize database connection
-	initializers.ConnectToDatabase()
+	// Load environment variables from .env file if present
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found, using system environment variables")
 	}
+
+	// Initialize database connection
+	initializers.ConnectToDatabase()
 }
 
 func main() {
-	// Initialize Redis client
-
 	// Initialize session manager
 	sessionManager := sessions.NewSessionManager()
 
@@ -33,22 +31,19 @@ func main() {
 	queries := sqlc.New(initializers.DB) // Pass the *sql.DB connection to sqlc.New()
 
 	// Initialize repositories
-	accountRepo := repository.NewAccountRepository(queries) // Pass the queries instance to the repository
+	accountRepo := repositories.NewAccountRepository(queries) // Pass the queries instance to the repository
+	postRepo := repositories.NewPostRepository(queries)       // Initialize PostRepository
 
 	// Initialize services
 	authService := services.NewAuthService(accountRepo)
+	postService := services.NewPostService(postRepo) // Initialize PostService
 
 	// Initialize controllers
 	authController := controllers.NewAuthController(authService, sessionManager)
-
-	// Create a Gin router
-	router := gin.Default()
-
-	// Apply global middlewares
-	router.Use(middleware.CORSMiddleware())
+	postController := controllers.NewPostController(postService) // Initialize PostController
 
 	// Register routes
-	routes.RegisterAuthRoutes(router, authController, middleware.SessionMiddleware(sessionManager))
+	router := routes.RegisterRoutes(authController, postController, sessionManager)
 
 	// Start the server
 	log.Println("Server is running on port 8080")

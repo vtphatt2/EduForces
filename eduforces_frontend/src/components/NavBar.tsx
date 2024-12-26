@@ -17,7 +17,7 @@ const NavBar: React.FC = () => {
   const handleLogout = () => {
     setIsLoggedIn(false);
     setUsername(null);
-    localStorage.removeItem("authToken");
+    localStorage.removeItem("session_id");
     localStorage.removeItem("username");
   };
 
