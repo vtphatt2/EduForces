@@ -1,83 +1,125 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import styles from "./Forum.module.css";
 import { Post } from "./Post";
 // import { ForumProps } from "./Type";
 import NavBar from "../../components/NavBar";
 import NavPage from "./NavPage";
 import TextArea from "./TextArea";
+import { PostPropsAPI } from "./Type";
+
+const baseUrl = "http://localhost:8080/api/v1";
 
 const Forum: React.FC = () => {
-  // Mock data, truyền vào real data sau này
-  const postList = [
-    {
-      title: "Hard inequality",
-      shortDescription: "Let a + b = 1. Prove that...",
-      author: "congthanh1203",
-      id: "h4578t9h495u8ujrre8",
-    },
-    {
-      title: "Why is mathematics important in real life?",
-      shortDescription:
-        "Mathematics is integral to real life because it provides tools and frameworks for solving problems, making decisions, and understanding the world around us. Here are key reasons why mathematics is essential in everyday life:",
-      author: "phuloi1512",
-      id: "5478yt894t9ht9th9r8",
-    },
-    {
-      title: "Projectile Motion",
-      shortDescription:
-        "A ball is thrown with an initial velocity of 20 m/s at an angle of 30∘ to the horizontal. Calculate:",
-      author: "congthanh1203",
-      id: "fjh489jt8jj93tj4308tj",
-    },
-    {
-      title: "Free Fall",
-      shortDescription:
-        "A stone is dropped from the top of a 45-meter-high building. Calculate:",
-      author: "hoangky1802",
-      id: "lsmjfklojf849j8j9j8",
-    },
-    {
-      title: "Atomic Structure",
-      shortDescription:
-        "Write the electron configuration for the following elements:",
-      author: "thinhphat544",
-      id: "f8j4w9jf88jjfg0439j",
-    },
-  ];
+  const location = useLocation();
+  const currentPage = parseInt(
+    new URLSearchParams(location.search).get("page") || "1",
+    10
+  );
+  const [postList, setPostList] = useState<PostPropsAPI[]>([]);
+  const [numPages, setNumPages] = useState(0);
+  const getPostList = async (page = 1, limit = 10) => {
+    try {
+      const response = await fetch(
+        `${baseUrl}/posts?page=${page}&limit=${limit}`,
+        {
+          method: "GET",
+          headers: {
+            "Session-Id": localStorage.getItem("session_id") || "",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setPostList(data.data);
+      setNumPages(Math.ceil(data.meta.total / 10));
+    } catch (error) {
+      alert("Error: " + error);
+    }
+  };
+
+  useEffect(() => {
+    getPostList(currentPage);
+  }, [currentPage]);
+
+  // const postList = [
+  //   {
+  //     title: "Hard inequality",
+  //     shortDescription: "Let a + b = 1. Prove that...",
+  //     author: "congthanh1203",
+  //     id: "h4578t9h495u8ujrre8",
+  //   },
+  //   {
+  //     title: "Why is mathematics important in real life?",
+  //     shortDescription:
+  //       "Mathematics is integral to real life because it provides tools and frameworks for solving problems, making decisions, and understanding the world around us. Here are key reasons why mathematics is essential in everyday life:",
+  //     author: "phuloi1512",
+  //     id: "5478yt894t9ht9th9r8",
+  //   },
+  //   {
+  //     title: "Projectile Motion",
+  //     shortDescription:
+  //       "A ball is thrown with an initial velocity of 20 m/s at an angle of 30∘ to the horizontal. Calculate:",
+  //     author: "congthanh1203",
+  //     id: "fjh489jt8jj93tj4308tj",
+  //   },
+  //   {
+  //     title: "Free Fall",
+  //     shortDescription:
+  //       "A stone is dropped from the top of a 45-meter-high building. Calculate:",
+  //     author: "hoangky1802",
+  //     id: "lsmjfklojf849j8j9j8",
+  //   },
+  //   {
+  //     title: "Atomic Structure",
+  //     shortDescription:
+  //       "Write the electron configuration for the following elements:",
+  //     author: "thinhphat544",
+  //     id: "f8j4w9jf88jjfg0439j",
+  //   },
+  // ];
   const uploadPost = async () => {
-    // const title = (
-    //   document.getElementById("titleTextArea") as HTMLTextAreaElement
-    // ).value;
-    // const content = (
-    //   document.getElementById("contentTextArea") as HTMLTextAreaElement
-    // ).value;
-    // if (title === "" || content === "") {
-    //   alert("Please fill in both title and content");
-    //   return;
-    // }
-    // const jsonData = JSON.stringify({
-    //   title: title,
-    //   content: content,
-    //   author: "", // User's id
-    //   timestamp: new Date().toLocaleString(),
-    // });
-    // try {
-    //   const response = await fetch("http://localhost:3001/forum/upload", {
-    //     method: "POST",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //     },
-    //     body: jsonData,
-    //   });
-    //   if (response.ok) {
-    //     alert("Upload successful");
-    //   } else {
-    //     alert("Upload failed");
-    //   }
-    // } catch (error) {
-    //   console.error(error);
-    // }
-    return;
+    const title = (
+      document.getElementById("titleTextArea") as HTMLTextAreaElement
+    ).value;
+    const content = (
+      document.getElementById("contentTextArea") as HTMLTextAreaElement
+    ).value;
+    if (title === "" || content === "") {
+      alert("Please fill in both title and content");
+      return;
+    }
+    const jsonData = JSON.stringify({
+      title,
+      content,
+    });
+    try {
+      const response = await fetch("http://localhost:3001/forum/upload", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Session-Id": localStorage.getItem("session_id") || "",
+        },
+        body: jsonData,
+      });
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+      const data = await response.json();
+      alert("Upload " + data.title + " successfully");
+      getPostList(currentPage);
+    } catch (error) {
+      alert("Error: " + error);
+    }
+
+    (document.getElementById("titleTextArea") as HTMLTextAreaElement).value =
+      "";
+    (document.getElementById("contentTextArea") as HTMLTextAreaElement).value =
+      "";
   };
   return (
     <main>
@@ -89,13 +131,13 @@ const Forum: React.FC = () => {
             {postList.map((post) => (
               <Post
                 title={post.title}
-                shortDescription={post.shortDescription}
-                author={post.author}
-                id={post.id}
+                shortDescription={post.content}
+                author={post.author_id}
+                id={post.post_id}
               />
             ))}
           </section>
-          <NavPage numPages={5} />
+          <NavPage numPages={numPages} />
         </div>
         <aside className={styles.uploadAndRules}>
           <h1 className={styles.forumTitle}>Quick upload</h1>
