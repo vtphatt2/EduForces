@@ -12,7 +12,6 @@ import { PostPropsAPI, CommentPropsAPI } from "./Type";
 const baseUrl = "http://localhost:8080/api/v1";
 
 const ForumPost: React.FC = () => {
-  // Fetch data from the backend by query string id
   const location = useLocation();
   const query = new URLSearchParams(location.search);
   const postId = query.get("id");
@@ -35,7 +34,7 @@ const ForumPost: React.FC = () => {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": localStorage.getItem("session_id") || "",
+          Authorization: localStorage.getItem("session_id") || "",
         },
       });
 
@@ -53,7 +52,7 @@ const ForumPost: React.FC = () => {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": localStorage.getItem("session_id") || "",
+          Authorization: localStorage.getItem("session_id") || "",
         },
       });
       if (!fetchCommentList.ok) {
@@ -126,7 +125,7 @@ const ForumPost: React.FC = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": localStorage.getItem("session_id") || "",
+          Authorization: localStorage.getItem("session_id") || "",
         },
         body: jsonData,
       });
@@ -134,10 +133,8 @@ const ForumPost: React.FC = () => {
       if (!response.ok) {
         throw new Error(`Error: ${response.status}`);
       }
-      // alert("Comment sent successfully");
       setComment("");
-      window.location.reload();
-      // fetchData(postId); 
+      fetchData(postId);
     } catch (error) {
       alert("Error: " + error);
     }
@@ -158,7 +155,7 @@ const ForumPost: React.FC = () => {
       </article>
       <hr className={styles.divider} />
       <section className={styles.commentSection}>
-        {commentList.map((_comment, index) => (
+        {/* {commentList.map((_comment, index) => (
           <Comment
             key={index}
             content={_comment.content}
@@ -168,9 +165,24 @@ const ForumPost: React.FC = () => {
             id={_comment.comment_id}
             fetchDataFunction={() => fetchData(postId)}
           />
-        ))}
+        ))} */}
+        {commentList === null ? (
+          <p>There are no comments yet.</p>
+        ) : (
+          commentList.map((_comment, index) => (
+            <Comment
+              key={index}
+              content={_comment.content}
+              votes={0}
+              author={_comment.author_id}
+              timestamp={_comment.timestamp}
+              id={_comment.comment_id}
+              fetchDataFunction={() => fetchData(postId)}
+            />
+          ))
+        )}
       </section>
-      <form className={styles.commentForm}>
+      <div className={styles.commentForm}>
         <textarea
           className={styles.commentInput}
           placeholder="Write a comment..."
@@ -181,7 +193,7 @@ const ForumPost: React.FC = () => {
         <p className={styles.commentCount} id="commentCount">
           0/5.000
         </p>
-      </form>
+      </div>
       <p className={styles.commentGuideline}>
         Please read the forum rules carefully. Negative comments may result in a
         24-hour ban.

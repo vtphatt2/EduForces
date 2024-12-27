@@ -25,7 +25,7 @@ const Forum: React.FC = () => {
         {
           method: "GET",
           headers: {
-            "Authorization": localStorage.getItem("session_id") || "",
+            Authorization: localStorage.getItem("session_id") || "",
           },
         }
       );
@@ -94,24 +94,21 @@ const Forum: React.FC = () => {
       return;
     }
     const jsonData = JSON.stringify({
-      title,
-      content,
+      title: title,
+      content: content,
     });
-    console.log(jsonData);
     try {
       const response = await fetch(`${baseUrl}/posts`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": localStorage.getItem("session_id") || "",
+          Authorization: localStorage.getItem("session_id") || "",
         },
         body: jsonData,
       });
       if (!response.ok) {
         throw new Error(`Error: ${response.status}`);
       }
-      const data = await response.json();
-      alert("Upload " + data.title + " successfully");
       getPostList(currentPage);
     } catch (error) {
       alert("Error: " + error);

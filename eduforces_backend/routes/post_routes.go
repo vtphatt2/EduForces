@@ -18,7 +18,7 @@ func RegisterPostRoutes(router *gin.Engine, postCtrl *controllers.PostController
 		postRoutes.POST("/:id/comments/:commentId/add-reaction", sessionMiddleware, postCtrl.AddReactionForPostOrComment)
 		postRoutes.POST("/:id/add-reaction", sessionMiddleware, postCtrl.AddReactionForPostOrComment)
 
-		postRoutes.POST("/", sessionMiddleware, postCtrl.CreatePost)
+		postRoutes.POST("", sessionMiddleware, postCtrl.CreatePost)
 		postRoutes.GET("/:id", sessionMiddleware, postCtrl.GetPostDetails)
 		postRoutes.GET("/:id/count-reaction", sessionMiddleware, postCtrl.CountReactionsForPost)
 		postRoutes.PUT("/:id", sessionMiddleware, postCtrl.UpdatePost)
