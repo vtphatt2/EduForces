@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -77,4 +78,21 @@ func (ps *PostService) UpdatePost(ctx context.Context, id uuid.UUID, req UpdateP
 
 func (ps *PostService) DeletePost(ctx context.Context, id uuid.UUID) error {
 	return ps.PostRepository.DeletePost(ctx, id)
+}
+
+func (ps *PostService) AddReactionForPostOrComment(ctx context.Context, accountID uuid.UUID, postID, commentID uuid.UUID, reactionType string) error {
+	arg := sqlc.AddReactionToPostParams{
+		ReactionID: uuid.New(),
+		Type:       sql.NullString{String: reactionType, Valid: true},
+		AccountID:  uuid.NullUUID{UUID: accountID, Valid: true},
+		Timestamp:  time.Now(),
+		PostID:     uuid.NullUUID{UUID: postID, Valid: postID != uuid.Nil},
+		CommentID:  uuid.NullUUID{UUID: commentID, Valid: commentID != uuid.Nil},
+	}
+
+	return ps.PostRepository.AddReactionForPostOrComment(ctx, arg)
+}
+
+func (ps *PostService) CountReactionsForPost(ctx context.Context, postID uuid.UUID) (sqlc.CountReactionsForPostRow, error) {
+	return ps.PostRepository.CountReactionsForPost(ctx, postID)
 }

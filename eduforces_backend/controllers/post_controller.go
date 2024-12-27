@@ -6,7 +6,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/vtphatt2/EduForces/helpers"
 	"github.com/vtphatt2/EduForces/services"
 )
 
@@ -36,15 +35,14 @@ func (pc *PostController) CreatePost(c *gin.Context) {
 		return
 	}
 
-	helpers.ConvertUserIDToUUID(c)
-
-	accountID, exists := c.Get("accountID")
+	user, exists := c.Get("user")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User ID not found"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		c.Abort()
 		return
 	}
 
-	newPost, err := pc.PostService.CreatePost(c.Request.Context(), accountID.(uuid.UUID), post)
+	newPost, err := pc.PostService.CreatePost(c.Request.Context(), uuid.MustParse(user.(string)), post)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -86,4 +84,62 @@ func (pc *PostController) DeletePost(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Post deleted successfully"})
+}
+
+func (pc *PostController) AddReactionForPostOrComment(c *gin.Context) {
+	var request struct {
+		ReactionType string `json:"reaction_type"`
+	}
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	postIDParam := c.Param("id")
+	var postID uuid.UUID
+	if postIDParam != "" {
+		var err error
+		postID, err = uuid.Parse(postIDParam)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid post_id"})
+			return
+		}
+	}
+
+	commentIDParam := c.Param("commentId")
+	var commentID uuid.UUID
+	if commentIDParam != "" {
+		var err error
+		commentID, err = uuid.Parse(commentIDParam)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid comment_id"})
+			return
+		}
+	}
+
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		c.Abort()
+		return
+	}
+
+	err := pc.PostService.AddReactionForPostOrComment(c.Request.Context(), uuid.MustParse(user.(string)), postID, commentID, request.ReactionType)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Reaction added successfully"})
+}
+
+func (pc *PostController) CountReactionsForPost(c *gin.Context) {
+	id := c.Param("id")
+	count, err := pc.PostService.CountReactionsForPost(c.Request.Context(), uuid.MustParse(id))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"data": count})
 }

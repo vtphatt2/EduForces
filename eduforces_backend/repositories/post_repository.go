@@ -2,6 +2,8 @@ package repositories
 
 import (
 	"context"
+	"database/sql"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/vtphatt2/EduForces/models/sqlc"
@@ -57,4 +59,54 @@ func (pr *PostRepository) UpdatePost(ctx context.Context, post sqlc.Post) error 
 
 func (pr *PostRepository) DeletePost(ctx context.Context, id uuid.UUID) error {
 	return pr.Queries.DeletePost(ctx, id)
+}
+
+func (pr *PostRepository) GetReactionForPost(ctx context.Context, postID, accountID uuid.UUID) (sqlc.Reaction, error) {
+	return pr.Queries.GetReactionForPost(ctx, sqlc.GetReactionForPostParams{
+		PostID:    uuid.NullUUID{UUID: postID},
+		AccountID: uuid.NullUUID{UUID: accountID},
+	})
+}
+
+func (pr *PostRepository) CountReactionsForPost(ctx context.Context, postID uuid.UUID) (sqlc.CountReactionsForPostRow, error) {
+	return pr.Queries.CountReactionsForPost(ctx, uuid.NullUUID{UUID: postID, Valid: true})
+}
+
+func (pr *PostRepository) AddReactionForPostOrComment(ctx context.Context, arg sqlc.AddReactionToPostParams) error {
+	// Check if the author already voted for that post/comment
+	existingReactionID, err := pr.Queries.CheckReactionExists(ctx, sqlc.CheckReactionExistsParams{
+		AccountID: arg.AccountID,
+		PostID:    arg.PostID,
+		CommentID: arg.CommentID,
+	})
+	if err != nil && err != sql.ErrNoRows {
+		// Log the error and return it
+		fmt.Println("Error checking existing reaction:", err)
+		return err
+	}
+
+	// If an existing reaction is found, delete it
+	if err == nil && existingReactionID != uuid.Nil {
+		err = pr.Queries.DeleteReaction(ctx, existingReactionID)
+		if err != nil {
+			// Log the error and return it
+			fmt.Println("Error deleting existing reaction:", err)
+			return err
+		}
+	}
+
+	// If the reaction type is "UNVOTE", stop here
+	if arg.Type.String == "UNVOTE" {
+		return nil
+	}
+
+	// Add the new reaction
+	err = pr.Queries.AddReactionToPost(ctx, arg)
+	if err != nil {
+		// Log the error and return it
+		fmt.Println("Error adding new reaction:", err)
+		return err
+	}
+
+	return nil
 }
