@@ -41,11 +41,11 @@ func (ps *PostService) GetAllPosts(ctx context.Context, page, limit int) ([]sqlc
 	return posts, meta, nil
 }
 
-func (ps *PostService) CreatePost(ctx context.Context, accountID string, req CreatePostRequest) (sqlc.Post, error) {
+func (ps *PostService) CreatePost(ctx context.Context, accountID uuid.UUID, req CreatePostRequest) (sqlc.Post, error) {
 
 	post := sqlc.Post{
 		PostID:    uuid.New(),
-		AuthorID:  uuid.NullUUID{UUID: uuid.MustParse(accountID), Valid: true},
+		AuthorID:  uuid.NullUUID{UUID: accountID, Valid: true},
 		Title:     req.Title,
 		Content:   req.Content,
 		Timestamp: time.Now(),
