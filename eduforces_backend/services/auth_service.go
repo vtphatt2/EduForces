@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/google/uuid"
 	"github.com/vtphatt2/EduForces/models/sqlc"
 	"github.com/vtphatt2/EduForces/repositories"
 )
@@ -106,4 +107,12 @@ func (s *AuthService) CreateOrFindUser(ctx context.Context, userInfo *GoogleUser
 	}
 
 	return account.AccountID.String(), nil
+}
+
+func (s *AuthService) GetAccountDetails(ctx context.Context, accountID uuid.UUID) (*sqlc.Account, error) {
+	return s.repo.GetAccountDetails(ctx, accountID)
+}
+
+func (s *AuthService) UpdateUsername(ctx context.Context, accountID uuid.UUID, username string) error {
+	return s.repo.UpdateUsername(ctx, accountID, username)
 }

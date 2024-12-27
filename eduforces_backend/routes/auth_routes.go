@@ -11,5 +11,7 @@ func RegisterAuthRoutes(router *gin.Engine, authCtrl *controllers.AuthController
 		authRoutes.POST("/google", authCtrl.GoogleAuthHandler)
 		authRoutes.GET("/logout", sessionMiddleware, authCtrl.LogoutHandler)
 		authRoutes.GET("/validate-session", authCtrl.ValidateSessionHandler)
+		authRoutes.GET("/account-details", sessionMiddleware, authCtrl.GetAccountDetails)
+		authRoutes.PUT("/update-username", sessionMiddleware, authCtrl.UpdateUsername)
 	}
 }

@@ -411,7 +411,7 @@ func (q *Queries) DeleteSubmission(ctx context.Context, submissionID uuid.UUID) 
 
 const getAccount = `-- name: GetAccount :one
 
-SELECT account_id, email, name, role FROM accounts WHERE account_id = $1
+SELECT account_id, email, username, name, role FROM accounts WHERE account_id = $1
 `
 
 // --- Account
@@ -421,6 +421,7 @@ func (q *Queries) GetAccount(ctx context.Context, accountID uuid.UUID) (Account,
 	err := row.Scan(
 		&i.AccountID,
 		&i.Email,
+		&i.Username,
 		&i.Name,
 		&i.Role,
 	)
@@ -429,7 +430,7 @@ func (q *Queries) GetAccount(ctx context.Context, accountID uuid.UUID) (Account,
 
 const getAccountByEmail = `-- name: GetAccountByEmail :one
 
-SELECT account_id, email, name, role FROM accounts WHERE email = $1
+SELECT account_id, email, username, name, role FROM accounts WHERE email = $1
 `
 
 // -- Forum
@@ -439,6 +440,7 @@ func (q *Queries) GetAccountByEmail(ctx context.Context, email string) (Account,
 	err := row.Scan(
 		&i.AccountID,
 		&i.Email,
+		&i.Username,
 		&i.Name,
 		&i.Role,
 	)
@@ -913,7 +915,7 @@ func (q *Queries) IsEventDate(ctx context.Context, eventTaskID uuid.UUID) (bool,
 }
 
 const listAccounts = `-- name: ListAccounts :many
-SELECT account_id, email, name, role FROM accounts
+SELECT account_id, email, username, name, role FROM accounts
 `
 
 func (q *Queries) ListAccounts(ctx context.Context) ([]Account, error) {
@@ -928,6 +930,7 @@ func (q *Queries) ListAccounts(ctx context.Context) ([]Account, error) {
 		if err := rows.Scan(
 			&i.AccountID,
 			&i.Email,
+			&i.Username,
 			&i.Name,
 			&i.Role,
 		); err != nil {
@@ -1144,6 +1147,20 @@ type UpdateAccountNameParams struct {
 
 func (q *Queries) UpdateAccountName(ctx context.Context, arg UpdateAccountNameParams) error {
 	_, err := q.db.ExecContext(ctx, updateAccountName, arg.Name, arg.Email)
+	return err
+}
+
+const updateAccountUsername = `-- name: UpdateAccountUsername :exec
+UPDATE accounts SET username = $1 WHERE account_id = $2
+`
+
+type UpdateAccountUsernameParams struct {
+	Username  string    `json:"username"`
+	AccountID uuid.UUID `json:"account_id"`
+}
+
+func (q *Queries) UpdateAccountUsername(ctx context.Context, arg UpdateAccountUsernameParams) error {
+	_, err := q.db.ExecContext(ctx, updateAccountUsername, arg.Username, arg.AccountID)
 	return err
 }
 

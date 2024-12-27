@@ -15,6 +15,9 @@ DELETE FROM accounts WHERE account_id = $1;
 -- name: UpdateAccountName :exec
 UPDATE accounts SET name = $1 WHERE email = $2;
 
+-- name: UpdateAccountUsername :exec
+UPDATE accounts SET username = $1 WHERE account_id = $2;
+
 
 ---- Forum
 
