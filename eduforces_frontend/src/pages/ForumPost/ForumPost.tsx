@@ -35,7 +35,7 @@ const ForumPost: React.FC = () => {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          "Session-Id": localStorage.getItem("session_id") || "",
+          "Authorization": localStorage.getItem("session_id") || "",
         },
       });
 
@@ -53,7 +53,7 @@ const ForumPost: React.FC = () => {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          "Session-Id": localStorage.getItem("session_id") || "",
+          "Authorization": localStorage.getItem("session_id") || "",
         },
       });
       if (!fetchCommentList.ok) {
@@ -126,7 +126,7 @@ const ForumPost: React.FC = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Session-Id": localStorage.getItem("session_id") || "",
+          "Authorization": localStorage.getItem("session_id") || "",
         },
         body: jsonData,
       });

@@ -8,7 +8,7 @@ import (
 func RegisterPostRoutes(router *gin.Engine, postCtrl *controllers.PostController, commentCtrl *controllers.CommentController, sessionMiddleware gin.HandlerFunc) {
 	postRoutes := router.Group("/api/v1/posts")
 	{
-		postRoutes.GET("/", sessionMiddleware, postCtrl.GetAllPosts)
+		postRoutes.GET("", sessionMiddleware, postCtrl.GetAllPosts)
 
 		postRoutes.GET("/:id/comments", sessionMiddleware, commentCtrl.GetAllCommentsForPost)
 		postRoutes.POST("/:id/comments", sessionMiddleware, commentCtrl.CreateComment)

@@ -25,7 +25,7 @@ const Forum: React.FC = () => {
         {
           method: "GET",
           headers: {
-            "Session-Id": localStorage.getItem("session_id") || "",
+            "Authorization": localStorage.getItem("session_id") || "",
           },
         }
       );
@@ -98,11 +98,11 @@ const Forum: React.FC = () => {
       content,
     });
     try {
-      const response = await fetch("http://localhost:3001/forum/upload", {
+      const response = await fetch(`${baseUrl}/posts`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Session-Id": localStorage.getItem("session_id") || "",
+          "Authorization": localStorage.getItem("session_id") || "",
         },
         body: jsonData,
       });
