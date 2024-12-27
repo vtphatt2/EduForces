@@ -6,7 +6,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
 // Environment variables for sensitive data
-const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+const clientId =
+  "909711892201-us0kuhr04lu7jmpdi9usnejpbe2mmklh.apps.googleusercontent.com";
 const backendAuthEndpoint = "http://localhost:8080/api/v1/auth/google";
 const redirectUri = "http://localhost:5173/login";
 
