@@ -36,8 +36,13 @@ func (pc *PostController) CreatePost(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	sessionID := c.GetHeader("Session-Id")
-	newPost, err := pc.PostService.CreatePost(c.Request.Context(), sessionID, post)
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
+	}
+	accountID := user.(string)
+	newPost, err := pc.PostService.CreatePost(c.Request.Context(), accountID, post)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

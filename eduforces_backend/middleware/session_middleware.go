@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/vtphatt2/EduForces/sessions"
 )
@@ -8,20 +10,21 @@ import (
 // SessionMiddleware is a Gin middleware that checks for a valid session.
 func SessionMiddleware(sm *sessions.SessionManager) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Retrieve the session ID from the cookie
-		sessionID, err := c.Cookie("session_id")
-		if err != nil {
-			// If the session cookie is not present, continue with the request
-			c.Next()
+		// Retrieve the session ID from the Authorization header
+		sessionID := c.GetHeader("Authorization")
+		if sessionID == "" {
+			// If the session ID is not present, return unauthorized
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Session not found"})
+			c.Abort()
 			return
 		}
 
 		// Retrieve the session from the session manager
 		session, valid := sm.GetSession(sessionID)
 		if !valid {
-			// If the session is invalid, clear the cookie and continue
-			c.SetCookie("session_id", "", -1, "/", "", false, true)
-			c.Next()
+			// If the session is invalid, return unauthorized
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid session"})
+			c.Abort()
 			return
 		}
 

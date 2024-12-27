@@ -36,7 +36,7 @@ func main() {
 
 	// Initialize services
 	authService := services.NewAuthService(accountRepo)
-	postService := services.NewPostService(postRepo) // Initialize PostService
+	postService := services.NewPostService(postRepo, accountRepo) // Initialize PostService with both postRepo and accountRepo
 
 	// Initialize controllers
 	authController := controllers.NewAuthController(authService, sessionManager)
