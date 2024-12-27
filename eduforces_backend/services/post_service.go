@@ -10,11 +10,12 @@ import (
 )
 
 type PostService struct {
-	PostRepository *repositories.PostRepository
+	PostRepository    *repositories.PostRepository
+	AccountRepository *repositories.AccountRepository
 }
 
-func NewPostService(postRepository *repositories.PostRepository) *PostService {
-	return &PostService{PostRepository: postRepository}
+func NewPostService(postRepository *repositories.PostRepository, accountRepository *repositories.AccountRepository) *PostService {
+	return &PostService{PostRepository: postRepository, AccountRepository: accountRepository}
 }
 
 type CreatePostRequest struct {
@@ -40,13 +41,11 @@ func (ps *PostService) GetAllPosts(ctx context.Context, page, limit int) ([]sqlc
 	return posts, meta, nil
 }
 
-func (ps *PostService) CreatePost(ctx context.Context, sessionID string, req CreatePostRequest) (sqlc.Post, error) {
-	tmpAccountID := "f04999e7-9aea-4fc5-b8d3-68e6d18a6d2e"
+func (ps *PostService) CreatePost(ctx context.Context, accountID uuid.UUID, req CreatePostRequest) (sqlc.Post, error) {
 
 	post := sqlc.Post{
-		PostID: uuid.New(),
-		// AuthorID:  uuid.NullUUID{UUID: uuid.MustParse(sessionID), Valid: true},
-		AuthorID:  uuid.NullUUID{UUID: uuid.MustParse(tmpAccountID), Valid: true},
+		PostID:    uuid.New(),
+		AuthorID:  uuid.NullUUID{UUID: accountID, Valid: true},
 		Title:     req.Title,
 		Content:   req.Content,
 		Timestamp: time.Now(),

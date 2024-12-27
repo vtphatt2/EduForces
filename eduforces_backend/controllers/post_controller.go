@@ -6,13 +6,12 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/vtphatt2/EduForces/helpers"
 	"github.com/vtphatt2/EduForces/services"
-	"github.com/vtphatt2/EduForces/sessions"
 )
 
 type PostController struct {
 	PostService *services.PostService
-	session     *sessions.SessionManager
 }
 
 func NewPostController(postService *services.PostService) *PostController {
@@ -36,12 +35,21 @@ func (pc *PostController) CreatePost(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	sessionID := c.GetHeader("Session-Id")
-	newPost, err := pc.PostService.CreatePost(c.Request.Context(), sessionID, post)
+
+	helpers.ConvertUserIDToUUID(c)
+
+	accountID, exists := c.Get("accountID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User ID not found"})
+		return
+	}
+
+	newPost, err := pc.PostService.CreatePost(c.Request.Context(), accountID.(uuid.UUID), post)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
 	c.JSON(http.StatusCreated, newPost)
 }
 
