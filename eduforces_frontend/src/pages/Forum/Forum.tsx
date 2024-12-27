@@ -97,6 +97,7 @@ const Forum: React.FC = () => {
       title,
       content,
     });
+    console.log(jsonData);
     try {
       const response = await fetch(`${baseUrl}/posts`, {
         method: "POST",

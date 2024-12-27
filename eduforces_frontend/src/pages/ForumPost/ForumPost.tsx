@@ -134,9 +134,10 @@ const ForumPost: React.FC = () => {
       if (!response.ok) {
         throw new Error(`Error: ${response.status}`);
       }
-      alert("Comment sent successfully");
+      // alert("Comment sent successfully");
       setComment("");
-      fetchData(postId);
+      window.location.reload();
+      // fetchData(postId); 
     } catch (error) {
       alert("Error: " + error);
     }
