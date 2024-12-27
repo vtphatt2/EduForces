@@ -36,29 +36,6 @@ CREATE TABLE reactions (
     comment_id UUID REFERENCES comments(comment_id)
 );
 
-
------ Question
-
--- Create Question table
-CREATE TABLE questions (
-    question_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    description TEXT NOT NULL,
-    answers TEXT[] NOT NULL,
-    correct_answer TEXT NOT NULL,
-    updated_at TIMESTAMP NOT NULL,
-    subject VARCHAR(255) NOT NULL
-);
-
--- Create QuestionPhoto table
-CREATE TABLE question_photos (
-    photo_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    question_id UUID REFERENCES questions(question_id),
-    photo_name VARCHAR(255) NOT NULL,
-    photo_path TEXT NOT NULL,
-    updated_at TIMESTAMP NOT NULL
-);
-
-
 --- Submission
 
 -- Create Submission table
@@ -99,13 +76,6 @@ CREATE TABLE contest_details (
     is_public BOOLEAN NOT NULL
 );
 
--- Junction table to map contests and questions
-CREATE TABLE contest_questions (
-    contest_detail_id UUID REFERENCES contest_details(contest_detail_id) ON DELETE CASCADE,
-    question_id UUID REFERENCES questions(question_id) ON DELETE CASCADE,
-    PRIMARY KEY (contest_detail_id, question_id)
-);
-
 -- Create ContestRegistration table
 CREATE TABLE contest_registrations (
     registration_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -133,3 +103,14 @@ CREATE TABLE event_tasks (
     special_gift_description TEXT NOT NULL
 );
 
+CREATE TABLE questions (
+    question_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    contest_id UUID REFERENCES contests(contest_id),
+    description TEXT NOT NULL,
+    answers TEXT[] NOT NULL,
+    correct_answer TEXT NOT NULL,
+    updated_at TIMESTAMP NOT NULL,
+    subject VARCHAR(255) NOT NULL,
+    is_public BOOLEAN NOT NULL DEFAULT FALSE,
+    question_tag VARCHAR NOT NULL
+);

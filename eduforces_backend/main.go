@@ -33,17 +33,18 @@ func main() {
 	// Initialize repositories
 	accountRepo := repositories.NewAccountRepository(queries) // Pass the queries instance to the repository
 	postRepo := repositories.NewPostRepository(queries)       // Initialize PostRepository
-
+	contestRepo := repositories.NewContestRepository(queries)
+	questionRepo := repositories.NewQuestionRepository(queries)
 	// Initialize services
 	authService := services.NewAuthService(accountRepo)
 	postService := services.NewPostService(postRepo, accountRepo) // Initialize PostService with both postRepo and accountRepo
-
+	contestService := services.NewContestService(contestRepo, questionRepo, accountRepo)
 	// Initialize controllers
 	authController := controllers.NewAuthController(authService, sessionManager)
 	postController := controllers.NewPostController(postService) // Initialize PostController
-
+	contestController := controllers.NewContestController(contestService)
 	// Register routes
-	router := routes.RegisterRoutes(authController, postController, sessionManager)
+	router := routes.RegisterRoutes(authController, postController, contestController, sessionManager)
 
 	// Start the server
 	log.Println("Server is running on port 8080")

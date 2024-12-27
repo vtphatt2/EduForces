@@ -124,12 +124,15 @@ type Post struct {
 }
 
 type Question struct {
-	QuestionID    uuid.UUID `json:"question_id"`
-	Description   string    `json:"description"`
-	Answers       []string  `json:"answers"`
-	CorrectAnswer string    `json:"correct_answer"`
-	UpdatedAt     time.Time `json:"updated_at"`
-	Subject       string    `json:"subject"`
+	QuestionID    uuid.UUID     `json:"question_id"`
+	ContestID     uuid.NullUUID `json:"contest_id"`
+	Description   string        `json:"description"`
+	Answers       []string      `json:"answers"`
+	CorrectAnswer string        `json:"correct_answer"`
+	UpdatedAt     time.Time     `json:"updated_at"`
+	Subject       string        `json:"subject"`
+	IsPublic      bool          `json:"is_public"`
+	QuestionTag   string        `json:"question_tag"`
 }
 
 type QuestionPhoto struct {

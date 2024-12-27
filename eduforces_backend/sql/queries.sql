@@ -49,16 +49,33 @@ SELECT * FROM reactions WHERE post_id = $1;
 INSERT INTO reactions (reaction_id, type, account_id, timestamp, post_id, comment_id) VALUES ($1, $2, $3, $4, $5, $6);
 
 
----Question 
+---Question
+
+-- name: UpdatePublicQuestion :exec
+UPDATE questions SET is_public = TRUE WHERE question_id = $1;
 
 -- name: GetQuestion :one
 SELECT * FROM questions WHERE question_id = $1;
+
+-- name: GetLatestQuestionWithSubject :one
+SELECT *
+FROM questions
+WHERE subject = $1 -- Replace 'Math' with the desired subject
+ORDER BY updated_at DESC -- Assuming updated_at stores the timestamp of the last update
+LIMIT 1;
+
+-- name: CheckContestExistsWithSubject :one
+SELECT EXISTS (
+    SELECT 1
+    FROM questions
+    WHERE subject = $1
+);
 
 -- name: ListQuestions :many
 SELECT * FROM questions;
 
 -- name: CreateQuestion :exec
-INSERT INTO questions (question_id, description, answers, correct_answer, updated_at, subject) VALUES ($1, $2, $3, $4, $5, $6);
+INSERT INTO questions (contest_id,description, answers, correct_answer, updated_at, subject, question_tag) VALUES ($1, $2, $3, $4, $5, $6,$7);
 
 -- name: DeleteQuestion :exec
 DELETE FROM questions WHERE question_id = $1;
@@ -163,3 +180,4 @@ SELECT special_gift_description FROM event_tasks WHERE event_task_id = $1;
 
 -- name: IsEventDate :one
 SELECT CASE WHEN event_date = CURRENT_DATE THEN TRUE ELSE FALSE END AS is_event_date FROM event_tasks WHERE event_task_id = $1;
+
