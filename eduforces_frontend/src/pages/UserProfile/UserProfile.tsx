@@ -32,10 +32,6 @@ const UserProfile: React.FC = () => {
     content: "10 Gold",
   };
 
-  const changeAvatar = () => {
-    (document.getElementById(styles.upload) as HTMLInputElement).click();
-  };
-
   const changeAvatarClick = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
     const file = e.target.files[0];
@@ -43,6 +39,10 @@ const UserProfile: React.FC = () => {
       styles.avatar
     )[0] as HTMLImageElement;
     avatar.src = URL.createObjectURL(file);
+  };
+
+  const changeUserProfile = () => {
+    alert("Changes saved successfully");
   };
 
   return (
@@ -59,7 +59,12 @@ const UserProfile: React.FC = () => {
         accept="image/*"
         onChange={changeAvatarClick}
       />
-      <h1 className={styles.changePhoto} onClick={changeAvatar}>
+      <h1
+        className={styles.changePhoto}
+        onClick={() =>
+          (document.getElementById(styles.upload) as HTMLInputElement).click()
+        }
+      >
         Change photo
       </h1>
       <div className={styles.info}>
@@ -82,7 +87,7 @@ const UserProfile: React.FC = () => {
         </label>
         <Button
           label="Save changes"
-          onClick={() => console.log("Save changes")}
+          onClick={changeUserProfile}
           style={{ width: "100%" }}
         />
       </div>
