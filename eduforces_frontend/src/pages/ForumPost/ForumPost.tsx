@@ -147,7 +147,6 @@ const ForumPost: React.FC = () => {
             <Comment
               key={index}
               content={_comment.content}
-              votes={0}
               author={_comment.author_id}
               timestamp={_comment.timestamp}
               id={_comment.comment_id}
