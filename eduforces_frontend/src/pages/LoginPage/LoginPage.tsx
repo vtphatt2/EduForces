@@ -3,9 +3,12 @@ import { useLocation } from "react-router-dom";
 import appLogo from "../../assets/logo_new.webp";
 import "./LoginPage.css";
 import Button from "../../components/Button";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 // Environment variables for sensitive data
-const clientId ="173187182094-lol8u5tku7e1bpi6br0tcfsqd4huqtag.apps.googleusercontent.com";
+const clientId =
+  "909711892201-us0kuhr04lu7jmpdi9usnejpbe2mmklh.apps.googleusercontent.com";
 const backendAuthEndpoint = "http://localhost:8080/api/v1/auth/google";
 const redirectUri = "http://localhost:5173/login";
 
