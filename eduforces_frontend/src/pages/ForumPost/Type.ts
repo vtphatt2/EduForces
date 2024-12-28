@@ -1,7 +1,6 @@
 export interface CommentProps {
   id: string;
   content: string;
-  votes: number;
   author: string;
   timestamp: string;
   fetchDataFunction: () => void;
