@@ -39,6 +39,12 @@ const NavBar: React.FC = () => {
     };
   }, []);
 
+  const signIn = () => {
+    if (isLoggedIn) {
+      return;
+    }
+    navigate("/login", { state: { fromLockIcon: true } });
+  };
   return (
     <nav className="navbar">
       <div className="logo">
@@ -100,7 +106,7 @@ const NavBar: React.FC = () => {
         </li>
       </ul>
 
-      <div className="auth-icon">
+      <div className="auth-icon" onClick={signIn}>
         {isLoggedIn ? (
           <div
             className="auth-dropdown"
