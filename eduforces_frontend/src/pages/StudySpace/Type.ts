@@ -5,3 +5,8 @@ export interface QuestionProps {
   correct_answer: string;
   isDone: boolean;
 }
+
+export interface FilterItemProps {
+  label: string;
+  isChecked: boolean;
+}
