@@ -110,3 +110,21 @@ func (pr *PostRepository) AddReactionForPostOrComment(ctx context.Context, arg s
 
 	return nil
 }
+
+func (pr *PostRepository) GetReactionForPostOrComment(ctx context.Context, arg sqlc.GetReactionExistParams) (sql.NullString, error) {
+	params := sqlc.GetReactionExistParams{
+		AccountID: arg.AccountID,
+		PostID:    arg.PostID,
+		CommentID: arg.CommentID,
+	}
+
+	reactionType, err := pr.Queries.GetReactionExist(ctx, params)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return sql.NullString{}, nil // No reaction found
+		}
+		return sql.NullString{}, err // Other errors
+	}
+
+	return reactionType, nil
+}

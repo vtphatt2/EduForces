@@ -10,7 +10,7 @@ func RegisterAuthRoutes(router *gin.Engine, authCtrl *controllers.AuthController
 	authRoutes := router.Group("/api/v1/auth")
 	{
 		authRoutes.POST("/google", authCtrl.GoogleAuthHandler)
-		authRoutes.GET("/logout", sessionMiddleware, authCtrl.LogoutHandler)
+		authRoutes.POST("/logout", authCtrl.LogoutHandler)
 		authRoutes.GET("/validate-session", authCtrl.ValidateSessionHandler)
 	}
 
@@ -18,6 +18,7 @@ func RegisterAuthRoutes(router *gin.Engine, authCtrl *controllers.AuthController
 	accountRoutes := router.Group("/api/v1/accounts")
 	{
 		accountRoutes.GET("/account-details", sessionMiddleware, authCtrl.GetAccountDetails)
+		accountRoutes.GET("/account-details/:id", sessionMiddleware, authCtrl.GetAccountDetailsFromID)
 		accountRoutes.PUT("/update-username", sessionMiddleware, authCtrl.UpdateUsername)
 	}
 }

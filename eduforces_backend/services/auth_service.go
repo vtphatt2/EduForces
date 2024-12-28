@@ -3,6 +3,7 @@ package services
 import (
 	"bytes"
 	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -28,8 +29,9 @@ type GoogleTokenResponse struct {
 }
 
 type GoogleUserInfo struct {
-	Email string `json:"email"`
-	Name  string `json:"name"`
+	Email   string `json:"email"`
+	Name    string `json:"name"`
+	Picture string `json:"picture"`
 }
 
 // ExchangeGoogleCode exchanges the authorization code for user info
@@ -51,6 +53,8 @@ func (s *AuthService) ExchangeGoogleCode(ctx context.Context, code string) (*Goo
 
 	bodyJSON, _ := json.Marshal(body)
 	resp, err := http.Post(tokenURL, "application/json", bytes.NewBuffer(bodyJSON))
+	fmt.Println("resp=", resp)
+
 	if err != nil {
 		return nil, err
 	}
@@ -91,9 +95,10 @@ func (s *AuthService) CreateOrFindUser(ctx context.Context, userInfo *GoogleUser
 	// If the user doesn't exist, create a new one
 	if account == nil {
 		err = s.repo.CreateAccount(ctx, sqlc.CreateAccountParams{
-			Email: userInfo.Email,
-			Name:  userInfo.Name,
-			Role:  "User",
+			Email:      userInfo.Email,
+			Name:       userInfo.Name,
+			Role:       "User",
+			AvatarPath: userInfo.Picture,
 		})
 		if err != nil {
 			return "", err
@@ -115,4 +120,8 @@ func (s *AuthService) GetAccountDetails(ctx context.Context, accountID uuid.UUID
 
 func (s *AuthService) UpdateUsername(ctx context.Context, accountID uuid.UUID, username string) error {
 	return s.repo.UpdateUsername(ctx, accountID, username)
+}
+
+func (s *AuthService) UpdateAccountLastActive(ctx context.Context, accountID uuid.UUID, lastActive sql.NullTime) error {
+	return s.repo.UpdateAccountLastActive(ctx, accountID, lastActive)
 }

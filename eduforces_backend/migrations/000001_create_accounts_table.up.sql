@@ -7,7 +7,12 @@ CREATE TABLE accounts (
     email TEXT UNIQUE NOT NULL,
     username TEXT UNIQUE NOT NULL DEFAULT 'user_' || nextval('username_seq'),
     name TEXT NOT NULL,
-    role role_enum NOT NULL DEFAULT 'User'
+    role role_enum NOT NULL DEFAULT 'User',
+    avatar_path TEXT NOT NULL DEFAULT 'default_avatar.png',
+    elo_rating INT NOT NULL DEFAULT 1500,
+    last_active TIMESTAMP,
+    school TEXT NOT NULL DEFAULT 'Unknown',
+    is_deactivated BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 -- Create Post table
