@@ -13,7 +13,7 @@ const UserProfile: React.FC = () => {
   const [name, setName] = useState({ title: "Name", content: "" });
   const [email, setEmail] = useState({ title: "Email", content: "" });
   const [role, setRole] = useState({ title: "Role", content: "" });
-  const [school, setSchool] = useState({ title: "School", content: "" });
+  const [school, setSchool] = useState("");
   const [avatarSrc, setAvatarSrc] = useState(
     "https://www.w3schools.com/howto/img_avatar.png"
   );
@@ -37,7 +37,7 @@ const UserProfile: React.FC = () => {
       setName({ title: "Name", content: data.name });
       setEmail({ title: "Email", content: data.email });
       setRole({ title: "Role", content: data.role });
-      setSchool({ title: "School", content: data.school });
+      setSchool(data.school);
       setAvatarSrc(data.avatar_path);
       setElo({ title: "Elo", content: `${data.elo_rating}` });
     } catch (error) {
@@ -47,7 +47,7 @@ const UserProfile: React.FC = () => {
 
   useEffect(() => {
     fetchUserProfile();
-  }, []);
+  }, [user.content, school]);
   const property = {
     title: "Property",
     content: "10 Gold",
@@ -71,6 +71,14 @@ const UserProfile: React.FC = () => {
       return;
     }
 
+    const _school = (
+      document.getElementsByTagName("textarea")[1] as HTMLTextAreaElement
+    ).value;
+    if (!_school) {
+      alert("School cannot be empty");
+      return;
+    }
+
     try {
       const response = await fetch(`${baseUrl}/accounts/update-username`, {
         method: "PUT",
@@ -78,7 +86,7 @@ const UserProfile: React.FC = () => {
           "Content-Type": "application/json",
           Authorization: localStorage.getItem("session_id") || "",
         },
-        body: JSON.stringify({ username }),
+        body: JSON.stringify({ username, school: _school }),
       });
 
       if (!response.ok) {
@@ -113,7 +121,7 @@ const UserProfile: React.FC = () => {
         <EditableInfoBox title={user.title} content={user.content} />
         <InfoBox title={name.title} content={name.content} />
         <InfoBox title={email.title} content={email.content} />
-        <EditableInfoBox title={school.title} content={school.content} />
+        <EditableInfoBox title="School" content={school} />
         <InfoBox title={elo.title} content={elo.content} />
         <InfoBox title={role.title} content={role.content} />
         <InfoBox title={property.title} content={property.content} />
