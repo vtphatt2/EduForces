@@ -209,3 +209,7 @@
 #leftAlignText {
   text-align: left;
 }
+
+#voted {
+  background-color: #d0d0d0;
+}
