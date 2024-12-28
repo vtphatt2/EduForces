@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import appLogo from "../../assets/logo_new.webp";
 import "./LoginPage.css";
 import Button from "../../components/Button";
@@ -23,6 +24,13 @@ const handleClick = () => {
 };
 
 const LoginPage: React.FC = () => {
+  const location = useLocation();
+  useEffect(() => {
+    if (location.state?.fromLockIcon) {
+      (document.getElementsByClassName("btn-signin")[0] as HTMLElement).click();
+      location.state.fromLockIcon = false;
+    }
+  }, [location.state]);
   const { setIsLoggedIn, setUsername } = useAuth();
   const navigate = useNavigate();
 
@@ -58,7 +66,6 @@ const LoginPage: React.FC = () => {
         .catch((error) => console.error("Error during login:", error));
     }
   }, [navigate, setIsLoggedIn, setUsername]);
-
   return (
     <div className="logo-text-container">
       <div className="intro-text">

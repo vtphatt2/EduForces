@@ -96,3 +96,13 @@ func (cc *CommentController) DeleteComment(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Comment deleted successfully"})
 }
+
+func (cc *CommentController) CountReactionsForComment(c *gin.Context) {
+	id := c.Param("commentId")
+	count, err := cc.CommentService.CountReactionsForComment(c.Request.Context(), uuid.MustParse(id))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, count)
+}

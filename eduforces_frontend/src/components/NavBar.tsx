@@ -1,45 +1,57 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Link, NavLink } from 'react-router-dom';
-import { FaLock } from 'react-icons/fa'; 
+import React, { useState, useEffect, useRef } from "react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { FaLock } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
-import './NavBar.css';
+import "./NavBar.css";
 
 const NavBar: React.FC = () => {
+  const navigate = useNavigate();
   const { isLoggedIn, username, setIsLoggedIn, setUsername } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
   const handleDropdownToggle = () => {
-    setIsDropdownOpen(prev => !prev);
+    setIsDropdownOpen((prev) => !prev);
   };
 
   const handleLogout = () => {
     setIsLoggedIn(false);
     setUsername(null);
+    setIsDropdownOpen(false);
     localStorage.removeItem("session_id");
     localStorage.removeItem("username");
+    navigate("/");
   };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsDropdownOpen(false);
       }
     };
 
-    document.addEventListener('click', handleClickOutside);
+    document.addEventListener("click", handleClickOutside);
 
     return () => {
-      document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener("click", handleClickOutside);
     };
   }, []);
 
+  const signIn = () => {
+    if (isLoggedIn) {
+      return;
+    }
+    navigate("/login", { state: { fromLockIcon: true } });
+  };
   return (
     <nav className="navbar">
       <div className="logo">
         <Link to="/">
-          <p className='app-name-p'>EduForces</p>
+          <p className="app-name-p">EduForces</p>
         </Link>
       </div>
       <ul className="nav-links">
@@ -47,7 +59,7 @@ const NavBar: React.FC = () => {
           <li>
             <NavLink
               to="/login"
-              className={({ isActive }) => (isActive ? 'active' : undefined)}
+              className={({ isActive }) => (isActive ? "active" : undefined)}
             >
               Login
             </NavLink>
@@ -57,7 +69,7 @@ const NavBar: React.FC = () => {
           <NavLink
             to="/"
             end
-            className={({ isActive }) => (isActive ? 'active' : undefined)}
+            className={({ isActive }) => (isActive ? "active" : undefined)}
           >
             Home
           </NavLink>
@@ -65,7 +77,7 @@ const NavBar: React.FC = () => {
         <li>
           <NavLink
             to="/contest"
-            className={({ isActive }) => (isActive ? 'active' : undefined)}
+            className={({ isActive }) => (isActive ? "active" : undefined)}
           >
             Contest
           </NavLink>
@@ -73,7 +85,7 @@ const NavBar: React.FC = () => {
         <li>
           <NavLink
             to="/forum"
-            className={({ isActive }) => (isActive ? 'active' : undefined)}
+            className={({ isActive }) => (isActive ? "active" : undefined)}
           >
             Forum
           </NavLink>
@@ -81,7 +93,7 @@ const NavBar: React.FC = () => {
         <li>
           <NavLink
             to="/study-space"
-            className={({ isActive }) => (isActive ? 'active' : undefined)}
+            className={({ isActive }) => (isActive ? "active" : undefined)}
           >
             Study Space
           </NavLink>
@@ -89,26 +101,28 @@ const NavBar: React.FC = () => {
         <li>
           <NavLink
             to="/donate"
-            className={({ isActive }) => (isActive ? 'active' : undefined)}
+            className={({ isActive }) => (isActive ? "active" : undefined)}
           >
             Donate
           </NavLink>
         </li>
       </ul>
 
-      <div className="auth-icon">
+      <div className="auth-icon" onClick={signIn}>
         {isLoggedIn ? (
           <div
             className="auth-dropdown"
             onClick={handleDropdownToggle}
             ref={dropdownRef}
           >
-            <span style={{ fontSize: '16px', marginLeft: '5px', cursor: 'pointer' }}>
+            <span
+              style={{ fontSize: "16px", marginLeft: "5px", cursor: "pointer" }}
+            >
               {username}
             </span>
             {isDropdownOpen && (
               <div className="dropdown-menu">
-                <div onClick={() => alert('View Profile')}>View Profile</div>
+                <div onClick={() => navigate(`/user`)}>View Profile</div>
                 <div onClick={handleLogout}>Logout</div>
               </div>
             )}

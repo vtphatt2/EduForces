@@ -62,3 +62,7 @@ func (cs *CommentService) UpdateComment(ctx context.Context, id uuid.UUID, req U
 func (cs *CommentService) DeleteComment(ctx context.Context, id uuid.UUID) error {
 	return cs.CommentRepository.DeleteComment(ctx, id)
 }
+
+func (cs *CommentService) CountReactionsForComment(ctx context.Context, commentID uuid.UUID) (sqlc.CountReactionsForCommentRow, error) {
+	return cs.CommentRepository.CountReactionsForComment(ctx, commentID)
+}

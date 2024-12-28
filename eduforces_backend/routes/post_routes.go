@@ -21,6 +21,7 @@ func RegisterPostRoutes(router *gin.Engine, postCtrl *controllers.PostController
 		postRoutes.POST("", sessionMiddleware, postCtrl.CreatePost)
 		postRoutes.GET("/:id", sessionMiddleware, postCtrl.GetPostDetails)
 		postRoutes.GET("/:id/count-reaction", sessionMiddleware, postCtrl.CountReactionsForPost)
+		postRoutes.GET("/:id/comments/:commentId/count-reaction", sessionMiddleware, commentCtrl.CountReactionsForComment)
 		postRoutes.PUT("/:id", sessionMiddleware, postCtrl.UpdatePost)
 		postRoutes.DELETE("/:id", sessionMiddleware, postCtrl.DeletePost)
 	}

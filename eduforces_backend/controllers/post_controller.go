@@ -116,6 +116,8 @@ func (pc *PostController) AddReactionForPostOrComment(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid comment_id"})
 			return
 		}
+
+		postID = uuid.UUID{}
 	}
 
 	user, exists := c.Get("user")
