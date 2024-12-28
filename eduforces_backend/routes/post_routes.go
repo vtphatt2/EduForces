@@ -8,7 +8,7 @@ import (
 func RegisterPostRoutes(router *gin.Engine, postCtrl *controllers.PostController, commentCtrl *controllers.CommentController, sessionMiddleware gin.HandlerFunc) {
 	postRoutes := router.Group("/api/v1/posts")
 	{
-		postRoutes.GET("/", sessionMiddleware, postCtrl.GetAllPosts)
+		postRoutes.GET("", sessionMiddleware, postCtrl.GetAllPosts)
 
 		postRoutes.GET("/:id/comments", sessionMiddleware, commentCtrl.GetAllCommentsForPost)
 		postRoutes.POST("/:id/comments", sessionMiddleware, commentCtrl.CreateComment)
@@ -18,7 +18,7 @@ func RegisterPostRoutes(router *gin.Engine, postCtrl *controllers.PostController
 		postRoutes.POST("/:id/comments/:commentId/add-reaction", sessionMiddleware, postCtrl.AddReactionForPostOrComment)
 		postRoutes.POST("/:id/add-reaction", sessionMiddleware, postCtrl.AddReactionForPostOrComment)
 
-		postRoutes.POST("/", sessionMiddleware, postCtrl.CreatePost)
+		postRoutes.POST("", sessionMiddleware, postCtrl.CreatePost)
 		postRoutes.GET("/:id", sessionMiddleware, postCtrl.GetPostDetails)
 		postRoutes.GET("/:id/count-reaction", sessionMiddleware, postCtrl.CountReactionsForPost)
 		postRoutes.PUT("/:id", sessionMiddleware, postCtrl.UpdatePost)

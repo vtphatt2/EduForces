@@ -18,7 +18,7 @@ const TextArea: React.FC<TextAreaProps> = ({ placeholder, maxLength, id }) => {
     }
   };
   return (
-    <form className={styles.textAreaForm}>
+    <div className={styles.textAreaForm}>
       <textarea
         className={styles.textArea}
         placeholder={placeholder}
@@ -27,7 +27,7 @@ const TextArea: React.FC<TextAreaProps> = ({ placeholder, maxLength, id }) => {
         id={id}
       />
       <p className={styles.textCount}>0/{maxLength}</p>
-    </form>
+    </div>
   );
 };
 
