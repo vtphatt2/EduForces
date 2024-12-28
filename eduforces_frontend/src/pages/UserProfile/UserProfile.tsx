@@ -1,32 +1,65 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styles from "./UserProfile.module.css";
 import InfoBox from "./InfoBox";
 import EditableInfoBox from "./EditableInfoBox";
 import NavBar from "../../components/NavBar";
 import Button from "../../components/Button";
 
+const baseUrl = "http://localhost:8080/api/v1";
+
 const UserProfile: React.FC = () => {
   const [checked, setChecked] = useState(true);
-  const user = {
-    title: "Username",
-    content: "phuloi321",
+  const [user, setUser] = useState({ title: "Username", content: "" });
+  const [name, setName] = useState({ title: "Name", content: "" });
+  const [email, setEmail] = useState({ title: "Email", content: "" });
+  const [role, setRole] = useState({ title: "Role", content: "" });
+  const fetchUserProfile = async () => {
+    try {
+      const response = await fetch(`${baseUrl}/account-details`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: localStorage.getItem("session_id") || "",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch user profile");
+      }
+
+      const data = await response.json();
+      setUser({ title: "Username", content: data.username });
+      setName({ title: "Name", content: data.name });
+      setEmail({ title: "Email", content: data.email });
+      setRole({ title: "Role", content: data.role });
+    } catch (error) {
+      alert(`Error: ${error}`);
+    }
   };
-  const name = {
-    title: "Name",
-    content: "Pham Phu Loi",
-  };
-  const email = {
-    title: "Email",
-    content: "phuloi123@gmail.com",
-  };
+
+  useEffect(() => {
+    fetchUserProfile();
+  }, []);
+  // const user = {
+  //   title: "Username",
+  //   content: "phuloi321",
+  // };
+  // const name = {
+  //   title: "Name",
+  //   content: "Pham Phu Loi",
+  // };
+  // const email = {
+  //   title: "Email",
+  //   content: "phuloi123@gmail.com",
+  // };
   const elo = {
     title: "Elo",
     content: "3200",
   };
-  const role = {
-    title: "Role",
-    content: "User",
-  };
+  // const role = {
+  //   title: "Role",
+  //   content: "User",
+  // };
   const property = {
     title: "Property",
     content: "10 Gold",
@@ -41,8 +74,33 @@ const UserProfile: React.FC = () => {
     avatar.src = URL.createObjectURL(file);
   };
 
-  const changeUserProfile = () => {
-    alert("Changes saved successfully");
+  const changeUserProfile = async () => {
+    const username = (
+      document.getElementsByTagName("textarea")[0] as HTMLTextAreaElement
+    ).value;
+    if (!username) {
+      alert("Username cannot be empty");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${baseUrl}/accounts/update-username`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: localStorage.getItem("session_id") || "",
+        },
+        body: JSON.stringify({ username }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update username");
+      }
+
+      fetchUserProfile();
+    } catch (error) {
+      alert(`Error: ${error}`);
+    }
   };
 
   return (
