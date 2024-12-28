@@ -196,17 +196,24 @@ func (q *Queries) CountReactionsForPost(ctx context.Context, postID uuid.NullUUI
 }
 
 const createAccount = `-- name: CreateAccount :exec
-INSERT INTO accounts (email, name, role) VALUES ($1, $2, $3)
+INSERT INTO accounts (email, name, role, avatar_path)
+VALUES ($1, $2, $3, $4)
 `
 
 type CreateAccountParams struct {
-	Email string   `json:"email"`
-	Name  string   `json:"name"`
-	Role  RoleEnum `json:"role"`
+	Email      string   `json:"email"`
+	Name       string   `json:"name"`
+	Role       RoleEnum `json:"role"`
+	AvatarPath string   `json:"avatar_path"`
 }
 
 func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) error {
-	_, err := q.db.ExecContext(ctx, createAccount, arg.Email, arg.Name, arg.Role)
+	_, err := q.db.ExecContext(ctx, createAccount,
+		arg.Email,
+		arg.Name,
+		arg.Role,
+		arg.AvatarPath,
+	)
 	return err
 }
 
@@ -411,7 +418,7 @@ func (q *Queries) DeleteSubmission(ctx context.Context, submissionID uuid.UUID) 
 
 const getAccount = `-- name: GetAccount :one
 
-SELECT account_id, email, username, name, role FROM accounts WHERE account_id = $1
+SELECT account_id, email, username, name, role, avatar_path, elo_rating, last_active, school, is_deactivated FROM accounts WHERE account_id = $1
 `
 
 // --- Account
@@ -424,13 +431,18 @@ func (q *Queries) GetAccount(ctx context.Context, accountID uuid.UUID) (Account,
 		&i.Username,
 		&i.Name,
 		&i.Role,
+		&i.AvatarPath,
+		&i.EloRating,
+		&i.LastActive,
+		&i.School,
+		&i.IsDeactivated,
 	)
 	return i, err
 }
 
 const getAccountByEmail = `-- name: GetAccountByEmail :one
 
-SELECT account_id, email, username, name, role FROM accounts WHERE email = $1
+SELECT account_id, email, username, name, role, avatar_path, elo_rating, last_active, school, is_deactivated FROM accounts WHERE email = $1
 `
 
 // -- Forum
@@ -443,6 +455,11 @@ func (q *Queries) GetAccountByEmail(ctx context.Context, email string) (Account,
 		&i.Username,
 		&i.Name,
 		&i.Role,
+		&i.AvatarPath,
+		&i.EloRating,
+		&i.LastActive,
+		&i.School,
+		&i.IsDeactivated,
 	)
 	return i, err
 }
@@ -762,6 +779,24 @@ func (q *Queries) GetQuestion(ctx context.Context, questionID uuid.UUID) (Questi
 	return i, err
 }
 
+const getReactionExist = `-- name: GetReactionExist :one
+SELECT type FROM reactions
+WHERE account_id = $1 AND (post_id = $2 OR comment_id = $3)
+`
+
+type GetReactionExistParams struct {
+	AccountID uuid.NullUUID `json:"account_id"`
+	PostID    uuid.NullUUID `json:"post_id"`
+	CommentID uuid.NullUUID `json:"comment_id"`
+}
+
+func (q *Queries) GetReactionExist(ctx context.Context, arg GetReactionExistParams) (sql.NullString, error) {
+	row := q.db.QueryRowContext(ctx, getReactionExist, arg.AccountID, arg.PostID, arg.CommentID)
+	var type_ sql.NullString
+	err := row.Scan(&type_)
+	return type_, err
+}
+
 const getReactionForComment = `-- name: GetReactionForComment :one
 SELECT reaction_id, type, account_id, timestamp, post_id, comment_id FROM reactions WHERE comment_id = $1 AND account_id = $2
 `
@@ -915,7 +950,7 @@ func (q *Queries) IsEventDate(ctx context.Context, eventTaskID uuid.UUID) (bool,
 }
 
 const listAccounts = `-- name: ListAccounts :many
-SELECT account_id, email, username, name, role FROM accounts
+SELECT account_id, email, username, name, role, avatar_path, elo_rating, last_active, school, is_deactivated FROM accounts
 `
 
 func (q *Queries) ListAccounts(ctx context.Context) ([]Account, error) {
@@ -933,6 +968,11 @@ func (q *Queries) ListAccounts(ctx context.Context) ([]Account, error) {
 			&i.Username,
 			&i.Name,
 			&i.Role,
+			&i.AvatarPath,
+			&i.EloRating,
+			&i.LastActive,
+			&i.School,
+			&i.IsDeactivated,
 		); err != nil {
 			return nil, err
 		}
@@ -1136,6 +1176,62 @@ func (q *Queries) RegisterForContest(ctx context.Context, arg RegisterForContest
 	return err
 }
 
+const updateAccountAvatar = `-- name: UpdateAccountAvatar :exec
+UPDATE accounts SET avatar_path = $1 WHERE account_id = $2
+`
+
+type UpdateAccountAvatarParams struct {
+	AvatarPath string    `json:"avatar_path"`
+	AccountID  uuid.UUID `json:"account_id"`
+}
+
+func (q *Queries) UpdateAccountAvatar(ctx context.Context, arg UpdateAccountAvatarParams) error {
+	_, err := q.db.ExecContext(ctx, updateAccountAvatar, arg.AvatarPath, arg.AccountID)
+	return err
+}
+
+const updateAccountDeactivation = `-- name: UpdateAccountDeactivation :exec
+UPDATE accounts SET is_deactivated = $1 WHERE account_id = $2
+`
+
+type UpdateAccountDeactivationParams struct {
+	IsDeactivated bool      `json:"is_deactivated"`
+	AccountID     uuid.UUID `json:"account_id"`
+}
+
+func (q *Queries) UpdateAccountDeactivation(ctx context.Context, arg UpdateAccountDeactivationParams) error {
+	_, err := q.db.ExecContext(ctx, updateAccountDeactivation, arg.IsDeactivated, arg.AccountID)
+	return err
+}
+
+const updateAccountEloRating = `-- name: UpdateAccountEloRating :exec
+UPDATE accounts SET elo_rating = $1 WHERE account_id = $2
+`
+
+type UpdateAccountEloRatingParams struct {
+	EloRating int32     `json:"elo_rating"`
+	AccountID uuid.UUID `json:"account_id"`
+}
+
+func (q *Queries) UpdateAccountEloRating(ctx context.Context, arg UpdateAccountEloRatingParams) error {
+	_, err := q.db.ExecContext(ctx, updateAccountEloRating, arg.EloRating, arg.AccountID)
+	return err
+}
+
+const updateAccountLastActive = `-- name: UpdateAccountLastActive :exec
+UPDATE accounts SET last_active = $1 WHERE account_id = $2
+`
+
+type UpdateAccountLastActiveParams struct {
+	LastActive sql.NullTime `json:"last_active"`
+	AccountID  uuid.UUID    `json:"account_id"`
+}
+
+func (q *Queries) UpdateAccountLastActive(ctx context.Context, arg UpdateAccountLastActiveParams) error {
+	_, err := q.db.ExecContext(ctx, updateAccountLastActive, arg.LastActive, arg.AccountID)
+	return err
+}
+
 const updateAccountName = `-- name: UpdateAccountName :exec
 UPDATE accounts SET name = $1 WHERE email = $2
 `
@@ -1147,6 +1243,20 @@ type UpdateAccountNameParams struct {
 
 func (q *Queries) UpdateAccountName(ctx context.Context, arg UpdateAccountNameParams) error {
 	_, err := q.db.ExecContext(ctx, updateAccountName, arg.Name, arg.Email)
+	return err
+}
+
+const updateAccountSchool = `-- name: UpdateAccountSchool :exec
+UPDATE accounts SET school = $1 WHERE account_id = $2
+`
+
+type UpdateAccountSchoolParams struct {
+	School    string    `json:"school"`
+	AccountID uuid.UUID `json:"account_id"`
+}
+
+func (q *Queries) UpdateAccountSchool(ctx context.Context, arg UpdateAccountSchoolParams) error {
+	_, err := q.db.ExecContext(ctx, updateAccountSchool, arg.School, arg.AccountID)
 	return err
 }
 

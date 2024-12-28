@@ -136,6 +136,47 @@ func (pc *PostController) AddReactionForPostOrComment(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Reaction added successfully"})
 }
 
+func (pc *PostController) GetReactionForPostOrComment(c *gin.Context) {
+	postIDParam := c.Param("id")
+	var postID uuid.UUID
+	if postIDParam != "" {
+		var err error
+		postID, err = uuid.Parse(postIDParam)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid post_id"})
+			return
+		}
+	}
+
+	commentIDParam := c.Param("commentId")
+	var commentID uuid.UUID
+	if commentIDParam != "" {
+		var err error
+		commentID, err = uuid.Parse(commentIDParam)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid comment_id"})
+			return
+		}
+
+		postID = uuid.UUID{}
+	}
+
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		c.Abort()
+		return
+	}
+
+	reaction_type, err := pc.PostService.GetReactionForPostOrComment(c.Request.Context(), uuid.MustParse(user.(string)), postID, commentID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": reaction_type})
+}
+
 func (pc *PostController) CountReactionsForPost(c *gin.Context) {
 	id := c.Param("id")
 	count, err := pc.PostService.CountReactionsForPost(c.Request.Context(), uuid.MustParse(id))

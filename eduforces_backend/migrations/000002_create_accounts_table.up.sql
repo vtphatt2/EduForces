@@ -1,1 +1,0 @@
-INSERT INTO public.accounts (account_id, email, name, role) VALUES ('f04999e7-9aea-4fc5-b8d3-68e6d18a6d2e', 'doancongthanh1302@gmail.com', 'Cong Thanh Doan', 'User');

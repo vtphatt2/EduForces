@@ -57,11 +57,16 @@ func (ns NullRoleEnum) Value() (driver.Value, error) {
 }
 
 type Account struct {
-	AccountID uuid.UUID `json:"account_id"`
-	Email     string    `json:"email"`
-	Username  string    `json:"username"`
-	Name      string    `json:"name"`
-	Role      RoleEnum  `json:"role"`
+	AccountID     uuid.UUID    `json:"account_id"`
+	Email         string       `json:"email"`
+	Username      string       `json:"username"`
+	Name          string       `json:"name"`
+	Role          RoleEnum     `json:"role"`
+	AvatarPath    string       `json:"avatar_path"`
+	EloRating     int32        `json:"elo_rating"`
+	LastActive    sql.NullTime `json:"last_active"`
+	School        string       `json:"school"`
+	IsDeactivated bool         `json:"is_deactivated"`
 }
 
 type Comment struct {

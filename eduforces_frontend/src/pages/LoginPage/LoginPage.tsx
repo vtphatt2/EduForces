@@ -12,7 +12,7 @@ const redirectUri = "http://localhost:5173/login";
 
 // Function to handle the click event for Google OAuth2 login
 const handleClick = () => {
-  const scope = "openid email profile";
+  const scope = "openid email profile picture";
   const responseType = "code";
 
   const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=${responseType}&scope=${scope}`;
