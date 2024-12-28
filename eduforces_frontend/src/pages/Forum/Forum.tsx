@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import styles from "./Forum.module.css";
 import { Post } from "./Post";
-// import { ForumProps } from "./Type";
 import NavBar from "../../components/NavBar";
 import NavPage from "./NavPage";
 import TextArea from "./TextArea";
@@ -17,7 +16,7 @@ const Forum: React.FC = () => {
     10
   );
   const [postList, setPostList] = useState<PostPropsAPI[]>([]);
-  const [numPages, setNumPages] = useState(0);
+  const [numPages, setNumPages] = useState(1);
   const getPostList = async (page = 1, limit = 10) => {
     try {
       const response = await fetch(
@@ -30,6 +29,10 @@ const Forum: React.FC = () => {
         }
       );
 
+      if (localStorage.getItem("session_id") === null) {
+        throw new Error("Please log in to view posts");
+      }
+
       if (!response.ok) {
         throw new Error(`Error: ${response.status}`);
       }
@@ -38,7 +41,7 @@ const Forum: React.FC = () => {
       setPostList(data.data);
       setNumPages(Math.ceil(data.meta.total / 5));
     } catch (error) {
-      alert("Error: " + error);
+      alert(`Error: ${error}`);
     }
   };
 
@@ -62,6 +65,9 @@ const Forum: React.FC = () => {
       content: content,
     });
     try {
+      if (localStorage.getItem("session_id") === null) {
+        throw new Error("Please log in to upload posts");
+      }
       const response = await fetch(`${baseUrl}/posts`, {
         method: "POST",
         headers: {
