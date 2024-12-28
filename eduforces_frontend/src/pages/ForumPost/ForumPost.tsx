@@ -140,18 +140,16 @@ const ForumPost: React.FC = () => {
       </article>
       <hr className={styles.divider} />
       <section className={styles.commentSection}>
-        {commentList === null ? (
+        {commentList === null || commentList.length === 0 ? (
           <p style={{ color: "black" }}>There are no comments yet.</p>
         ) : (
           commentList.map((_comment, index) => (
             <Comment
               key={index}
               content={_comment.content}
-              votes={0}
               author={_comment.author_id}
               timestamp={_comment.timestamp}
               id={_comment.comment_id}
-              fetchDataFunction={() => fetchData(postId)}
             />
           ))
         )}

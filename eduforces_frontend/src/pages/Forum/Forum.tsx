@@ -39,7 +39,7 @@ const Forum: React.FC = () => {
 
       const data = await response.json();
       setPostList(data.data);
-      setNumPages(Math.ceil(data.meta.total / 5));
+      setNumPages(Math.ceil(data.meta.total / data.meta.limit));
     } catch (error) {
       alert(`Error: ${error}`);
     }
@@ -96,7 +96,7 @@ const Forum: React.FC = () => {
         <div className={styles.forumContainer}>
           <h1 className={styles.forumTitle}>Posts</h1>
           <section className={styles.postList}>
-            {postList === null ? (
+            {postList === null || postList.length === 0 ? (
               <p style={{ color: "black" }}>No posts found</p>
             ) : (
               postList.map((post) => (

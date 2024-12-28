@@ -3,7 +3,6 @@ export interface CommentProps {
   content: string;
   author: string;
   timestamp: string;
-  fetchDataFunction: () => void;
 }
 
 export interface CommentPropsAPI {
