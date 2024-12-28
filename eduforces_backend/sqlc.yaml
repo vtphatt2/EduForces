@@ -1,0 +1,8 @@
+version: "1"
+packages:
+  - name: "sqlc"              # Package name for generated code
+    path: "./models/sqlc"     # Output path for the generated Go code
+    queries: "./sql"  # Path to SQL queries
+    schema: "./migrations"    # Path to database schema
+    engine: "postgresql"       # Database engine
+    emit_json_tags: true # Add this line to include JSON tags

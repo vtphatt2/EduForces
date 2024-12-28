@@ -5,6 +5,12 @@ export interface PostProps {
   id: string;
 }
 
+export interface PostPropsAPI {
+  title: string;
+  content: string;
+  author_id: string;
+  post_id: string;
+}
 export interface NavPageProps {
   numPages: number;
 }

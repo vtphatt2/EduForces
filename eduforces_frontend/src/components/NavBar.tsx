@@ -19,6 +19,7 @@ const NavBar: React.FC = () => {
     setIsLoggedIn(false);
     setIsDropdownOpen(false);
     localStorage.removeItem("session_id");
+    localStorage.removeItem("username");
     navigate("/");
   };
 

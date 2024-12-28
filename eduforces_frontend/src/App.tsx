@@ -1,6 +1,7 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import NavBar from "./components/NavBar";
+import { AuthProvider } from "./context/AuthContext";
 
 import LoginPage from "./pages/LoginPage/LoginPage";
 import Home from "./pages/Home/Home";
@@ -86,29 +87,21 @@ let processedLeaderboardList = leaderboardList.sort((a, b) => b.elo - a.elo);
 
 const App: React.FC = () => {
   return (
-    <div>
-      <NavBar />
-      <div className="content" style={{ marginTop: "50px" }}>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/forum" element={<Forum />} />
-          <Route path="/post" element={<ForumPost />} />
-          <Route
-            path="/"
-            element={
-              <Home
-                postList={postList}
-                contestList={processedContestList}
-                leaderboardList={processedLeaderboardList.slice(0, 10)}
-              />
-            }
-          />
-          <Route path="/contest" element={<Contest />} />
-          <Route path="/study-space" element={<StudySpace />} />
-          <Route path="/user" element={<UserProfile />} />
-        </Routes>
+    <AuthProvider>
+      <div>
+        <NavBar />
+        <div className="content" style={{ marginTop: "100px" }}>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/" element={<Home postList={[]} contestList={[]} leaderboardList={[]} />} />
+            <Route path="/forum" element={<Forum />} />
+            <Route path="/post" element={<ForumPost />} />
+            <Route path="/contest" element={<Contest />} />
+            <Route path="/study-space" element={<StudySpace />} />
+          </Routes>
+        </div>
       </div>
-    </div>
+    </AuthProvider>
   );
 };
 
