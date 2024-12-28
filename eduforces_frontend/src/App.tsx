@@ -15,7 +15,7 @@ const App: React.FC = () => {
     <AuthProvider>
       <div>
         <NavBar />
-        <div className="content" style={{ marginTop: "100px" }}>
+        <div className="content" style={{ marginTop: "80px" }}>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/" element={<Home />} />
