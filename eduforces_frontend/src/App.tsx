@@ -93,11 +93,17 @@ const App: React.FC = () => {
         <div className="content" style={{ marginTop: "100px" }}>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/" element={<Home postList={[]} contestList={[]} leaderboardList={[]} />} />
+            <Route
+              path="/"
+              element={
+                <Home postList={[]} contestList={[]} leaderboardList={[]} />
+              }
+            />
             <Route path="/forum" element={<Forum />} />
             <Route path="/post" element={<ForumPost />} />
             <Route path="/contest" element={<Contest />} />
             <Route path="/study-space" element={<StudySpace />} />
+            <Route path="/user" element={<UserProfile />} />
           </Routes>
         </div>
       </div>

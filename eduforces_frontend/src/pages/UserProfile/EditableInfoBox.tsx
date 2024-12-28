@@ -1,10 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { InfoBoxProps } from "./Type";
 import styles from "./UserProfile.module.css";
 
 const EditableInfoBox: React.FC<InfoBoxProps> = ({ title, content }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState(content);
+
+  useEffect(() => {
+    setEditedContent(content);
+  }, [content]);
   const editContent = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     e.target.value = e.target.value.replace("\n", "");
     e.target.value = e.target.value.replace("\r", "");

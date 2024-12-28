@@ -15,7 +15,7 @@ const UserProfile: React.FC = () => {
   const [role, setRole] = useState({ title: "Role", content: "" });
   const fetchUserProfile = async () => {
     try {
-      const response = await fetch(`${baseUrl}/account-details`, {
+      const response = await fetch(`${baseUrl}/accounts/account-details`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -96,7 +96,7 @@ const UserProfile: React.FC = () => {
       if (!response.ok) {
         throw new Error("Failed to update username");
       }
-
+      alert("Update username successfully");
       fetchUserProfile();
     } catch (error) {
       alert(`Error: ${error}`);
