@@ -13,13 +13,17 @@ const AccountManagement: React.FC = () => {
   const [roleSelected, setRoleSelected] = useState("all");
   const [activeSelected, setActiveSelected] = useState("all");
 
-  const fetchUsers = async (role, isDeactivated: boolean | null) => {
+  const fetchUsers = async (
+    role,
+    isDeactivated: boolean | null,
+    userPrefix = ""
+  ) => {
     if (role === "all") {
       role = "";
     }
     try {
       const response = await fetch(
-        `${baseUrl}/accounts/list-accounts?isDeactivated=${isDeactivated}?role=${role}`,
+        `${baseUrl}/accounts/list-accounts?is_deactivated=${isDeactivated}&role=${role}&username_prefix=${userPrefix}`,
         {
           method: "GET",
           headers: {
@@ -111,6 +115,27 @@ const AccountManagement: React.FC = () => {
     );
     setRoleSelected(role);
   };
+  const filterActive = async (active) => {
+    fetchUsers(
+      roleSelected,
+      active === "active" ? false : active === "banned" ? true : null
+    );
+    setActiveSelected(active);
+  };
+  const search = async () => {
+    const searchInput = document.querySelector(
+      `.${styles.searchInput}`
+    ) as HTMLInputElement;
+    fetchUsers(
+      roleSelected,
+      activeSelected === "active"
+        ? false
+        : activeSelected === "banned"
+        ? true
+        : null,
+      searchInput.value
+    );
+  };
   return (
     <main className={styles.accountManagement}>
       <NavBar />
@@ -121,7 +146,7 @@ const AccountManagement: React.FC = () => {
             placeholder="Search for users"
             className={styles.searchInput}
           />
-          <Button label="Search" onClick={() => {}} />
+          <Button label="Search" onClick={search} />
         </div>
         <div className={styles.filterRole}>
           <select
@@ -140,7 +165,7 @@ const AccountManagement: React.FC = () => {
           <select
             className={styles.filterSelect}
             defaultValue="all"
-            onChange={(e) => setActiveSelected(e.target.value)}
+            onChange={(e) => filterActive(e.target.value)}
             value={activeSelected}
           >
             <option value="active">Active</option>
@@ -163,76 +188,84 @@ const AccountManagement: React.FC = () => {
             </tr>
           </thead>
           <tbody className={styles.tableBody}>
-            {users.map((user) => (
-              <tr key={user.account_id} className={styles.tableRow}>
-                <td className={styles.tableData}>
-                  <img
-                    src={getTrueImageSrc(user.avatar_path)}
-                    alt="avatar"
-                    className={styles.avatar}
-                  />
-                </td>
-                <td className={styles.tableData}>{user.username}</td>
-                <td className={styles.tableData}>{user.email}</td>
-                <td className={styles.tableData}>
-                  {user.last_active.Valid
-                    ? formatTimestamp(user.last_active.Time)
-                    : "Online"}
-                </td>
-                <td className={styles.tableData}>
-                  <select
-                    className={styles.roleSelect}
-                    value={user.role}
-                    onChange={
-                      //   (e) => {
-                      //   const newUsers = users.map((u) => {
-                      //     if (u.id === user.id) {
-                      //       return { ...u, role: e.target.value };
-                      //     }
-                      //     return u;
-                      //   });
-                      //   setUsers(newUsers);
-                      // }
-                      (e) => changeRole(user, e)
-                    }
-                  >
-                    <option value="User">User</option>
-                    <option value="Coordinator">Coordinator</option>
-                    <option value="Admin">Admin</option>
-                  </select>
-                </td>
-                <td className={styles.tableData}>
-                  {user.is_deactivated ? "Banned" : "Active"}
-                </td>
-                <td className={styles.tableData}>
-                  <Button
-                    label={user.is_deactivated ? "Unban" : "Ban"}
-                    onClick={
-                      // user.isActived
-                      //   ? () => {
-                      //       const newUsers = users.map((u) => {
-                      //         if (u.id === user.id) {
-                      //           return { ...u, isActived: false };
-                      //         }
-                      //         return u;
-                      //       });
-                      //       setUsers(newUsers);
-                      //     }
-                      //   : () => {
-                      //       const newUsers = users.map((u) => {
-                      //         if (u.id === user.id) {
-                      //           return { ...u, isActived: true };
-                      //         }
-                      //         return u;
-                      //       });
-                      //       setUsers(newUsers);
-                      //     }
-                      () => toggleBan(user)
-                    }
-                  />
+            {users === null || users.length === 0 ? (
+              <tr className={styles.tableRow}>
+                <td className={styles.tableData} colSpan={7}>
+                  No data
                 </td>
               </tr>
-            ))}
+            ) : (
+              users.map((user) => (
+                <tr key={user.account_id} className={styles.tableRow}>
+                  <td className={styles.tableData}>
+                    <img
+                      src={getTrueImageSrc(user.avatar_path)}
+                      alt="avatar"
+                      className={styles.avatar}
+                    />
+                  </td>
+                  <td className={styles.tableData}>{user.username}</td>
+                  <td className={styles.tableData}>{user.email}</td>
+                  <td className={styles.tableData}>
+                    {user.last_active.Valid
+                      ? formatTimestamp(user.last_active.Time)
+                      : "Online"}
+                  </td>
+                  <td className={styles.tableData}>
+                    <select
+                      className={styles.roleSelect}
+                      value={user.role}
+                      onChange={
+                        //   (e) => {
+                        //   const newUsers = users.map((u) => {
+                        //     if (u.id === user.id) {
+                        //       return { ...u, role: e.target.value };
+                        //     }
+                        //     return u;
+                        //   });
+                        //   setUsers(newUsers);
+                        // }
+                        (e) => changeRole(user, e)
+                      }
+                    >
+                      <option value="User">User</option>
+                      <option value="Coordinator">Coordinator</option>
+                      <option value="Admin">Admin</option>
+                    </select>
+                  </td>
+                  <td className={styles.tableData}>
+                    {user.is_deactivated ? "Banned" : "Active"}
+                  </td>
+                  <td className={styles.tableData}>
+                    <Button
+                      label={user.is_deactivated ? "Unban" : "Ban"}
+                      onClick={
+                        // user.isActived
+                        //   ? () => {
+                        //       const newUsers = users.map((u) => {
+                        //         if (u.id === user.id) {
+                        //           return { ...u, isActived: false };
+                        //         }
+                        //         return u;
+                        //       });
+                        //       setUsers(newUsers);
+                        //     }
+                        //   : () => {
+                        //       const newUsers = users.map((u) => {
+                        //         if (u.id === user.id) {
+                        //           return { ...u, isActived: true };
+                        //         }
+                        //         return u;
+                        //       });
+                        //       setUsers(newUsers);
+                        //     }
+                        () => toggleBan(user)
+                      }
+                    />
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
