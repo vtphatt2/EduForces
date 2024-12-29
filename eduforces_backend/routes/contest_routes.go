@@ -8,14 +8,11 @@ import (
 func RegisterContestRoutes(router *gin.Engine, contestCtrl *controllers.ContestController, sessionMiddleware gin.HandlerFunc) {
 	contestRoutes := router.Group("/api/v1/contests")
 	{
-		// contestRoutes.GET("/", sessionMiddleware, postCtrl.GetAllPosts)
-		contestRoutes.POST("", sessionMiddleware, contestCtrl.CreateContest)
 		contestRoutes.GET("", sessionMiddleware, contestCtrl.ListContests)
 		contestRoutes.GET("/:id", sessionMiddleware, contestCtrl.GetContest)
+		contestRoutes.POST("", sessionMiddleware, contestCtrl.CreateContest)
+		contestRoutes.POST("/submit/:id", sessionMiddleware, contestCtrl.SubmitContest)
 		contestRoutes.DELETE("/:id", sessionMiddleware, contestCtrl.DeleteContest)
 		contestRoutes.PUT("/:id", sessionMiddleware, contestCtrl.UpdateContest)
-		// contestRoutes.GET("/:id", sessionMiddleware, postCtrl.GetPostDetails)
-		// contestRoutes.PUT("/:id", sessionMiddleware, postCtrl.UpdatePost)
-		// contestRoutes.DELETE("/:id", sessionMiddleware, postCtrl.DeletePost)
 	}
 }

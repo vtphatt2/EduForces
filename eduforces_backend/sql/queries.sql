@@ -174,7 +174,7 @@ SELECT * FROM submissions WHERE submission_id = $1;
 SELECT * FROM submissions;
 
 -- name: CreateSubmission :exec
-INSERT INTO submissions (submission_id, contest_id, account_id, time) VALUES ($1, $2, $3, $4);
+INSERT INTO submissions (submission_id, contest_id, account_id, time, score) VALUES ($1, $2, $3, $4, $5);
 
 -- name: DeleteSubmission :exec
 DELETE FROM submissions WHERE submission_id = $1;

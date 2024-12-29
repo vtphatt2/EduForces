@@ -52,8 +52,9 @@ CREATE TABLE reactions (
 CREATE TABLE submissions (
     submission_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     contest_id UUID NOT NULL,
-    account_id VARCHAR(255) NOT NULL,
-    time TIMESTAMP NOT NULL
+    account_id UUID REFERENCES accounts(account_id),
+    time TIMESTAMPTZ NOT NULL,
+    score INT NOT NULL DEFAULT 0
 );
 
 -- Create SubmissionDetail table

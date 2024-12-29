@@ -15,6 +15,11 @@ import (
 	"github.com/vtphatt2/EduForces/repositories"
 )
 
+type Submission struct {
+	ContestID  uuid.UUID        `json:"contest_id"`
+	UserAnswer []QuestionAnswer `json:"answer"`
+}
+
 type ContestService struct {
 	ContestRepository  *repositories.ContestRepository
 	QuestionRepository *repositories.QuestionRepository
@@ -38,6 +43,11 @@ type QuestionDetail struct {
 	Subject       string    `json:"subject"`
 }
 
+type QuestionAnswer struct {
+	Answer        string `json:"answer"`
+	CorrectAnswer string `json:"correct_answer"`
+}
+
 type CreateContestRequest struct {
 	Name        string     `json:"name"`
 	Description string     `json:"description"`
@@ -57,14 +67,13 @@ type UpdateContestRequest struct {
 }
 
 type UpdateContestRequestParam struct {
-	ContestID   uuid.UUID `json:"contest_id"`
-	Name        string    `json:"name"`
-	Description string    `json:"description"`
-	StartTime   time.Time `json:"start_time"`
-	Duration    int32     `json:"duration"`
-	Difficulty  int32     `json:"difficulty"`
-
-	Questions []Question `json:"questions"`
+	ContestID   uuid.UUID  `json:"contest_id"`
+	Name        string     `json:"name"`
+	Description string     `json:"description"`
+	StartTime   time.Time  `json:"start_time"`
+	Duration    int32      `json:"duration"`
+	Difficulty  int32      `json:"difficulty"`
+	Questions   []Question `json:"questions"`
 }
 
 type Contest struct {
@@ -279,13 +288,13 @@ func (s *ContestService) ScheduleContestStatusUpdates(ctx context.Context) {
 
 	// Schedule function to update Pending contests to Live
 	c.AddFunc("@every 1s", func() {
-		log.Println("Updating Pending contests to Live")
+		// log.Println("Updating Pending contests to Live")
 		s.updatePendingContestsToLive(context.Background())
 	})
 
 	// Schedule function to update Live contests to Ended
 	c.AddFunc("@every 1s", func() {
-		log.Println("Updating Live contests to Ended")
+		// log.Println("Updating Live contests to Ended")
 		s.updateLiveContestsToEnded(context.Background())
 	})
 
@@ -300,11 +309,11 @@ func (s *ContestService) updatePendingContestsToLive(ctx context.Context) {
 	}
 
 	for _, contest := range contests {
-		log.Printf("Checking contest: %s with start time: %s", contest.ContestID, contest.StartTime)
-		log.Println("Current time:", time.Now())
+		// log.Printf("Checking contest: %s with start time: %s", contest.ContestID, contest.StartTime)
+		// log.Println("Current time:", time.Now())
 		if contest.StartTime.Before(time.Now()) {
 			// log.Println("Current time:", time.Now())
-			log.Printf("Updating contest: %s to Live", contest.ContestID)
+			// log.Printf("Updating contest: %s to Live", contest.ContestID)
 			err := s.ContestRepository.UpdateContestStatus(ctx, sqlc.UpdateContestStatusParams{
 				Status:    sqlc.StatusEnumLive,
 				ContestID: contest.ContestID,
@@ -326,7 +335,7 @@ func (s *ContestService) updateLiveContestsToEnded(ctx context.Context) {
 	}
 
 	for _, contest := range contests {
-		log.Printf("Checking contest: %s with end time: %s", contest.ContestID, contest.StartTime.Add(time.Duration(contest.Duration)*time.Minute))
+		// log.Printf("Checking contest: %s with end time: %s", contest.ContestID, contest.StartTime.Add(time.Duration(contest.Duration)*time.Minute))
 		if contest.StartTime.Add(time.Duration(contest.Duration) * time.Minute).Before(time.Now()) {
 			log.Printf("Updating contest: %s to Ended", contest.ContestID)
 			err := s.ContestRepository.UpdateContestStatus(ctx, sqlc.UpdateContestStatusParams{
@@ -462,4 +471,33 @@ func (s *ContestService) GetContestDetails(ctx context.Context, contestID uuid.U
 		UpdatedAt:   contest.UpdatedAt,
 		Questions:   questionList,
 	}, nil
+}
+
+func (s *ContestService) SubmitContest(ctx context.Context, contestID uuid.UUID, accountID uuid.UUID, submission Submission) (sqlc.CreateSubmissionParams, error) {
+	// Calculate the score
+	var totalScore int32
+	for _, userAnswer := range submission.UserAnswer {
+		if userAnswer.CorrectAnswer == userAnswer.Answer {
+			totalScore += 1
+		}
+	}
+
+	averageScore := (totalScore * 10) / int32((len(submission.UserAnswer)))
+
+	// Prepare the submission parameters
+	submissionParams := sqlc.CreateSubmissionParams{
+		SubmissionID: uuid.New(),
+		ContestID:    contestID,
+		AccountID:    uuid.NullUUID{UUID: accountID, Valid: true},
+		Score:        averageScore,
+		Time:         time.Now(),
+	}
+
+	// Write the submission to the database
+	err := s.ContestRepository.SubmitContest(ctx, submissionParams)
+	if err != nil {
+		return sqlc.CreateSubmissionParams{}, fmt.Errorf("failed to submit contest: %w", err)
+	}
+
+	return submissionParams, nil
 }

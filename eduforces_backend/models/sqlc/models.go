@@ -191,10 +191,11 @@ type Reaction struct {
 }
 
 type Submission struct {
-	SubmissionID uuid.UUID `json:"submission_id"`
-	ContestID    uuid.UUID `json:"contest_id"`
-	AccountID    string    `json:"account_id"`
-	Time         time.Time `json:"time"`
+	SubmissionID uuid.UUID     `json:"submission_id"`
+	ContestID    uuid.UUID     `json:"contest_id"`
+	AccountID    uuid.NullUUID `json:"account_id"`
+	Time         time.Time     `json:"time"`
+	Score        int32         `json:"score"`
 }
 
 type SubmissionDetail struct {

@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -125,4 +126,35 @@ func (cc *ContestController) UpdateContest(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Contest updated successfully"})
+}
+func (cc *ContestController) SubmitContest(c *gin.Context) {
+	log.Println("SubmitContest called")
+	contestID := c.Param("id")
+	if contestID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Contest ID is required"})
+		return
+	}
+
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		c.Abort()
+		return
+	}
+
+	var submission services.Submission
+	if err := c.ShouldBindJSON(&submission); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	fmt.Printf("Submission received: %+v\n", submission)
+
+	submissionParams, err := cc.ContestService.SubmitContest(c.Request.Context(), uuid.MustParse(contestID), uuid.MustParse(user.(string)), submission)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, submissionParams)
 }

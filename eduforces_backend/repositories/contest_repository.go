@@ -57,3 +57,7 @@ func (r *ContestRepository) ListContestsByStatus(ctx context.Context, status sql
 func (r *ContestRepository) UpdateContest(ctx context.Context, params sqlc.UpdateContestParams) error {
 	return r.queries.UpdateContest(ctx, params)
 }
+
+func (r *ContestRepository) SubmitContest(ctx context.Context, params sqlc.CreateSubmissionParams) error {
+	return r.queries.CreateSubmission(ctx, params)
+}

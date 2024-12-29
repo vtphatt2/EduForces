@@ -298,14 +298,15 @@ func (q *Queries) CreateQuestion(ctx context.Context, arg CreateQuestionParams) 
 }
 
 const createSubmission = `-- name: CreateSubmission :exec
-INSERT INTO submissions (submission_id, contest_id, account_id, time) VALUES ($1, $2, $3, $4)
+INSERT INTO submissions (submission_id, contest_id, account_id, time, score) VALUES ($1, $2, $3, $4, $5)
 `
 
 type CreateSubmissionParams struct {
-	SubmissionID uuid.UUID `json:"submission_id"`
-	ContestID    uuid.UUID `json:"contest_id"`
-	AccountID    string    `json:"account_id"`
-	Time         time.Time `json:"time"`
+	SubmissionID uuid.UUID     `json:"submission_id"`
+	ContestID    uuid.UUID     `json:"contest_id"`
+	AccountID    uuid.NullUUID `json:"account_id"`
+	Time         time.Time     `json:"time"`
+	Score        int32         `json:"score"`
 }
 
 func (q *Queries) CreateSubmission(ctx context.Context, arg CreateSubmissionParams) error {
@@ -314,6 +315,7 @@ func (q *Queries) CreateSubmission(ctx context.Context, arg CreateSubmissionPara
 		arg.ContestID,
 		arg.AccountID,
 		arg.Time,
+		arg.Score,
 	)
 	return err
 }
@@ -781,7 +783,7 @@ func (q *Queries) GetSpecialGiftDescription(ctx context.Context, eventTaskID uui
 
 const getSubmission = `-- name: GetSubmission :one
 
-SELECT submission_id, contest_id, account_id, time FROM submissions WHERE submission_id = $1
+SELECT submission_id, contest_id, account_id, time, score FROM submissions WHERE submission_id = $1
 `
 
 // ---- Submission
@@ -793,6 +795,7 @@ func (q *Queries) GetSubmission(ctx context.Context, submissionID uuid.UUID) (Su
 		&i.ContestID,
 		&i.AccountID,
 		&i.Time,
+		&i.Score,
 	)
 	return i, err
 }
@@ -1131,7 +1134,7 @@ func (q *Queries) ListQuestionsOfContest(ctx context.Context, contestID uuid.Nul
 }
 
 const listSubmissions = `-- name: ListSubmissions :many
-SELECT submission_id, contest_id, account_id, time FROM submissions
+SELECT submission_id, contest_id, account_id, time, score FROM submissions
 `
 
 func (q *Queries) ListSubmissions(ctx context.Context) ([]Submission, error) {
@@ -1148,6 +1151,7 @@ func (q *Queries) ListSubmissions(ctx context.Context) ([]Submission, error) {
 			&i.ContestID,
 			&i.AccountID,
 			&i.Time,
+			&i.Score,
 		); err != nil {
 			return nil, err
 		}
