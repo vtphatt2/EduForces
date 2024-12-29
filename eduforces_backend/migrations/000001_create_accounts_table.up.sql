@@ -1,4 +1,5 @@
 CREATE TYPE role_enum AS ENUM ('Admin', 'Coordinator', 'User');
+CREATE TYPE status_enum as ENUM ('Pending','Live','Ended')
 
 CREATE SEQUENCE username_seq;
 
@@ -70,6 +71,7 @@ CREATE TABLE contests (
     difficulty INT NOT NULL,
     author_id UUID REFERENCES accounts(account_id),
     updated_at TIMESTAMP NOT NULL
+    status status_enum NOT NULL DEFAULT 'Pending'
 );
 
 -- Create ContestDetail table
