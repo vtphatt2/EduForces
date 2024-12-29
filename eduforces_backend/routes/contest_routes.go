@@ -13,6 +13,7 @@ func RegisterContestRoutes(router *gin.Engine, contestCtrl *controllers.ContestC
 		contestRoutes.GET("", sessionMiddleware, contestCtrl.ListContests)
 		contestRoutes.GET("/:id", sessionMiddleware, contestCtrl.GetContest)
 		contestRoutes.DELETE("/:id", sessionMiddleware, contestCtrl.DeleteContest)
+		contestRoutes.PUT("/:id", sessionMiddleware, contestCtrl.UpdateContest)
 		// contestRoutes.GET("/:id", sessionMiddleware, postCtrl.GetPostDetails)
 		// contestRoutes.PUT("/:id", sessionMiddleware, postCtrl.UpdatePost)
 		// contestRoutes.DELETE("/:id", sessionMiddleware, postCtrl.DeletePost)

@@ -1290,6 +1290,35 @@ func (q *Queries) UpdateComment(ctx context.Context, arg UpdateCommentParams) er
 	return err
 }
 
+const updateContest = `-- name: UpdateContest :exec
+UPDATE contests
+SET name = $1, description = $2, start_time = $3, duration = $4, difficulty = $5, updated_at = $6
+WHERE contest_id = $7
+`
+
+type UpdateContestParams struct {
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	StartTime   time.Time `json:"start_time"`
+	Duration    int32     `json:"duration"`
+	Difficulty  int32     `json:"difficulty"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	ContestID   uuid.UUID `json:"contest_id"`
+}
+
+func (q *Queries) UpdateContest(ctx context.Context, arg UpdateContestParams) error {
+	_, err := q.db.ExecContext(ctx, updateContest,
+		arg.Name,
+		arg.Description,
+		arg.StartTime,
+		arg.Duration,
+		arg.Difficulty,
+		arg.UpdatedAt,
+		arg.ContestID,
+	)
+	return err
+}
+
 const updateContestDescription = `-- name: UpdateContestDescription :exec
 UPDATE contests SET description = $1, updated_at = $2 WHERE contest_id = $3
 `

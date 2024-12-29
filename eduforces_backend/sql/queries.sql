@@ -203,6 +203,11 @@ SELECT * FROM contests WHERE status = $1;
 -- name: UpdateContestStatus :exec
 UPDATE contests SET status = $1 WHERE contest_id = $2;
 
+-- name: UpdateContest :exec
+UPDATE contests
+SET name = $1, description = $2, start_time = $3, duration = $4, difficulty = $5, updated_at = $6
+WHERE contest_id = $7;
+
 -- name: ListContestsOfAuthor :many
 SELECT * FROM contests WHERE author_id = $1;
 

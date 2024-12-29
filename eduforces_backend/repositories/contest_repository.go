@@ -54,3 +54,6 @@ func (r *ContestRepository) UpdateContestStatus(ctx context.Context, params sqlc
 func (r *ContestRepository) ListContestsByStatus(ctx context.Context, status sqlc.StatusEnum) ([]sqlc.Contest, error) {
 	return r.queries.ListContestsByStatus(ctx, status)
 }
+func (r *ContestRepository) UpdateContest(ctx context.Context, params sqlc.UpdateContestParams) error {
+	return r.queries.UpdateContest(ctx, params)
+}

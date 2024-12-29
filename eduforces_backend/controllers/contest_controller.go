@@ -95,3 +95,34 @@ func (cc *ContestController) DeleteContest(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Contest deleted successfully"})
 }
+func (cc *ContestController) UpdateContest(c *gin.Context) {
+	var req services.UpdateContestRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	contestID := c.Param("id")
+	if contestID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Contest ID is required"})
+		return
+	}
+
+	updateReq := services.UpdateContestRequestParam{
+		ContestID:   uuid.MustParse(contestID),
+		Name:        req.Name,
+		Description: req.Description,
+		StartTime:   req.StartTime,
+		Duration:    req.Duration,
+		Difficulty:  req.Difficulty,
+		Questions:   req.Questions,
+	}
+
+	err := cc.ContestService.UpdateContest(c.Request.Context(), updateReq)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Contest updated successfully"})
+}

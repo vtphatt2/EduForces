@@ -38,6 +38,26 @@ type CreateContestRequest struct {
 	Questions   []Question `json:"questions"`
 }
 
+type UpdateContestRequest struct {
+	Name        string     `json:"name"`
+	Description string     `json:"description"`
+	StartTime   time.Time  `json:"start_time"`
+	Duration    int32      `json:"duration"`
+	Difficulty  int32      `json:"difficulty"`
+	Questions   []Question `json:"questions"`
+}
+
+type UpdateContestRequestParam struct {
+	ContestID   uuid.UUID `json:"contest_id"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	StartTime   time.Time `json:"start_time"`
+	Duration    int32     `json:"duration"`
+	Difficulty  int32     `json:"difficulty"`
+
+	Questions []Question `json:"questions"`
+}
+
 type Contest struct {
 	ContestID   uuid.UUID     `json:"contest_id"`
 	Name        string        `json:"name"`
@@ -304,4 +324,84 @@ func (s *ContestService) updateLiveContestsToEnded(ctx context.Context) {
 			}
 		}
 	}
+}
+func (s *ContestService) UpdateContest(ctx context.Context, req UpdateContestRequestParam) error {
+	// Extract the contest ID
+	contestID := req.ContestID
+
+	// Prepare the update contest parameters
+	updateParams := sqlc.UpdateContestParams{
+		ContestID:   contestID,
+		Name:        req.Name,
+		Description: req.Description,
+		StartTime:   req.StartTime,
+		Duration:    req.Duration,
+		Difficulty:  req.Difficulty,
+		UpdatedAt:   time.Now(),
+	}
+
+	// Update the contest in the database
+	err := s.ContestRepository.UpdateContest(ctx, updateParams)
+	if err != nil {
+		return fmt.Errorf("failed to update contest: %w", err)
+	}
+
+	// Delete all questions associated with the contest
+	err = s.QuestionRepository.DeleteQuestionsByContestId(ctx, uuid.NullUUID{UUID: contestID, Valid: true})
+	if err != nil {
+		return fmt.Errorf("failed to delete questions: %w", err)
+	}
+
+	// Iterate each question and create them in the database
+	questions := req.Questions
+	subjectCount := map[string]int32{
+		"Math":      0,
+		"Physics":   0,
+		"Chemistry": 0,
+		"Biology":   0,
+		"History":   0,
+		"Geography": 0,
+		"English":   0,
+	}
+	for _, question := range questions {
+		var questionTag string = "" + question.Subject + "-"
+		subject := question.Subject
+		if subjectCount[subject] != 0 {
+			subjectCount[subject] += 1
+		} else {
+			if exists, err := s.QuestionRepository.CheckContestExistsWithSubject(ctx, subject); err != nil {
+				return fmt.Errorf("error checking if contest exists with subject: %w", err)
+			} else if exists {
+				q, err := s.QuestionRepository.GetLatestQuestionWithSubject(ctx, subject)
+				if err != nil {
+					return fmt.Errorf("error getting latest question with subject: %w", err)
+				}
+				index := strings.Index(q.QuestionTag, "-")
+				substr := q.QuestionTag[index+1:]
+				num, err := strconv.Atoi(substr)
+				if err != nil {
+					return fmt.Errorf("error converting substring to integer: %w", err)
+				}
+				subjectCount[subject] = int32(num)
+			}
+			subjectCount[subject] += 1
+		}
+
+		questionParam := sqlc.CreateQuestionParams{
+			ContestID:     uuid.NullUUID{UUID: contestID, Valid: true},
+			Description:   question.Description,
+			Answers:       question.Answers,
+			CorrectAnswer: question.CorrectAnswer,
+			UpdatedAt:     time.Now(),
+			Subject:       question.Subject,
+			QuestionTag:   fmt.Sprintf("%s%d", questionTag, subjectCount[subject]),
+		}
+		// Create question in db
+		err = s.QuestionRepository.CreateQuestion(ctx, questionParam)
+		if err != nil {
+			return fmt.Errorf("error creating question in db: %w", err)
+		}
+	}
+
+	return nil
 }
