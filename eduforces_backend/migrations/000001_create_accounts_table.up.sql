@@ -125,3 +125,4 @@ CREATE TABLE questions (
     is_public BOOLEAN NOT NULL DEFAULT FALSE,
     question_tag VARCHAR NOT NULL
 );
+

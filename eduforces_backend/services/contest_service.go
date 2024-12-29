@@ -29,6 +29,15 @@ type Question struct {
 	Subject       string    `json:"subject"`
 }
 
+type QuestionDetail struct {
+	QuestionID    uuid.UUID `json:"question_id"`
+	Description   string    `json:"description"`
+	Answers       []string  `json:"answers"`
+	CorrectAnswer string    `json:"correct_answer"`
+	UpdatedAt     time.Time `json:"updated_at"`
+	Subject       string    `json:"subject"`
+}
+
 type CreateContestRequest struct {
 	Name        string     `json:"name"`
 	Description string     `json:"description"`
@@ -68,6 +77,18 @@ type Contest struct {
 	AuthorID    uuid.NullUUID `json:"author_id"`
 	UpdatedAt   time.Time     `json:"updated_at"`
 	Questions   []Question    `json:"questions"`
+}
+
+type ContestDetail struct {
+	ContestID   uuid.UUID        `json:"contest_id"`
+	Name        string           `json:"name"`
+	Description string           `json:"description"`
+	StartTime   time.Time        `json:"start_time"`
+	Duration    int32            `json:"duration"`
+	Difficulty  int32            `json:"difficulty"`
+	AuthorID    uuid.NullUUID    `json:"author_id"`
+	UpdatedAt   time.Time        `json:"updated_at"`
+	Questions   []QuestionDetail `json:"questions"`
 }
 
 func NewContestService(ContestRepository *repositories.ContestRepository, QuestionRepository *repositories.QuestionRepository, AccountRepository *repositories.AccountRepository) *ContestService {
@@ -165,20 +186,21 @@ func (s *ContestService) CreateContest(ctx context.Context, req CreateContestReq
 	return contestParams, nil
 }
 
-func (s *ContestService) GetContest(ctx context.Context, contestID uuid.UUID) (Contest, error) {
+func (s *ContestService) GetContest(ctx context.Context, contestID uuid.UUID) (ContestDetail, error) {
 	contest, err := s.ContestRepository.GetContest(ctx, contestID)
 	if err != nil {
-		return Contest{}, err
+		return ContestDetail{}, err
 	}
 
 	questions, err := s.QuestionRepository.ListQuestionOfContest(ctx, uuid.NullUUID{UUID: contestID, Valid: true})
 	if err != nil {
-		return Contest{}, err
+		return ContestDetail{}, err
 	}
 
-	var questionList []Question
+	var questionList []QuestionDetail
 	for _, q := range questions {
-		questionList = append(questionList, Question{
+		questionList = append(questionList, QuestionDetail{
+			QuestionID:    q.QuestionID,
 			Description:   q.Description,
 			Answers:       q.Answers,
 			CorrectAnswer: q.CorrectAnswer,
@@ -187,7 +209,7 @@ func (s *ContestService) GetContest(ctx context.Context, contestID uuid.UUID) (C
 		})
 	}
 
-	return Contest{
+	return ContestDetail{
 		ContestID:   contest.ContestID,
 		Name:        contest.Name,
 		Description: contest.Description,
@@ -404,4 +426,40 @@ func (s *ContestService) UpdateContest(ctx context.Context, req UpdateContestReq
 	}
 
 	return nil
+}
+
+func (s *ContestService) GetContestDetails(ctx context.Context, contestID uuid.UUID) (ContestDetail, error) {
+	contest, err := s.ContestRepository.GetContest(ctx, contestID)
+	if err != nil {
+		return ContestDetail{}, err
+	}
+
+	questions, err := s.QuestionRepository.ListQuestionOfContest(ctx, uuid.NullUUID{UUID: contestID, Valid: true})
+	if err != nil {
+		return ContestDetail{}, err
+	}
+
+	var questionList []QuestionDetail
+	for _, q := range questions {
+		questionList = append(questionList, QuestionDetail{
+			QuestionID:    q.QuestionID,
+			Description:   q.Description,
+			Answers:       q.Answers,
+			CorrectAnswer: q.CorrectAnswer,
+			UpdatedAt:     q.UpdatedAt,
+			Subject:       q.Subject,
+		})
+	}
+
+	return ContestDetail{
+		ContestID:   contest.ContestID,
+		Name:        contest.Name,
+		Description: contest.Description,
+		StartTime:   contest.StartTime,
+		Duration:    contest.Duration,
+		Difficulty:  contest.Difficulty,
+		AuthorID:    contest.AuthorID,
+		UpdatedAt:   contest.UpdatedAt,
+		Questions:   questionList,
+	}, nil
 }
