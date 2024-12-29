@@ -3,6 +3,7 @@ import styles from "./StudySpace.module.css";
 // import Button from "../../components/Button";
 import NavBar from "../../components/NavBar";
 import QuestionCard from "./QuestionCard";
+import FilterItem from "./FilterItem";
 
 const StudySpace: React.FC = () => {
   const questionsList = [
@@ -130,9 +131,19 @@ const StudySpace: React.FC = () => {
           </section>
         </div>
         <aside className={styles.filterContainer}>
-          <h1>Filter</h1>
+          <h1 className={styles.title}>Filter</h1>
           <div className={styles.allFilter}>
             <h2 className={styles.filterTitle}>Subject</h2>
+            <FilterItem label="Math" isChecked={true} />
+            <FilterItem label="Physics" isChecked={true} />
+            <FilterItem label="Chemistry" isChecked={true} />
+            <FilterItem label="Biology" isChecked={true} />
+            <FilterItem label="History" isChecked={true} />
+            <FilterItem label="Geography" isChecked={true} />
+            <FilterItem label="English" isChecked={true} />
+            <h2 className={styles.filterTitle}>Status</h2>
+            <FilterItem label="Done" isChecked={true} />
+            <FilterItem label="Undone" isChecked={true} />
           </div>
         </aside>
       </div>

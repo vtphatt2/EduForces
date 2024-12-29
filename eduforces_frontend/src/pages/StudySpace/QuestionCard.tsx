@@ -21,20 +21,27 @@ const QuestionCard: React.FC<QuestionProps> = ({
   return (
     <div className={styles.questionCard}>
       <h2 className={styles.questionId}>{id}</h2>
-      <p className={styles.question}>{question}</p>
-      {options.map((option) => (
-        <label key={option.value} className={styles.option}>
-          <input
-            type="radio"
-            value={option.value}
-            checked={selectedOption === option.value}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setSelectedOption(e.target.value)
-            }
-          />
-          {option.label}
-        </label>
-      ))}
+      <p className={styles.question} id={isFold ? styles.hide : undefined}>
+        {question}
+      </p>
+      <section
+        className={styles.allOptions}
+        id={isFold ? styles.hide : undefined}
+      >
+        {options.map((option) => (
+          <label key={option.value} className={styles.option}>
+            <input
+              type="radio"
+              value={option.value}
+              checked={selectedOption === option.value}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setSelectedOption(e.target.value)
+              }
+            />
+            {option.label}
+          </label>
+        ))}
+      </section>
       <img
         src={isFold ? "left.svg" : "down_arrow.svg"}
         alt="fold"
@@ -46,7 +53,12 @@ const QuestionCard: React.FC<QuestionProps> = ({
         alt="done"
         className={styles.doneIcon}
       />
-      <Button label={"Submit"} onClick={() => console.log("Submit")} />
+      <Button
+        label={"Submit"}
+        style={{ alignSelf: "end", display: "flex" }}
+        onClick={() => console.log("Submit")}
+        id={isFold ? styles.hide : undefined}
+      />
     </div>
   );
 };
