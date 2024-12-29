@@ -69,7 +69,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const clearSession = () => {
-    localStorage.removeItem("session_id"); // Clear session ID from local storage
+    localStorage.removeItem("session_id"); // Clear session ID from local
+    localStorage.removeItem("name"); // Clear session ID from local storage
     setIsLoggedIn(false);
     setUsername(null);
   };

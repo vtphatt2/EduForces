@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { QuestionProps } from "./Type";
@@ -6,55 +6,63 @@ import Button from "../../components/Button.tsx";
 import Question from "./Question";
 import styles from "./ContestCreate.module.css";
 
+const baseUrl = "http://localhost:8080/api/v1";
+
 const ContestCreate: React.FC = () => {
   const location = useLocation();
   const { id, title, timestamp, duration } = location.state || {};
   console.log("Contest Details:", { id, title, timestamp, duration });
+  const generateId = useRef(10000); // Use useRef to persist the generateId value
 
   // State for contest details
+  const [isEditContest, setIsEditContest] = useState(false);
   const [contestName, setContestName] = useState(title);
   const [startTime, setStartTime] = useState(timestamp);
   const [contestDuration, setContestDuration] = useState(duration);
+  const [questionList, setQuestionList] = useState<QuestionProps[]>([]);
 
-  let [questionList, setQuestionList] = useState<QuestionProps[]>([
-    {
-      id: 10001,
-      questionNumber: 1,
-      title: "What is the capital of France?",
-      answerList: ["Paris", "London", "Berlin", "Madrid"],
-      correctAnswer: "Paris",
-    },
-    {
-      id: 10002,
-      questionNumber: 2,
-      title: "What is the capital of Germany?",
-      answerList: ["Paris", "London", "Berlin", "Madrid"],
-      correctAnswer: "Berlin",
-    },
-    {
-      id: 10003,
-      questionNumber: 3,
-      title: "What is the capital of Spain?",
-      answerList: ["Paris", "London", "Berlin", "Madrid"],
-      correctAnswer: "Madrid",
-    },
-    {
-      id: 10004,
-      questionNumber: 4,
-      title: "What is the capital of England?",
-      answerList: ["Paris", "London", "Berlin", "Madrid"],
-      correctAnswer: "London",
-    },
-    {
-      id: 10005,
-      questionNumber: 5,
-      title: "What is the capital of Italy?",
-      answerList: ["Paris", "London", "Berlin", "Rome"],
-      correctAnswer: "Rome",
-    },
-  ]);
-
-  const generateId = useRef(10200); // Use useRef to persist the generateId value
+    const fetchQuestionsOfContestById = async (id: string) => {
+      try {
+        const response = await fetch(`${baseUrl}/contests/${id}`, {
+          method: "GET",
+          headers: {
+            Authorization: localStorage.getItem("session_id") || "",
+          },
+        });
+  
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status}`);
+        }
+  
+        const data = await response.json();
+        const questions = data.questions;
+        for (let i = 0; i < questions.length; i++) {
+          let question_id = generateId.current++;
+          let question_number = i + 1;
+          let question_title = questions[i].description;
+          let question_answerList = questions[i].answers;
+          let question_correctAnswer = questions[i].correct_answer;
+  
+          questions[i] = {
+            id: question_id,
+            questionNumber: question_number,
+            title: question_title,
+            answerList: question_answerList,
+            correctAnswer: question_correctAnswer,
+          };
+        }
+  
+        setQuestionList(questions);
+        setIsEditContest(true);
+      } catch (error) {
+        setIsEditContest(false);
+        console.error("Failed to fetch contests:", error);
+      }
+    };
+  
+    useEffect(() => {
+      fetchQuestionsOfContestById(id);
+    }, []);
 
 
   const handleCreateQuestion = () => {
@@ -94,27 +102,62 @@ const ContestCreate: React.FC = () => {
       "You have unsaved changes. Are you sure you want to go back? Unsaved changes will be lost."
     );
     if (userConfirmed) {
-      navigate("/"); // Replace with the actual path to ContestCoordinator page
+      navigate("/contest-coordinator"); // Replace with the actual path to ContestCoordinator page
     }
   };
 
-  const handleSaveClick = () => {
+  const handleSaveClick = async () => {
     // Collect the data to be saved
     const contestData = {
-      id,
-      title, // Add logic to fetch the updated title from the textarea
-      timestamp, // Add logic to fetch the updated timestamp from the textarea
-      duration, // Add logic to fetch the updated duration from the textarea
-      questionList, // Current question list
+      name: contestName,
+      description: null,
+      start_time: startTime,
+      duration: Number(contestDuration.split(" ")[0]),
+      difficulty: null,
+      questions: questionList.map((question) => ({
+        description: question.title,
+        answers: question.answerList,
+        correct_answer: question.correctAnswer,
+        subject: "General",
+      })),
     };
 
     console.log("Saving Contest Data:", contestData); // Debugging log
 
-    // Save data logic (e.g., API call or updating state)
-    // Example: await saveContest(contestData);
-
-    // Navigate back to ContestCoordinator page
-    navigate("/");
+    try {
+      let response;
+      if (isEditContest) {
+        // If the contest has an id, call the PUT API to edit the contest
+        response = await fetch(`${baseUrl}/contests/${id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: localStorage.getItem("session_id") || "",
+          },
+          body: JSON.stringify(contestData),
+        });
+      } else {
+        // If the contest doesn't have an id, call the POST API to add a new contest
+        response = await fetch(`${baseUrl}/contests`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: localStorage.getItem("session_id") || "",
+          },
+          body: JSON.stringify(contestData),
+        });
+      }
+  
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+  
+      alert("Contest saved successfully!");
+      navigate("/contest-coordinator");
+    } catch (error) {
+      console.error("Failed to save contest:", error);
+      alert("Failed to save contest. Please try again.");
+    }
   };
 
 
@@ -143,7 +186,7 @@ const ContestCreate: React.FC = () => {
             <strong className={styles.headerText}>Start Time </strong>
             <textarea
               className={styles.textArea}
-              placeholder="Enter start time in this format: YYYY-MM-DD HH:MM:SS"
+              placeholder="Enter start time in this format: ex: 2025-03-15T16:30:00Z"
               value={startTime}
               onChange={(e) => setStartTime(e.target.value)}
             />
@@ -154,7 +197,8 @@ const ContestCreate: React.FC = () => {
             <textarea
               className={styles.textArea}
               placeholder="Enter duration in minutes: ex: 60"
-              value={contestDuration}
+              // In Python to take the first word: 60 minutes -> 60, we do contestDuration.split(" ")[0], in typescript we can do contestDuration.split(" ")[0]
+              value={contestDuration.split(" ")[0]}
               onChange={(e) => setContestDuration(e.target.value)}
             />
           </div>
