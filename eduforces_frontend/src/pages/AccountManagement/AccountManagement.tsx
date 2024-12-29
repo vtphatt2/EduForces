@@ -3,81 +3,114 @@ import { useState, useEffect } from "react";
 import styles from "./AccountManagement.module.css";
 import NavBar from "../../components/NavBar";
 import Button from "../../components/Button";
+import { AccountRowProps } from "./Type";
+import { getTrueImageSrc, formatTimestamp } from "../../components/Common";
 
 const baseUrl = "http://localhost:8080/api/v1";
 
 const AccountManagement: React.FC = () => {
-  const usersX = [
-    {
-      avatarSrc: "https://via.placeholder.com/150",
-      id: "1",
-      name: "John Doe",
-      username: "johndoe",
-      email: "johndoe@gmail.com",
-      lastLogin: "2021-08-01",
-      role: "user",
-      isActived: false,
-    },
-    {
-      avatarSrc: "https://via.placeholder.com/150",
-      id: "2",
-      name: "Jane Doe",
-      username: "janedoe",
-      email: "janedoe@example.com",
-      lastLogin: "2021-08-01",
-      role: "coordinator",
-      isActived: true,
-    },
-    {
-      avatarSrc: "https://via.placeholder.com/150",
-      id: "3",
-      name: "Admin",
-      username: "admin",
-      email: "admin@eduforces.com",
-      lastLogin: "2021-08-01",
-      role: "admin",
-      isActived: true,
-    },
-  ];
-  const [users, setUsers] = useState(usersX);
+  // const usersX = [
+  //   {
+  //     avatarSrc: "https://via.placeholder.com/150",
+  //     id: "1",
+  //     name: "John Doe",
+  //     username: "johndoe",
+  //     email: "johndoe@gmail.com",
+  //     lastLogin: "2021-08-01",
+  //     role: "user",
+  //     isActived: false,
+  //   },
+  //   {
+  //     avatarSrc: "https://via.placeholder.com/150",
+  //     id: "2",
+  //     name: "Jane Doe",
+  //     username: "janedoe",
+  //     email: "janedoe@example.com",
+  //     lastLogin: "2021-08-01",
+  //     role: "coordinator",
+  //     isActived: true,
+  //   },
+  //   {
+  //     avatarSrc: "https://via.placeholder.com/150",
+  //     id: "3",
+  //     name: "Admin",
+  //     username: "admin",
+  //     email: "admin@eduforces.com",
+  //     lastLogin: "2021-08-01",
+  //     role: "admin",
+  //     isActived: true,
+  //   },
+  // ];
+  const [users, setUsers] = useState<AccountRowProps[]>([]);
   const [roleSelected, setRoleSelected] = useState("all");
   const [activeSelected, setActiveSelected] = useState("all");
-  const changeRole = async (user, e) => {
-    const newRole = e.target.value;
+
+  const fetchUsers = async (isDeactivated: boolean | null) => {
     try {
-      const response = await fetch(`${baseUrl}/`, {
-        method: "POST",
+      const response = await fetch(
+        `${baseUrl}/accounts/list-accounts?isDeactivated=${isDeactivated}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: localStorage.getItem("session_id") || "",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`${response.status} - ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      setUsers(data);
+    } catch (error) {
+      alert(`${error}`);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers(null);
+  }, []);
+  const changeRole = async (user, e) => {
+    try {
+      const response = await fetch(`${baseUrl}/accounts/update-role`, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: localStorage.getItem("session_id") || "",
         },
-        body: JSON.stringify({ role: newRole, id: user.id }),
+        body: JSON.stringify({
+          account_id: user.account_id,
+          role: e.target.value,
+        }),
       });
 
       if (!response.ok) {
         throw new Error(`${response.status} - ${response.statusText}`);
       }
-      //fetch all Users
+      fetchUsers(null);
     } catch (error) {
       alert(`${error}`);
     }
   };
   const toggleBan = async (user) => {
-    const currentStatus = user.isActived;
     try {
-      const response = await fetch(`${baseUrl}/`, {
-        method: "POST",
+      const response = await fetch(`${baseUrl}/accounts/update-deactivation`, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: localStorage.getItem("session_id") || "",
         },
-        body: JSON.stringify({ id: user.id, isActived: !currentStatus }),
+        body: JSON.stringify({
+          account_id: user.account_id,
+          is_deactivated: !user.is_deactivated ? 1 : 2,
+        }),
       });
 
       if (!response.ok) {
         throw new Error(`${response.status} - ${response.statusText}`);
       }
-      //fetch all Users
+      fetchUsers(null);
     } catch (error) {
       alert(`${error}`);
     }
@@ -101,9 +134,9 @@ const AccountManagement: React.FC = () => {
             onChange={(e) => setRoleSelected(e.target.value)}
             value={roleSelected}
           >
-            <option value="user">User</option>
-            <option value="coordinator">Coordinator</option>
-            <option value="admin">Admin</option>
+            <option value="User">User</option>
+            <option value="Coordinator">Coordinator</option>
+            <option value="Admin">Admin</option>
             <option value="all">All</option>
           </select>
         </div>
@@ -135,17 +168,21 @@ const AccountManagement: React.FC = () => {
           </thead>
           <tbody className={styles.tableBody}>
             {users.map((user) => (
-              <tr key={user.id} className={styles.tableRow}>
+              <tr key={user.account_id} className={styles.tableRow}>
                 <td className={styles.tableData}>
                   <img
-                    src={user.avatarSrc}
+                    src={getTrueImageSrc(user.avatar_path)}
                     alt="avatar"
                     className={styles.avatar}
                   />
                 </td>
                 <td className={styles.tableData}>{user.username}</td>
                 <td className={styles.tableData}>{user.email}</td>
-                <td className={styles.tableData}>{user.lastLogin}</td>
+                <td className={styles.tableData}>
+                  {user.last_active.Valid
+                    ? formatTimestamp(user.last_active.Time)
+                    : "Online"}
+                </td>
                 <td className={styles.tableData}>
                   <select
                     className={styles.roleSelect}
@@ -163,17 +200,17 @@ const AccountManagement: React.FC = () => {
                       (e) => changeRole(user, e)
                     }
                   >
-                    <option value="user">User</option>
-                    <option value="coordinator">Coordinator</option>
-                    <option value="admin">Admin</option>
+                    <option value="User">User</option>
+                    <option value="Coordinator">Coordinator</option>
+                    <option value="Admin">Admin</option>
                   </select>
                 </td>
                 <td className={styles.tableData}>
-                  {user.isActived ? "Yes" : "No"}
+                  {user.is_deactivated ? "Banned" : "Active"}
                 </td>
                 <td className={styles.tableData}>
                   <Button
-                    label={user.isActived ? "Ban" : "Unban"}
+                    label={user.is_deactivated ? "Unban" : "Ban"}
                     onClick={
                       // user.isActived
                       //   ? () => {

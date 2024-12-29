@@ -124,6 +124,18 @@ const StudySpace: React.FC = () => {
   //   },
   // ];
   const [questionsList, setQuestionsList] = useState([] as QuestionPropsAPI[]);
+  const [filter, setFilter] = useState([
+    true,
+    true,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+  ]);
+
   const fetchQuestions = async (subject: string[], done: number) => {
     try {
       const response = await fetch(`${baseUrl}/questions/filter`, {
@@ -132,7 +144,7 @@ const StudySpace: React.FC = () => {
           "Content-Type": "application/json",
           Authorization: localStorage.getItem("session_id") || "",
         },
-        body: JSON.stringify({ subject, done }),
+        body: JSON.stringify({ subjects: subject, done: done }),
       });
       if (!response.ok) {
         throw new Error(response.statusText);
@@ -157,6 +169,38 @@ const StudySpace: React.FC = () => {
       3
     );
   }, []);
+
+  const filterQuestions = async () => {
+    const subjects = [];
+    for (let i = 0; i < 7; i++) {
+      const subject = document.getElementsByTagName("input")[i].checked;
+      // console.log(subject);
+      if (subject) {
+        subjects.push(document.getElementsByTagName("label")[i].innerText);
+      }
+    }
+    const isDone = document.getElementsByTagName("input")[7].checked;
+    const isUndone = document.getElementsByTagName("input")[8].checked;
+    const done = isDone && isUndone ? 3 : isDone ? 1 : isUndone ? 2 : 0;
+    try {
+      const response = await fetch(`${baseUrl}/questions/filter`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: localStorage.getItem("session_id") || "",
+        },
+        body: JSON.stringify({ subjects: subjects, done: done }),
+      });
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
+      const data = await response.json();
+      setQuestionsList(data);
+    } catch (error) {
+      alert(error);
+    }
+  };
+
   return (
     <main className={styles.container}>
       <NavBar />
@@ -184,17 +228,17 @@ const StudySpace: React.FC = () => {
           <h1 className={styles.title}>Filter</h1>
           <div className={styles.allFilter}>
             <h2 className={styles.filterTitle}>Subject</h2>
-            <FilterItem label="Math" isChecked={true} />
-            <FilterItem label="Physics" isChecked={true} />
-            <FilterItem label="Chemistry" isChecked={true} />
-            <FilterItem label="Biology" isChecked={true} />
-            <FilterItem label="History" isChecked={true} />
-            <FilterItem label="Geography" isChecked={true} />
-            <FilterItem label="English" isChecked={true} />
+            <FilterItem label="Math" isChecked={filter[0]} />
+            <FilterItem label="Physics" isChecked={filter[1]} />
+            <FilterItem label="Chemistry" isChecked={filter[2]} />
+            <FilterItem label="Biology" isChecked={filter[3]} />
+            <FilterItem label="History" isChecked={filter[4]} />
+            <FilterItem label="Geography" isChecked={filter[5]} />
+            <FilterItem label="English" isChecked={filter[6]} />
             <h2 className={styles.filterTitle}>Status</h2>
-            <FilterItem label="Done" isChecked={true} />
-            <FilterItem label="Undone" isChecked={true} />
-            <Button label="Apply" onClick={() => console.log("Apply")} />
+            <FilterItem label="Done" isChecked={filter[7]} />
+            <FilterItem label="Undone" isChecked={filter[8]} />
+            <Button label="Apply" onClick={filterQuestions} />
           </div>
         </aside>
       </div>

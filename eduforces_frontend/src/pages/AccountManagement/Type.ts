@@ -1,20 +1,16 @@
 export interface AccountRowProps {
-  avatarSrc: string;
-  id: string;
-  name: string;
-  username: string;
+  account_id: string;
   email: string;
-  lastLogin: string;
-  role: string;
-  isActived: boolean;
-}
-
-export interface AccountDetailProps {
-  id: string;
-  name: string;
   username: string;
-  email: string;
-  lastLogin: string;
+  name: string;
   role: string;
-  isActived: boolean;
+  avatar_path: string;
+  elo_rating: number;
+  last_active: {
+    Time: string;
+    Valid: boolean;
+  };
+  school: string;
+  gold_amount: string;
+  is_deactivated: boolean;
 }
