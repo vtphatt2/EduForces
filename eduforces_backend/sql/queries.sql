@@ -13,6 +13,26 @@ SELECT * FROM accounts WHERE email = $1;
 -- name: ListAccounts :many
 SELECT * FROM accounts;
 
+-- name: ListAccountsByFilters :many
+SELECT * FROM accounts
+WHERE ($1::text IS NULL OR username ILIKE $1 || '%')
+  AND ($2::text = '' OR role = $2::role_enum)
+  AND (
+    $3::int IS NULL OR
+    ($3::int = 1 AND is_deactivated = true) OR
+    ($3::int = 0 AND is_deactivated = false) OR
+    $3::int = 3
+  );
+
+
+-- filter accounts by username prefix
+-- name: ListAccountsByUsernamePrefix :many
+SELECT * FROM accounts WHERE username LIKE $1 || '%';
+
+-- filter accounts by role
+-- name: ListAccountsByRole :many
+SELECT * FROM accounts WHERE role = $1;
+
 -- name: CreateAccount :exec
 INSERT INTO accounts (email, name, role, avatar_path)
 VALUES ($1, $2, $3, $4);

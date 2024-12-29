@@ -493,45 +493,6 @@ func (q *Queries) GetAccountByEmail(ctx context.Context, email string) (Account,
 	return i, err
 }
 
-const getAllAccounts = `-- name: GetAllAccounts :many
-SELECT account_id, email, username, name, role, avatar_path, elo_rating, last_active, school, gold_amount, is_deactivated FROM accounts
-`
-
-func (q *Queries) GetAllAccounts(ctx context.Context) ([]Account, error) {
-	rows, err := q.db.QueryContext(ctx, getAllAccounts)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Account
-	for rows.Next() {
-		var i Account
-		if err := rows.Scan(
-			&i.AccountID,
-			&i.Email,
-			&i.Username,
-			&i.Name,
-			&i.Role,
-			&i.AvatarPath,
-			&i.EloRating,
-			&i.LastActive,
-			&i.School,
-			&i.GoldAmount,
-			&i.IsDeactivated,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getAllNotificationsForAccount = `-- name: GetAllNotificationsForAccount :many
 SELECT notification_id, account_id, message, created_at FROM notifications 
 WHERE account_id = $1::UUID
@@ -1109,6 +1070,139 @@ SELECT account_id, email, username, name, role, avatar_path, elo_rating, last_ac
 // filter accounts by deactivation status
 func (q *Queries) ListAccountsByDeactivationStatus(ctx context.Context, isDeactivated bool) ([]Account, error) {
 	rows, err := q.db.QueryContext(ctx, listAccountsByDeactivationStatus, isDeactivated)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Account
+	for rows.Next() {
+		var i Account
+		if err := rows.Scan(
+			&i.AccountID,
+			&i.Email,
+			&i.Username,
+			&i.Name,
+			&i.Role,
+			&i.AvatarPath,
+			&i.EloRating,
+			&i.LastActive,
+			&i.School,
+			&i.GoldAmount,
+			&i.IsDeactivated,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listAccountsByFilters = `-- name: ListAccountsByFilters :many
+SELECT account_id, email, username, name, role, avatar_path, elo_rating, last_active, school, gold_amount, is_deactivated FROM accounts
+WHERE ($1::text IS NULL OR username ILIKE $1 || '%')
+  AND ($2::text = '' OR role = $2::role_enum)
+  AND (
+    $3::int IS NULL OR
+    ($3::int = 1 AND is_deactivated = true) OR
+    ($3::int = 0 AND is_deactivated = false) OR
+    $3::int = 3
+  )
+`
+
+type ListAccountsByFiltersParams struct {
+	Column1 string `json:"column_1"`
+	Column2 string `json:"column_2"`
+	Column3 int32  `json:"column_3"`
+}
+
+func (q *Queries) ListAccountsByFilters(ctx context.Context, arg ListAccountsByFiltersParams) ([]Account, error) {
+	rows, err := q.db.QueryContext(ctx, listAccountsByFilters, arg.Column1, arg.Column2, arg.Column3)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Account
+	for rows.Next() {
+		var i Account
+		if err := rows.Scan(
+			&i.AccountID,
+			&i.Email,
+			&i.Username,
+			&i.Name,
+			&i.Role,
+			&i.AvatarPath,
+			&i.EloRating,
+			&i.LastActive,
+			&i.School,
+			&i.GoldAmount,
+			&i.IsDeactivated,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listAccountsByRole = `-- name: ListAccountsByRole :many
+SELECT account_id, email, username, name, role, avatar_path, elo_rating, last_active, school, gold_amount, is_deactivated FROM accounts WHERE role = $1
+`
+
+// filter accounts by role
+func (q *Queries) ListAccountsByRole(ctx context.Context, role RoleEnum) ([]Account, error) {
+	rows, err := q.db.QueryContext(ctx, listAccountsByRole, role)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Account
+	for rows.Next() {
+		var i Account
+		if err := rows.Scan(
+			&i.AccountID,
+			&i.Email,
+			&i.Username,
+			&i.Name,
+			&i.Role,
+			&i.AvatarPath,
+			&i.EloRating,
+			&i.LastActive,
+			&i.School,
+			&i.GoldAmount,
+			&i.IsDeactivated,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listAccountsByUsernamePrefix = `-- name: ListAccountsByUsernamePrefix :many
+SELECT account_id, email, username, name, role, avatar_path, elo_rating, last_active, school, gold_amount, is_deactivated FROM accounts WHERE username LIKE $1 || '%'
+`
+
+// filter accounts by username prefix
+func (q *Queries) ListAccountsByUsernamePrefix(ctx context.Context, dollar_1 sql.NullString) ([]Account, error) {
+	rows, err := q.db.QueryContext(ctx, listAccountsByUsernamePrefix, dollar_1)
 	if err != nil {
 		return nil, err
 	}
