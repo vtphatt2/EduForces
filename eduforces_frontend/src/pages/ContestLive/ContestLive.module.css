@@ -1,0 +1,133 @@
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 3px solid black;
+    height: 100px;
+}
+  
+.headerContent {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+}
+  
+.contestTitle {
+    font-size: clamp(2.5rem, 1.5vw, 3rem);
+    color: red; /* Red color for the title */
+    margin: 0;
+    margin-bottom: 0.25rem;
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+}
+
+.timeLeft {
+    font-size: clamp(1.5rem, 1vw, 2rem);
+    color: black; /* Black for time left */
+    margin: 0;
+    margin-top: 0.5rem;
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+}
+
+
+
+
+
+body {
+    overflow: hidden; /* Prevent scrolling on the entire page */
+}
+
+.contestLiveContainer {
+    display: flex;
+    height: 90vh; /* Full viewport height to fix the layout */
+    overflow: hidden; /* Hide the scrollbar */
+}
+
+.questions {
+    flex: 5;
+    font-size: clamp(1rem, 1.4vw, 2rem);
+    margin: 0;
+    margin-left: clamp(3.5rem, 3vw, 4.5rem);
+    margin-bottom: 0.75rem; 
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+    color: #5D5A88;
+
+    overflow-y: auto; /* Make it scrollable */
+    padding: 1rem;
+    border-right: 3px solid black;
+}
+
+.sidebar {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    justify-content: space-between; /* Align top and bottom sections */
+}
+
+.progressSection {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: 1.5rem;
+    overflow-y: auto; /* Add scroll when content overflows */
+}
+
+.announcementSection {
+    display: flex;
+    flex-direction: column;
+    flex: 1; /* Takes half the height */
+    padding: 1.5rem;
+    overflow-y: auto; /* Add scroll when content overflows */
+}
+
+.questions,
+.progressSection,
+.announcementSection {
+  overflow-y: auto; /* Enable scrolling */
+  scrollbar-width: none; /* Hide scrollbar */
+  -ms-overflow-style: none; /* Hide scrollbar for IE and Edge */
+}
+
+.questions::-webkit-scrollbar,
+.progressSection::-webkit-scrollbar,
+.announcementSection::-webkit-scrollbar {
+  display: none; /* Hide scrollbar for Chrome, Safari, and Edge */
+}
+ 
+.divider {
+    border-top: 3px solid black; 
+    margin: 0; /* Adds space around the line */
+}
+
+.progress{
+    font-size: clamp(2rem, 1.5vw, 3rem);
+    margin: 0;
+    margin-bottom: 1rem; 
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+    color: #5D5A88;
+}
+
+.announcement{
+    font-size: clamp(2rem, 1.5vw, 3rem);
+    margin: 0;
+    margin-bottom: 0.75rem; 
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+    color: #5D5A88;
+}
+
+.announcementText {
+    font-size: clamp(0.75rem, 3vw, 1rem);
+    line-height: clamp(1.5rem, 3vw, 1.875rem);
+    margin: 0;
+    margin-left: clamp(1.125rem, 3vw, 2.5rem);
+    margin-right: clamp(1.125rem, 3vw, 2.5rem);
+    margin-bottom: 1rem;
+    font-weight: 400;
+    font-family: 'Poppins', sans-serif;
+    color: black;
+}

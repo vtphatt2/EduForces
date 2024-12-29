@@ -209,6 +209,12 @@ INSERT INTO questions (contest_id,description, answers, correct_answer, updated_
 -- name: DeleteQuestion :exec
 DELETE FROM questions WHERE question_id = $1;
 
+-- name: DeleteQuestionsByContestId :exec
+DELETE FROM questions WHERE contest_id = $1;
+
+-- name: UpdateQuestionToPublic :exec
+UPDATE questions SET is_public = TRUE WHERE contest_id = $1;
+
 -- name: UpdateQuestionDescription :exec
 UPDATE questions SET description = $1, updated_at = $2 WHERE question_id = $3;
 
@@ -221,7 +227,7 @@ SELECT * FROM submissions WHERE submission_id = $1;
 SELECT * FROM submissions;
 
 -- name: CreateSubmission :exec
-INSERT INTO submissions (submission_id, contest_id, account_id, time) VALUES ($1, $2, $3, $4);
+INSERT INTO submissions (submission_id, contest_id, account_id, time, score) VALUES ($1, $2, $3, $4, $5);
 
 -- name: DeleteSubmission :exec
 DELETE FROM submissions WHERE submission_id = $1;
@@ -249,6 +255,11 @@ SELECT * FROM contests WHERE status = $1;
 
 -- name: UpdateContestStatus :exec
 UPDATE contests SET status = $1 WHERE contest_id = $2;
+
+-- name: UpdateContest :exec
+UPDATE contests
+SET name = $1, description = $2, start_time = $3, duration = $4, difficulty = $5, updated_at = $6
+WHERE contest_id = $7;
 
 -- name: ListContestsOfAuthor :many
 SELECT * FROM contests WHERE author_id = $1;

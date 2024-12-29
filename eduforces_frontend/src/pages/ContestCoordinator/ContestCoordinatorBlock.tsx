@@ -18,11 +18,9 @@ const ContestCoordinatorBlock: React.FC<
   const navigate = useNavigate();
 
   const handleEditClick = () => {
-    // console.log("Edit button clicked");
     // Add logic to navigate to the page: ContestCreate
     // Pass the contest details to the ContestCreate page
-    console.log("Editing Contest:", title); // Debugging
-    navigate("/contest-create", { // Navigate to ContestCreate page
+    navigate("/contest-create", { 
       state: {
         id,
         title,

@@ -298,14 +298,15 @@ func (q *Queries) CreateQuestion(ctx context.Context, arg CreateQuestionParams) 
 }
 
 const createSubmission = `-- name: CreateSubmission :exec
-INSERT INTO submissions (submission_id, contest_id, account_id, time) VALUES ($1, $2, $3, $4)
+INSERT INTO submissions (submission_id, contest_id, account_id, time, score) VALUES ($1, $2, $3, $4, $5)
 `
 
 type CreateSubmissionParams struct {
-	SubmissionID uuid.UUID `json:"submission_id"`
-	ContestID    uuid.UUID `json:"contest_id"`
-	AccountID    string    `json:"account_id"`
-	Time         time.Time `json:"time"`
+	SubmissionID uuid.UUID     `json:"submission_id"`
+	ContestID    uuid.UUID     `json:"contest_id"`
+	AccountID    uuid.NullUUID `json:"account_id"`
+	Time         time.Time     `json:"time"`
+	Score        int32         `json:"score"`
 }
 
 func (q *Queries) CreateSubmission(ctx context.Context, arg CreateSubmissionParams) error {
@@ -314,6 +315,7 @@ func (q *Queries) CreateSubmission(ctx context.Context, arg CreateSubmissionPara
 		arg.ContestID,
 		arg.AccountID,
 		arg.Time,
+		arg.Score,
 	)
 	return err
 }
@@ -375,6 +377,15 @@ DELETE FROM questions WHERE question_id = $1
 
 func (q *Queries) DeleteQuestion(ctx context.Context, questionID uuid.UUID) error {
 	_, err := q.db.ExecContext(ctx, deleteQuestion, questionID)
+	return err
+}
+
+const deleteQuestionsByContestId = `-- name: DeleteQuestionsByContestId :exec
+DELETE FROM questions WHERE contest_id = $1
+`
+
+func (q *Queries) DeleteQuestionsByContestId(ctx context.Context, contestID uuid.NullUUID) error {
+	_, err := q.db.ExecContext(ctx, deleteQuestionsByContestId, contestID)
 	return err
 }
 
@@ -907,7 +918,7 @@ func (q *Queries) GetSpecialGiftDescription(ctx context.Context, eventTaskID uui
 
 const getSubmission = `-- name: GetSubmission :one
 
-SELECT submission_id, contest_id, account_id, time FROM submissions WHERE submission_id = $1
+SELECT submission_id, contest_id, account_id, time, score FROM submissions WHERE submission_id = $1
 `
 
 // ---- Submission
@@ -919,6 +930,7 @@ func (q *Queries) GetSubmission(ctx context.Context, submissionID uuid.UUID) (Su
 		&i.ContestID,
 		&i.AccountID,
 		&i.Time,
+		&i.Score,
 	)
 	return i, err
 }
@@ -1488,7 +1500,7 @@ func (q *Queries) ListQuestionsOfContest(ctx context.Context, contestID uuid.Nul
 }
 
 const listSubmissions = `-- name: ListSubmissions :many
-SELECT submission_id, contest_id, account_id, time FROM submissions
+SELECT submission_id, contest_id, account_id, time, score FROM submissions
 `
 
 func (q *Queries) ListSubmissions(ctx context.Context) ([]Submission, error) {
@@ -1505,6 +1517,7 @@ func (q *Queries) ListSubmissions(ctx context.Context) ([]Submission, error) {
 			&i.ContestID,
 			&i.AccountID,
 			&i.Time,
+			&i.Score,
 		); err != nil {
 			return nil, err
 		}
@@ -1677,6 +1690,35 @@ func (q *Queries) UpdateComment(ctx context.Context, arg UpdateCommentParams) er
 	return err
 }
 
+const updateContest = `-- name: UpdateContest :exec
+UPDATE contests
+SET name = $1, description = $2, start_time = $3, duration = $4, difficulty = $5, updated_at = $6
+WHERE contest_id = $7
+`
+
+type UpdateContestParams struct {
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	StartTime   time.Time `json:"start_time"`
+	Duration    int32     `json:"duration"`
+	Difficulty  int32     `json:"difficulty"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	ContestID   uuid.UUID `json:"contest_id"`
+}
+
+func (q *Queries) UpdateContest(ctx context.Context, arg UpdateContestParams) error {
+	_, err := q.db.ExecContext(ctx, updateContest,
+		arg.Name,
+		arg.Description,
+		arg.StartTime,
+		arg.Duration,
+		arg.Difficulty,
+		arg.UpdatedAt,
+		arg.ContestID,
+	)
+	return err
+}
+
 const updateContestDescription = `-- name: UpdateContestDescription :exec
 UPDATE contests SET description = $1, updated_at = $2 WHERE contest_id = $3
 `
@@ -1757,6 +1799,15 @@ type UpdateQuestionDescriptionParams struct {
 
 func (q *Queries) UpdateQuestionDescription(ctx context.Context, arg UpdateQuestionDescriptionParams) error {
 	_, err := q.db.ExecContext(ctx, updateQuestionDescription, arg.Description, arg.UpdatedAt, arg.QuestionID)
+	return err
+}
+
+const updateQuestionToPublic = `-- name: UpdateQuestionToPublic :exec
+UPDATE questions SET is_public = TRUE WHERE contest_id = $1
+`
+
+func (q *Queries) UpdateQuestionToPublic(ctx context.Context, contestID uuid.NullUUID) error {
+	_, err := q.db.ExecContext(ctx, updateQuestionToPublic, contestID)
 	return err
 }
 

@@ -100,3 +100,10 @@ func (r *QuestionRepository) CreateUserDoneQuestion(ctx context.Context, account
 		Done:       done,
 	})
 }
+
+func (r *QuestionRepository) DeleteQuestionsByContestId(ctx context.Context, contestID uuid.NullUUID) error {
+	return r.queries.DeleteQuestionsByContestId(ctx, contestID)
+}
+func (r *QuestionRepository) UpdateQuestionToPublic(ctx context.Context, contestID uuid.NullUUID) error {
+	return r.queries.UpdateQuestionToPublic(ctx, contestID)
+}
