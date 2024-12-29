@@ -131,3 +131,25 @@ func (r *AccountRepository) UpdateAccountRole(ctx context.Context, accountID uui
 func (r *AccountRepository) ListAccountsByDeactivationStatus(ctx context.Context, isDeactivated bool) ([]sqlc.Account, error) {
 	return r.queries.ListAccountsByDeactivationStatus(ctx, isDeactivated)
 }
+
+func (r *AccountRepository) ListAccountsByRole(ctx context.Context, role sqlc.RoleEnum) ([]sqlc.Account, error) {
+	return r.queries.ListAccountsByRole(ctx, role)
+}
+
+func (r *AccountRepository) ListAccountsByUsernamePrefix(ctx context.Context, usernamePrefix string) ([]sqlc.Account, error) {
+	return r.queries.ListAccountsByUsernamePrefix(ctx, sql.NullString{String: usernamePrefix, Valid: true})
+}
+
+type ListAccountsByFiltersParams struct {
+	Column1 string
+	Column2 string
+	Column3 int32
+}
+
+func (r *AccountRepository) ListAccountsByFilters(ctx context.Context, params ListAccountsByFiltersParams) ([]sqlc.Account, error) {
+	return r.queries.ListAccountsByFilters(ctx, sqlc.ListAccountsByFiltersParams{
+		Column1: params.Column1,
+		Column2: params.Column2,
+		Column3: params.Column3,
+	})
+}

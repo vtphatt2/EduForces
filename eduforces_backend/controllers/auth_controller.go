@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/vtphatt2/EduForces/models/sqlc"
+	"github.com/vtphatt2/EduForces/repositories"
 	"github.com/vtphatt2/EduForces/services"
 	"github.com/vtphatt2/EduForces/sessions"
 )
@@ -342,15 +343,30 @@ func (ctrl *AuthController) UpdateAccountDeactivation(c *gin.Context) {
 }
 
 func (ctrl *AuthController) ListAccounts(c *gin.Context) {
+	isDeactivatedQuery_int := 3
+
 	isDeactivatedQuery := c.Query("is_deactivated")
+	usernamePrefix := c.Query("username_prefix")
+	role := c.Query("role")
+
+	if isDeactivatedQuery == "true" {
+		isDeactivatedQuery_int = 1
+	} else if isDeactivatedQuery == "false" {
+		isDeactivatedQuery_int = 0
+	}
+
 	var accounts []sqlc.Account
 	var err error
 
-	if isDeactivatedQuery == "" {
+	if isDeactivatedQuery_int == 3 && usernamePrefix == "" && role == "" {
 		accounts, err = ctrl.service.ListAccounts(c.Request.Context())
 	} else {
-		isDeactivated := isDeactivatedQuery == "true"
-		accounts, err = ctrl.service.ListAccountsByDeactivationStatus(c.Request.Context(), isDeactivated)
+		params := repositories.ListAccountsByFiltersParams{
+			Column1: usernamePrefix,
+			Column2: role,
+			Column3: int32(isDeactivatedQuery_int),
+		}
+		accounts, err = ctrl.service.ListAccountsByFilters(c.Request.Context(), params)
 	}
 
 	if err != nil {

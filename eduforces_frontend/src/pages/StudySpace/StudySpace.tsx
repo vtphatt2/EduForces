@@ -124,7 +124,7 @@ const StudySpace: React.FC = () => {
   //   },
   // ];
   const [questionsList, setQuestionsList] = useState([] as QuestionPropsAPI[]);
-  const fetchQuestions = async (subject: string[], done: number) => {
+  const fetchQuestions = async (subjects: string[], done: number) => {
     try {
       const response = await fetch(`${baseUrl}/questions/filter`, {
         method: "POST",
@@ -132,7 +132,7 @@ const StudySpace: React.FC = () => {
           "Content-Type": "application/json",
           Authorization: localStorage.getItem("session_id") || "",
         },
-        body: JSON.stringify({ subject, done }),
+        body: JSON.stringify({ subjects, done }),
       });
       if (!response.ok) {
         throw new Error(response.statusText);

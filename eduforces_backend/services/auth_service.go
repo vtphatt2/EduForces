@@ -192,5 +192,19 @@ func (s *AuthService) ListAccountsByDeactivationStatus(ctx context.Context, isDe
 }
 
 func (s *AuthService) ListAccounts(ctx context.Context) ([]sqlc.Account, error) {
+	fmt.Println("ListAccounts")
 	return s.repo.ListAccounts(ctx)
+}
+
+func (s *AuthService) ListAccountsByRole(ctx context.Context, role sqlc.RoleEnum) ([]sqlc.Account, error) {
+	return s.repo.ListAccountsByRole(ctx, role)
+}
+
+func (s *AuthService) ListAccountsByUsernamePrefix(ctx context.Context, usernamePrefix string) ([]sqlc.Account, error) {
+	return s.repo.ListAccountsByUsernamePrefix(ctx, usernamePrefix)
+}
+
+func (s *AuthService) ListAccountsByFilters(ctx context.Context, params repositories.ListAccountsByFiltersParams) ([]sqlc.Account, error) {
+	fmt.Println("ListAccountsByFilters, params=", params)
+	return s.repo.ListAccountsByFilters(ctx, params)
 }
