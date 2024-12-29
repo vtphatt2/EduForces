@@ -54,7 +54,6 @@ const LoginPage: React.FC = () => {
             // Store the session ID in local storage
             localStorage.setItem("session_id", data.session_id);
             localStorage.setItem("username", data.user.username);
-
             setIsLoggedIn(true);
             setUsername(data.user.username);
             // Redirect to the home page or dashboard

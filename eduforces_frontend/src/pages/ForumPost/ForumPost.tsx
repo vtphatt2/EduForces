@@ -6,7 +6,8 @@ import { Post } from "./Post";
 import { UserInfo } from "./UserInfo";
 import Button from "../../components/Button";
 import NavBar from "../../components/NavBar";
-import { PostPropsAPI, CommentPropsAPI } from "./Type";
+import { PostPropsAPI, CommentPropsAPI, ForumPostProps } from "./Type";
+import getAccountDetailById, { formatTimestamp } from "../../components/Common";
 
 const baseUrl = "http://localhost:8080/api/v1";
 
@@ -19,15 +20,16 @@ const ForumPost: React.FC = () => {
     title: "",
     content: "",
     author_id: "",
+    author_name: "",
     timestamp: "",
   });
-  // const [userInfo, setUserInfo] = useState<ForumPostProps["userInfo"]>({
-  //   elo: 0,
-  //   university: "",
-  //   avatarSrc: "",
-  // });
+  const [userInfo, setUserInfo] = useState<ForumPostProps["userInfo"]>({
+    elo: 0,
+    university: "",
+    avatarSrc: "",
+  });
   const [commentList, setCommentList] = useState<CommentPropsAPI[]>([]);
-  const fetchData = async (id: string | null) => {
+  const fetchData = React.useCallback(async (id: string | null) => {
     try {
       if (localStorage.getItem("session_id") === null) {
         throw new Error(`Please log in to view posts`);
@@ -44,7 +46,20 @@ const ForumPost: React.FC = () => {
         throw new Error(`Error: ${fetchPost.status}`);
       }
       const postData = await fetchPost.json();
-      setPost(postData);
+      const accountDetail = await getAccountDetailById(postData.author_id);
+      setUserInfo({
+        elo: accountDetail.elo_rating,
+        university: accountDetail.school,
+        avatarSrc: accountDetail.avatar_path,
+      });
+      setPost({
+        post_id: postData.post_id,
+        title: postData.title,
+        content: postData.content,
+        author_id: postData.author_id,
+        author_name: accountDetail.username,
+        timestamp: formatTimestamp(postData.timestamp),
+      });
     } catch (error) {
       alert("Error: " + error);
     }
@@ -64,19 +79,24 @@ const ForumPost: React.FC = () => {
         throw new Error(`Error: ${fetchCommentList.status}`);
       }
       const commentData = await fetchCommentList.json();
-      setCommentList(commentData.data);
+      const commentListTemp = commentData.data === null ? [] : commentData.data;
+      for (let i = 0; i < commentListTemp.length; i++) {
+        const accountDetail = await getAccountDetailById(
+          commentListTemp[i].author_id
+        );
+        commentListTemp[i].author_name = accountDetail.username;
+        commentListTemp[i].timestamp = formatTimestamp(
+          commentListTemp[i].timestamp
+        );
+      }
+      setCommentList(commentListTemp);
     } catch (error) {
       alert("Error: " + error);
     }
-  };
+  }, []);
   useEffect(() => {
     fetchData(postId);
-  }, [postId]);
-  const userInfo = {
-    elo: 1500,
-    university: "HCMUS",
-    avatarSrc: "https://www.w3schools.com/howto/img_avatar.png",
-  };
+  }, [postId, fetchData]);
   const [comment, setComment] = useState("");
   const handleCommentChange = (
     event: React.ChangeEvent<HTMLTextAreaElement>
@@ -132,7 +152,8 @@ const ForumPost: React.FC = () => {
         <div className={styles.postLayout}>
           <Post
             content={post.content}
-            postAuthor={post.author_id}
+            postAuthor={post.author_name}
+            postAuthorId={post.author_id}
             timestamp={post.timestamp}
           />
           <UserInfo {...userInfo} />
@@ -147,7 +168,8 @@ const ForumPost: React.FC = () => {
             <Comment
               key={index}
               content={_comment.content}
-              author={_comment.author_id}
+              author={_comment.author_name}
+              author_id={_comment.author_id}
               timestamp={_comment.timestamp}
               id={_comment.comment_id}
             />

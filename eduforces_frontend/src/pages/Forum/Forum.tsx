@@ -6,6 +6,7 @@ import NavBar from "../../components/NavBar";
 import NavPage from "./NavPage";
 import TextArea from "./TextArea";
 import { PostPropsAPI } from "./Type";
+import getAccountDetailById from "../../components/Common";
 
 const baseUrl = "http://localhost:8080/api/v1";
 
@@ -38,7 +39,14 @@ const Forum: React.FC = () => {
       }
 
       const data = await response.json();
-      setPostList(data.data);
+      const postListTmp = data.data === null ? [] : data.data;
+      for (let i = 0; i < postListTmp.length; i++) {
+        const author_detail = await getAccountDetailById(
+          postListTmp[i].author_id
+        );
+        postListTmp[i].author_id = author_detail.username;
+      }
+      setPostList(postListTmp);
       setNumPages(Math.ceil(data.meta.total / data.meta.limit));
     } catch (error) {
       alert(`Error: ${error}`);

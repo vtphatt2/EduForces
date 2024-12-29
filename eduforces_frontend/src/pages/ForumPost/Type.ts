@@ -2,12 +2,14 @@ export interface CommentProps {
   id: string;
   content: string;
   author: string;
+  author_id: string;
   timestamp: string;
 }
 
 export interface CommentPropsAPI {
   comment_id: string;
   content: string;
+  author_name: string;
   author_id: string;
   timestamp: string;
   parent_comment_id: string;
@@ -22,6 +24,7 @@ export interface UserInfoProps {
 export interface PostProps {
   content: string;
   postAuthor: string;
+  postAuthorId: string;
   timestamp: string;
 }
 
@@ -29,6 +32,7 @@ export interface PostPropsAPI {
   post_id: string;
   title: string;
   content: string;
+  author_name: string;
   author_id: string;
   timestamp: string;
 }

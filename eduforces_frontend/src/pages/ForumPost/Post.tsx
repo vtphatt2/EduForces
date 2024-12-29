@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import styles from "./ForumPost.module.css";
 import { PostProps } from "./Type";
@@ -8,8 +9,10 @@ const baseUrl = "http://localhost:8080/api/v1";
 export const Post: React.FC<PostProps> = ({
   content,
   postAuthor,
+  postAuthorId,
   timestamp,
 }) => {
+  const navigate = useNavigate();
   const location = useLocation();
   const query = new URLSearchParams(location.search);
   const postId = query.get("id");
@@ -106,7 +109,15 @@ export const Post: React.FC<PostProps> = ({
           </button>
         </div>
         <p className={styles.postAuthor}>
-          Posted by <span className={styles.authorName}>{postAuthor} </span>
+          Posted by{" "}
+          <span
+            className={styles.authorName}
+            onClick={() => {
+              navigate(`/profile?id=${postAuthorId}`);
+            }}
+          >
+            {postAuthor}{" "}
+          </span>
           at {timestamp}
         </p>
       </div>

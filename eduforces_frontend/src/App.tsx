@@ -10,6 +10,7 @@ import Forum from "./pages/Forum/Forum";
 import Contest from "./pages/Contest/Contest";
 import StudySpace from "./pages/StudySpace/StudySpace";
 import UserProfile from "./pages/UserProfile/UserProfile";
+import OtherUserProfile from "./pages/UserProfile/OtherUserProfile";
 
 const App: React.FC = () => {
   return (
@@ -25,6 +26,7 @@ const App: React.FC = () => {
             <Route path="/contest" element={<Contest />} />
             <Route path="/study-space" element={<StudySpace />} />
             <Route path="/user" element={<UserProfile />} />
+            <Route path="/profile" element={<OtherUserProfile />} />
           </Routes>
         </div>
       </div>

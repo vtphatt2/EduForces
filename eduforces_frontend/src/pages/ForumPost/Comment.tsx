@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import styles from "./ForumPost.module.css";
 import { CommentProps } from "./Type";
 
@@ -9,8 +9,10 @@ export const Comment: React.FC<CommentProps> = ({
   id,
   content,
   author,
+  author_id,
   timestamp,
 }) => {
+  const navigate = useNavigate();
   const location = useLocation();
   const query = new URLSearchParams(location.search);
   const postId = query.get("id");
@@ -115,7 +117,13 @@ export const Comment: React.FC<CommentProps> = ({
         </div>
       </div>
       <div className={styles.commentMeta}>
-        <span className={styles.commentAuthor}>by {author}</span>
+        by{" "}
+        <span
+          className={styles.commentAuthor}
+          onClick={() => navigate(`/profile?id=${author_id}`)}
+        >
+          {author}
+        </span>
         <br />
         <time className={styles.commentTimestamp}>{timestamp}</time>
       </div>
