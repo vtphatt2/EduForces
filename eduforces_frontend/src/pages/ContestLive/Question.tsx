@@ -41,10 +41,10 @@ const Question: React.FC<
           <img
             src={
               isFlagged
-                ? "RaisedFlag.png"
-                : "Flag.png"
+                ? "/RaisedFlag.png"
+                : "/Flag.png"
             }
-            alt=""
+            alt="Flag"
             className={styles.flagIcon}
           />
         </button>

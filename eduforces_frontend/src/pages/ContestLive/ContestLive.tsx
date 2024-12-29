@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { ContestLiveProps } from "./Type";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { QuestionProps } from "./Type";
 import Button from "../../components/Button.tsx";
 import Announcement from "./Announcement";
@@ -7,13 +8,58 @@ import Question from "./Question";
 import Progress from "./Progress";
 import styles from "./ContestLive.module.css";
 
-const ContestLive: React.FC<ContestLiveProps> = ({
-  questionList: initialQuestionList,
-  announcementList,
-  contestTitle,
-  contestTimestamp,
-}) => {
-  const [questionList, setQuestionList] = useState(initialQuestionList);
+const baseUrl = "http://localhost:8080/api/v1";
+
+const ContestLive: React.FC = () =>{
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const { contestId, contestTitle, contestTimestamp, contestDuration, announcementList } = location.state || {};
+  console.log("Contest Details:", { contestId, contestTitle, contestTimestamp, contestDuration, announcementList });
+
+  const [questionList, setQuestionList] = useState<QuestionProps[]>([]);
+
+    const fetchQuestionsOfContestById = async (id: string) => {
+      try {
+        const response = await fetch(`${baseUrl}/contests/${id}`, {
+          method: "GET",
+          headers: {
+            Authorization: localStorage.getItem("session_id") || "",
+          },
+        });
+  
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status}`);
+        }
+  
+        const data = await response.json();
+        const questions = data.questions;
+        for (let i = 0; i < questions.length; i++) {
+          let question_number = i + 1;
+          let question_title = questions[i].description;
+          let question_answerList = questions[i].answers;
+          let question_correctAnswer = questions[i].correct_answer;
+  
+          questions[i] = {
+            questionNumber: question_number,
+            title: question_title,
+            answerList: question_answerList,
+            correctAnswer: question_correctAnswer,
+          };
+        }
+  
+        setQuestionList(questions);
+      } catch (error) {
+        console.error("Failed to fetch contests:", error);
+      }
+    };
+  
+    useEffect(() => {
+      if (contestId){ 
+        fetchQuestionsOfContestById(contestId);
+      }
+    }, [contestId]);
+
 
   const updateQuestionState = (
     questionNumber: number,
@@ -29,34 +75,75 @@ const ContestLive: React.FC<ContestLiveProps> = ({
   };
 
   const navigateBack = () => {
-    // Logic to navigate back (e.g., use history or router)
-    console.log("Navigate back");
+    const userConfirmed = window.confirm(
+      "You have unsaved changes. Are you sure you want to go back? The progress will be lost."
+    );
+    if (userConfirmed) {
+      navigate("/contest"); // Replace with the actual path to Contest page
+    }
   };
 
-  const handleSubmit = () => {
-    // Logic for submission
-    console.log("Submission handled");
+  const handleSubmit = async () => {
+    const contestData = {
+      contest_id: contestId,
+      answer: 
+        questionList.map((question) => ({
+          answer: question.userAnswer,
+          correct_answer: question.correctAnswer
+        })),
+    };
+
+    try {
+      let response;
+      {
+        response = await fetch(`${baseUrl}/contests/submit/${contestId}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: localStorage.getItem("session_id") || "",
+          },
+          body: JSON.stringify(contestData),
+        });
+      }
+  
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const score = data.score;
+      alert("Submitted successfully!\nYour score is: " + score);
+
+      navigate("/contest");
+    } catch (error) {
+      console.error("Failed to save contest:", error);
+      alert("Failed to save contest. Please try again.");
+    }
   };
 
   return (
     <>
       <header className={styles.header}>
-        <Button
-          label="&#8592;" /* Left arrow for back */
-          onClick={navigateBack}
-          color="black"
-          backgroundColor="#F2F1FA"
-        />
+        <div className={styles.buttonWrapper}>
+          <Button
+            label="&#8592;" /* Left arrow for back */
+            onClick={navigateBack}
+            color="black"
+            backgroundColor="#F2F1FA"
+          />
+        </div>
         <div className={styles.headerContent}>
           <h1 className={styles.contestTitle}> {contestTitle}</h1>
           <p className={styles.timeLeft}> {contestTimestamp}</p>
         </div>
-        <Button
-          label="Submit"
-          onClick={handleSubmit}
-          color="black"
-          backgroundColor="#00C12A"
-        />
+        <div className={styles.buttonWrapper}>
+          <Button
+            label="Submit"
+            onClick={handleSubmit}
+            color="black"
+            backgroundColor="#00C12A"
+          />
+        </div>
       </header>
 
       <div className={styles.contestLiveContainer}>
@@ -101,7 +188,7 @@ const ContestLive: React.FC<ContestLiveProps> = ({
               During the exam, any announcements from the organizers will be
               displayed here.*
             </p>
-            {announcementList.map((announcement, index) => (
+            {announcementList.map((announcement: { title: string; content: string }, index: number) => (
               <Announcement
                 key={index}
                 title={announcement.title}
