@@ -18,6 +18,7 @@ func RegisterContestRoutes(router *gin.Engine, contestCtrl *controllers.ContestC
 	}
 	questionRoutes := router.Group("/api/v1/questions")
 	{
-		questionRoutes.GET("/filter", sessionMiddleware, contestCtrl.FilterQuestions)
+		questionRoutes.POST("/filter", sessionMiddleware, contestCtrl.FilterQuestions)
+		questionRoutes.PUT("/update-question-done-status", sessionMiddleware, contestCtrl.UpdateUserDoneStatus)
 	}
 }

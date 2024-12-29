@@ -113,6 +113,12 @@ type Account struct {
 	IsDeactivated bool         `json:"is_deactivated"`
 }
 
+type AccountReadNotification struct {
+	AccountID      uuid.UUID    `json:"account_id"`
+	NotificationID uuid.UUID    `json:"notification_id"`
+	ReadAt         sql.NullTime `json:"read_at"`
+}
+
 type Comment struct {
 	CommentID       uuid.UUID     `json:"comment_id"`
 	AuthorID        uuid.NullUUID `json:"author_id"`
@@ -161,6 +167,13 @@ type EventTask struct {
 	SpecialGiftDescription string    `json:"special_gift_description"`
 }
 
+type Notification struct {
+	NotificationID uuid.UUID    `json:"notification_id"`
+	AccountID      uuid.UUID    `json:"account_id"`
+	Message        string       `json:"message"`
+	CreatedAt      sql.NullTime `json:"created_at"`
+}
+
 type Post struct {
 	PostID    uuid.UUID     `json:"post_id"`
 	AuthorID  uuid.NullUUID `json:"author_id"`
@@ -207,5 +220,5 @@ type SubmissionDetail struct {
 type UserDoneQuestion struct {
 	AccountID  uuid.UUID `json:"account_id"`
 	QuestionID uuid.UUID `json:"question_id"`
-	Done       bool      `json:"done"`
+	Done       int32     `json:"done"`
 }

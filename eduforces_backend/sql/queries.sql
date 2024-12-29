@@ -159,12 +159,25 @@ FROM questions q
 LEFT JOIN user_done_question udq ON q.question_id = udq.question_id AND udq.account_id = $2
 WHERE q.subject = ANY($1::text[])
 AND (
-    ($3::boolean IS NULL) OR
-    (udq.done = $3::boolean) OR
-    (udq.done IS NULL AND $3::boolean = false)
+    ($3::int = 2 AND udq.question_id IS NULL) OR --false
+    ($3::int = 3) OR  --both
+    ($3::int = udq.done)  --match
 );
 
+-- name: UpdateUserDoneStatus :exec
+UPDATE user_done_question
+SET done = $3
+WHERE account_id = $1 AND question_id = $2;
 
+-- name: UserDoneQuestionExists :one
+SELECT EXISTS (
+    SELECT 1
+    FROM user_done_question
+    WHERE account_id = $1 AND question_id = $2
+);
+
+-- name: CreateUserDoneQuestion :exec
+INSERT INTO user_done_question (account_id, question_id, done) VALUES ($1, $2, $3);
 
 -- name: CreateQuestion :exec
 INSERT INTO questions (contest_id,description, answers, correct_answer, updated_at, subject, question_tag) VALUES ($1, $2, $3, $4, $5, $6,$7);
@@ -254,3 +267,34 @@ SELECT special_gift_description FROM event_tasks WHERE event_task_id = $1;
 -- name: IsEventDate :one
 SELECT CASE WHEN event_date = CURRENT_DATE THEN TRUE ELSE FALSE END AS is_event_date FROM event_tasks WHERE event_task_id = $1;
 
+-- Insert a new notification
+-- name: InsertNotification :one
+INSERT INTO notifications (account_id, message) 
+VALUES ($1::UUID, $2::TEXT)
+RETURNING notification_id;
+
+-- Mark a notification as read by an account
+-- name: MarkNotificationAsRead :exec
+INSERT INTO account_read_notifications (account_id, notification_id) 
+VALUES ($1::UUID, $2::UUID);
+
+-- Get all notifications for an account
+-- name: GetAllNotificationsForAccount :many
+SELECT * FROM notifications 
+WHERE account_id = $1::UUID;
+
+-- Get all unread notifications for an account
+-- name: GetUnreadNotificationsForAccount :many
+SELECT n.* 
+FROM notifications n
+LEFT JOIN account_read_notifications arn 
+ON n.notification_id = arn.notification_id AND arn.account_id = $1::UUID
+WHERE n.account_id = $1::UUID AND arn.notification_id IS NULL;
+
+-- Get all read notifications for an account
+-- name: GetReadNotificationsForAccount :many
+SELECT n.* 
+FROM notifications n
+JOIN account_read_notifications arn 
+ON n.notification_id = arn.notification_id
+WHERE arn.account_id = $1::UUID;

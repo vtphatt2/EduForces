@@ -129,8 +129,27 @@ CREATE TABLE questions (
 CREATE TABLE user_done_question (
     account_id UUID NOT NULL,
     question_id UUID NOT NULL,
-    done BOOLEAN NOT NULL,
+    done INT NOT NULL DEFAULT 0,
     PRIMARY KEY (account_id, question_id),
     FOREIGN KEY (account_id) REFERENCES accounts(account_id),
     FOREIGN KEY (question_id) REFERENCES questions(question_id)
+);
+
+-- Create the notifications table
+CREATE TABLE notifications (
+    notification_id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    account_id UUID NOT NULL,
+    message TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (account_id) REFERENCES accounts(account_id)
+);
+
+-- Create the account_read_notifications table to track if an account has read a notification
+CREATE TABLE account_read_notifications (
+    account_id UUID NOT NULL,
+    notification_id UUID NOT NULL,
+    read_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (account_id, notification_id),
+    FOREIGN KEY (account_id) REFERENCES accounts(account_id),
+    FOREIGN KEY (notification_id) REFERENCES notifications(notification_id)
 );

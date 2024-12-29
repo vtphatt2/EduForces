@@ -285,13 +285,36 @@ func (s *ContestService) updateLiveContestsToEnded(ctx context.Context) {
 type FilterQuestionsParams struct {
 	Subjects  []string  `json:"subjects"`
 	AccountID uuid.UUID `json:"account_id"`
-	Done      bool      `json:"done"`
+	Done      int32     `json:"done"`
 }
 
 func (s *ContestService) FilterQuestions(ctx context.Context, params FilterQuestionsParams) ([]sqlc.Question, error) {
+	fmt.Println("doneservice=", params.Done)
 	return s.QuestionRepository.FilterQuestions(ctx, repositories.FilterQuestionsParams{
 		Subjects:  params.Subjects,
 		AccountID: params.AccountID,
 		Done:      params.Done,
 	})
+}
+
+func (s *ContestService) UpdateUserDoneStatus(ctx context.Context, accountID uuid.UUID, questionID uuid.UUID, doneStatus int32) error {
+	// Check if the record exists
+	exists, err := s.QuestionRepository.UserDoneQuestionExists(ctx, accountID, questionID)
+	if err != nil {
+		return err
+	}
+
+	params := sqlc.UpdateUserDoneStatusParams{
+		AccountID:  accountID,
+		QuestionID: questionID,
+		Done:       doneStatus,
+	}
+
+	if exists {
+		// Update the existing record
+		return s.QuestionRepository.UpdateUserDoneStatus(ctx, params)
+	} else {
+		// Create a new record
+		return s.QuestionRepository.CreateUserDoneQuestion(ctx, accountID, questionID, doneStatus)
+	}
 }

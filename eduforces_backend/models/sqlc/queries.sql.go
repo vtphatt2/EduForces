@@ -318,6 +318,21 @@ func (q *Queries) CreateSubmission(ctx context.Context, arg CreateSubmissionPara
 	return err
 }
 
+const createUserDoneQuestion = `-- name: CreateUserDoneQuestion :exec
+INSERT INTO user_done_question (account_id, question_id, done) VALUES ($1, $2, $3)
+`
+
+type CreateUserDoneQuestionParams struct {
+	AccountID  uuid.UUID `json:"account_id"`
+	QuestionID uuid.UUID `json:"question_id"`
+	Done       int32     `json:"done"`
+}
+
+func (q *Queries) CreateUserDoneQuestion(ctx context.Context, arg CreateUserDoneQuestionParams) error {
+	_, err := q.db.ExecContext(ctx, createUserDoneQuestion, arg.AccountID, arg.QuestionID, arg.Done)
+	return err
+}
+
 const deleteAccount = `-- name: DeleteAccount :exec
 DELETE FROM accounts WHERE account_id = $1
 `
@@ -387,16 +402,16 @@ FROM questions q
 LEFT JOIN user_done_question udq ON q.question_id = udq.question_id AND udq.account_id = $2
 WHERE q.subject = ANY($1::text[])
 AND (
-    ($3::boolean IS NULL) OR
-    (udq.done = $3::boolean) OR
-    (udq.done IS NULL AND $3::boolean = false)
+    ($3::int = 2 AND udq.question_id IS NULL) OR --false
+    ($3::int = 3) OR  --both
+    ($3::int = udq.done)  --match
 )
 `
 
 type FilterQuestionsBySubjectsAndDoneStatusParams struct {
 	Column1   []string  `json:"column_1"`
 	AccountID uuid.UUID `json:"account_id"`
-	Column3   bool      `json:"column_3"`
+	Column3   int32     `json:"column_3"`
 }
 
 func (q *Queries) FilterQuestionsBySubjectsAndDoneStatus(ctx context.Context, arg FilterQuestionsBySubjectsAndDoneStatusParams) ([]Question, error) {
@@ -478,6 +493,40 @@ func (q *Queries) GetAccountByEmail(ctx context.Context, email string) (Account,
 		&i.IsDeactivated,
 	)
 	return i, err
+}
+
+const getAllNotificationsForAccount = `-- name: GetAllNotificationsForAccount :many
+SELECT notification_id, account_id, message, created_at FROM notifications 
+WHERE account_id = $1::UUID
+`
+
+// Get all notifications for an account
+func (q *Queries) GetAllNotificationsForAccount(ctx context.Context, dollar_1 uuid.UUID) ([]Notification, error) {
+	rows, err := q.db.QueryContext(ctx, getAllNotificationsForAccount, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Notification
+	for rows.Next() {
+		var i Notification
+		if err := rows.Scan(
+			&i.NotificationID,
+			&i.AccountID,
+			&i.Message,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getCommentDetails = `-- name: GetCommentDetails :one
@@ -810,6 +859,43 @@ func (q *Queries) GetReactionsForPost(ctx context.Context, postID uuid.NullUUID)
 	return items, nil
 }
 
+const getReadNotificationsForAccount = `-- name: GetReadNotificationsForAccount :many
+SELECT n.notification_id, n.account_id, n.message, n.created_at 
+FROM notifications n
+JOIN account_read_notifications arn 
+ON n.notification_id = arn.notification_id
+WHERE arn.account_id = $1::UUID
+`
+
+// Get all read notifications for an account
+func (q *Queries) GetReadNotificationsForAccount(ctx context.Context, dollar_1 uuid.UUID) ([]Notification, error) {
+	rows, err := q.db.QueryContext(ctx, getReadNotificationsForAccount, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Notification
+	for rows.Next() {
+		var i Notification
+		if err := rows.Scan(
+			&i.NotificationID,
+			&i.AccountID,
+			&i.Message,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getSpecialGiftDescription = `-- name: GetSpecialGiftDescription :one
 SELECT special_gift_description FROM event_tasks WHERE event_task_id = $1
 `
@@ -869,6 +955,62 @@ func (q *Queries) GetSubmissionDetails(ctx context.Context, submissionID uuid.Nu
 		return nil, err
 	}
 	return items, nil
+}
+
+const getUnreadNotificationsForAccount = `-- name: GetUnreadNotificationsForAccount :many
+SELECT n.notification_id, n.account_id, n.message, n.created_at 
+FROM notifications n
+LEFT JOIN account_read_notifications arn 
+ON n.notification_id = arn.notification_id AND arn.account_id = $1::UUID
+WHERE n.account_id = $1::UUID AND arn.notification_id IS NULL
+`
+
+// Get all unread notifications for an account
+func (q *Queries) GetUnreadNotificationsForAccount(ctx context.Context, dollar_1 uuid.UUID) ([]Notification, error) {
+	rows, err := q.db.QueryContext(ctx, getUnreadNotificationsForAccount, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Notification
+	for rows.Next() {
+		var i Notification
+		if err := rows.Scan(
+			&i.NotificationID,
+			&i.AccountID,
+			&i.Message,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const insertNotification = `-- name: InsertNotification :one
+INSERT INTO notifications (account_id, message) 
+VALUES ($1::UUID, $2::TEXT)
+RETURNING notification_id
+`
+
+type InsertNotificationParams struct {
+	Column1 uuid.UUID `json:"column_1"`
+	Column2 string    `json:"column_2"`
+}
+
+// Insert a new notification
+func (q *Queries) InsertNotification(ctx context.Context, arg InsertNotificationParams) (uuid.UUID, error) {
+	row := q.db.QueryRowContext(ctx, insertNotification, arg.Column1, arg.Column2)
+	var notification_id uuid.UUID
+	err := row.Scan(&notification_id)
+	return notification_id, err
 }
 
 const isEventDate = `-- name: IsEventDate :one
@@ -1204,6 +1346,22 @@ func (q *Queries) ListSubmissions(ctx context.Context) ([]Submission, error) {
 	return items, nil
 }
 
+const markNotificationAsRead = `-- name: MarkNotificationAsRead :exec
+INSERT INTO account_read_notifications (account_id, notification_id) 
+VALUES ($1::UUID, $2::UUID)
+`
+
+type MarkNotificationAsReadParams struct {
+	Column1 uuid.UUID `json:"column_1"`
+	Column2 uuid.UUID `json:"column_2"`
+}
+
+// Mark a notification as read by an account
+func (q *Queries) MarkNotificationAsRead(ctx context.Context, arg MarkNotificationAsReadParams) error {
+	_, err := q.db.ExecContext(ctx, markNotificationAsRead, arg.Column1, arg.Column2)
+	return err
+}
+
 const updateAccountAvatar = `-- name: UpdateAccountAvatar :exec
 UPDATE accounts SET avatar_path = $1 WHERE account_id = $2
 `
@@ -1441,4 +1599,41 @@ type UpdateSubmissionTimeParams struct {
 func (q *Queries) UpdateSubmissionTime(ctx context.Context, arg UpdateSubmissionTimeParams) error {
 	_, err := q.db.ExecContext(ctx, updateSubmissionTime, arg.Time, arg.SubmissionID)
 	return err
+}
+
+const updateUserDoneStatus = `-- name: UpdateUserDoneStatus :exec
+UPDATE user_done_question
+SET done = $3
+WHERE account_id = $1 AND question_id = $2
+`
+
+type UpdateUserDoneStatusParams struct {
+	AccountID  uuid.UUID `json:"account_id"`
+	QuestionID uuid.UUID `json:"question_id"`
+	Done       int32     `json:"done"`
+}
+
+func (q *Queries) UpdateUserDoneStatus(ctx context.Context, arg UpdateUserDoneStatusParams) error {
+	_, err := q.db.ExecContext(ctx, updateUserDoneStatus, arg.AccountID, arg.QuestionID, arg.Done)
+	return err
+}
+
+const userDoneQuestionExists = `-- name: UserDoneQuestionExists :one
+SELECT EXISTS (
+    SELECT 1
+    FROM user_done_question
+    WHERE account_id = $1 AND question_id = $2
+)
+`
+
+type UserDoneQuestionExistsParams struct {
+	AccountID  uuid.UUID `json:"account_id"`
+	QuestionID uuid.UUID `json:"question_id"`
+}
+
+func (q *Queries) UserDoneQuestionExists(ctx context.Context, arg UserDoneQuestionExistsParams) (bool, error) {
+	row := q.db.QueryRowContext(ctx, userDoneQuestionExists, arg.AccountID, arg.QuestionID)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
 }
