@@ -1,0 +1,68 @@
+th {
+  color: black;
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+td {
+  color: black;
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+.searchAndFilter {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 15px;
+  margin: 0;
+}
+
+.search {
+  margin-right: 10px;
+  flex: 4;
+  display: flex;
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+}
+
+.filterRole {
+  margin-right: 10px;
+  flex: 5;
+  display: flex;
+  align-items: center;
+}
+
+.filterActive {
+  margin-right: 10px;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.searchInput {
+  margin-right: 10px;
+  height: 30px;
+}
+
+.filterSelect {
+  margin-right: 10px;
+  height: 30px;
+}
+
+.tableElement {
+  margin: 5%;
+}
+
+.tableHeader {
+  font-size: 20px;
+  font-weight: 800;
+  color: #5d5a88;
+  width: fit-content;
+}
+
+.avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+}

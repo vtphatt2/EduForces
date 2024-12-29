@@ -13,6 +13,7 @@ import UserProfile from "./pages/UserProfile/UserProfile";
 import OtherUserProfile from "./pages/UserProfile/OtherUserProfile";
 import ContestCoordinator from "./pages/ContestCoordinator/ContestCoordinator";
 import ContestCreate from "./pages/ContestCreate/ContestCreate";
+import AccountManagement from "./pages/AccountManagement/AccountManagement";
 
 const App: React.FC = () => {
   return (
@@ -28,9 +29,13 @@ const App: React.FC = () => {
             <Route path="/contest" element={<Contest />} />
             <Route path="/study-space" element={<StudySpace />} />
             <Route path="/contest-create" element={<ContestCreate />} />
-            <Route path="/contestCoordinator" element={<ContestCoordinator />} />
+            <Route
+              path="/contestCoordinator"
+              element={<ContestCoordinator />}
+            />
             <Route path="/user" element={<UserProfile />} />
             <Route path="/profile" element={<OtherUserProfile />} />
+            <Route path="/account-management" element={<AccountManagement />} />
           </Routes>
         </div>
       </div>
