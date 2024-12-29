@@ -72,7 +72,7 @@ CREATE TABLE contests (
     contest_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(255) NOT NULL,
     description TEXT NOT NULL,
-    start_time TIMESTAMP NOT NULL,
+    start_time TIMESTAMPTZ NOT NULL,
     duration INT NOT NULL,
     difficulty INT NOT NULL,
     author_id UUID REFERENCES accounts(account_id),

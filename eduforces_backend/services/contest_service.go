@@ -213,6 +213,22 @@ func (s *ContestService) ListContests(ctx context.Context, accountID uuid.UUID) 
 }
 
 func (s *ContestService) DeleteContest(ctx context.Context, contestID uuid.UUID) error {
+	// Get the contest by contestID
+	contest, err := s.ContestRepository.GetContest(ctx, contestID)
+	if err != nil {
+		return err
+	}
+	if contest == nil {
+		return errors.New("contest not found")
+	}
+
+	// Delete all questions of this contest
+	err = s.QuestionRepository.DeleteQuestionsByContestId(ctx, uuid.NullUUID{UUID: contestID, Valid: true})
+	if err != nil {
+		return err
+	}
+
+	// Delete the contest
 	return s.ContestRepository.DeleteContest(ctx, contestID)
 }
 
@@ -243,7 +259,9 @@ func (s *ContestService) updatePendingContestsToLive(ctx context.Context) {
 
 	for _, contest := range contests {
 		log.Printf("Checking contest: %s with start time: %s", contest.ContestID, contest.StartTime)
+		log.Println("Current time:", time.Now())
 		if contest.StartTime.Before(time.Now()) {
+			// log.Println("Current time:", time.Now())
 			log.Printf("Updating contest: %s to Live", contest.ContestID)
 			err := s.ContestRepository.UpdateContestStatus(ctx, sqlc.UpdateContestStatusParams{
 				Status:    sqlc.StatusEnumLive,

@@ -363,6 +363,15 @@ func (q *Queries) DeleteQuestion(ctx context.Context, questionID uuid.UUID) erro
 	return err
 }
 
+const deleteQuestionsByContestId = `-- name: DeleteQuestionsByContestId :exec
+DELETE FROM questions WHERE contest_id = $1
+`
+
+func (q *Queries) DeleteQuestionsByContestId(ctx context.Context, contestID uuid.NullUUID) error {
+	_, err := q.db.ExecContext(ctx, deleteQuestionsByContestId, contestID)
+	return err
+}
+
 const deleteReaction = `-- name: DeleteReaction :exec
 DELETE FROM reactions WHERE reaction_id = $1
 `

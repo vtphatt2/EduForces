@@ -61,3 +61,7 @@ func (r *QuestionRepository) DeleteQuestion(ctx context.Context, questionID uuid
 func (r *QuestionRepository) ListQuestionOfContest(ctx context.Context, contestID uuid.NullUUID) ([]sqlc.Question, error) {
 	return r.queries.ListQuestionsOfContest(ctx, contestID)
 }
+
+func (r *QuestionRepository) DeleteQuestionsByContestId(ctx context.Context, contestID uuid.NullUUID) error {
+	return r.queries.DeleteQuestionsByContestId(ctx, contestID)
+}

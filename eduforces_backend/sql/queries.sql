@@ -158,6 +158,9 @@ INSERT INTO questions (contest_id,description, answers, correct_answer, updated_
 -- name: DeleteQuestion :exec
 DELETE FROM questions WHERE question_id = $1;
 
+-- name: DeleteQuestionsByContestId :exec
+DELETE FROM questions WHERE contest_id = $1;
+
 -- name: UpdateQuestionDescription :exec
 UPDATE questions SET description = $1, updated_at = $2 WHERE question_id = $3;
 

@@ -79,3 +79,19 @@ func (cc *ContestController) GetContest(c *gin.Context) {
 func (cc *ContestController) ScheduleContestStatusUpdates(c context.Context) {
 	cc.ContestService.ScheduleContestStatusUpdates(c)
 }
+
+func (cc *ContestController) DeleteContest(c *gin.Context) {
+	contestID := c.Param("id")
+	if contestID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Contest ID is required"})
+		return
+	}
+
+	err := cc.ContestService.DeleteContest(c.Request.Context(), uuid.MustParse(contestID))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Contest deleted successfully"})
+}
