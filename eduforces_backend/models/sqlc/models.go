@@ -73,25 +73,20 @@ type Comment struct {
 }
 
 type Contest struct {
-	ContestID   uuid.UUID `json:"contest_id"`
-	Name        string    `json:"name"`
-	Description string    `json:"description"`
-	UploadTime  time.Time `json:"upload_time"`
-	Duration    int64     `json:"duration"`
-	Difficulty  int32     `json:"difficulty"`
-	Author      string    `json:"author"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ContestID   uuid.UUID     `json:"contest_id"`
+	Name        string        `json:"name"`
+	Description string        `json:"description"`
+	StartTime   time.Time     `json:"start_time"`
+	Duration    int32         `json:"duration"`
+	Difficulty  int32         `json:"difficulty"`
+	AuthorID    uuid.NullUUID `json:"author_id"`
+	UpdatedAt   time.Time     `json:"updated_at"`
 }
 
 type ContestDetail struct {
 	ContestDetailID uuid.UUID     `json:"contest_detail_id"`
 	ContestID       uuid.NullUUID `json:"contest_id"`
 	IsPublic        bool          `json:"is_public"`
-}
-
-type ContestQuestion struct {
-	ContestDetailID uuid.UUID `json:"contest_detail_id"`
-	QuestionID      uuid.UUID `json:"question_id"`
 }
 
 type ContestRegistration struct {
@@ -133,14 +128,6 @@ type Question struct {
 	Subject       string        `json:"subject"`
 	IsPublic      bool          `json:"is_public"`
 	QuestionTag   string        `json:"question_tag"`
-}
-
-type QuestionPhoto struct {
-	PhotoID    uuid.UUID     `json:"photo_id"`
-	QuestionID uuid.NullUUID `json:"question_id"`
-	PhotoName  string        `json:"photo_name"`
-	PhotoPath  string        `json:"photo_path"`
-	UpdatedAt  time.Time     `json:"updated_at"`
 }
 
 type Reaction struct {

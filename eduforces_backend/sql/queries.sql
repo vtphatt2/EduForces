@@ -57,6 +57,9 @@ UPDATE questions SET is_public = TRUE WHERE question_id = $1;
 -- name: GetQuestion :one
 SELECT * FROM questions WHERE question_id = $1;
 
+-- name: ListQuestionsOfContest :many
+SELECT * FROM questions WHERE contest_id = $1;
+
 -- name: GetLatestQuestionWithSubject :one
 SELECT *
 FROM questions
@@ -82,13 +85,6 @@ DELETE FROM questions WHERE question_id = $1;
 
 -- name: UpdateQuestionDescription :exec
 UPDATE questions SET description = $1, updated_at = $2 WHERE question_id = $3;
-
--- name: GetPhotosForQuestion :many
-SELECT * FROM question_photos WHERE question_id = $1;
-
--- name: AddPhotoToQuestion :exec
-INSERT INTO question_photos (photo_id, question_id, photo_name, photo_path, updated_at) VALUES ($1, $2, $3, $4, $5);
-
 
 ------ Submission
 
@@ -122,35 +118,17 @@ SELECT * FROM contests WHERE contest_id = $1;
 -- name: ListContests :many
 SELECT * FROM contests;
 
+-- name: ListContestsOfAuthor :many
+SELECT * FROM contests WHERE author_id = $1;
+
 -- name: CreateContest :exec
-INSERT INTO contests (contest_id, name, description, upload_time, duration, difficulty, author, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);
+INSERT INTO contests (contest_id, name, description, start_time, duration, difficulty, author_id, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);
 
 -- name: DeleteContest :exec
 DELETE FROM contests WHERE contest_id = $1;
 
 -- name: UpdateContestDescription :exec
 UPDATE contests SET description = $1, updated_at = $2 WHERE contest_id = $3;
-
--- name: GetContestDetails :one
-SELECT * FROM contest_details WHERE contest_id = $1;
-
--- name: AddContestDetail :exec
-INSERT INTO contest_details (contest_detail_id, contest_id, is_public) VALUES ($1, $2, $3);
-
--- name: AddContestQuestion :exec
-INSERT INTO contest_questions (contest_detail_id, question_id) VALUES ($1, $2);
-
--- name: GetContestQuestions :many
-SELECT q.* FROM questions q
-JOIN contest_questions cq ON q.question_id = cq.question_id
-WHERE cq.contest_detail_id = $1;
-
--- name: RegisterForContest :exec
-INSERT INTO contest_registrations (registration_id, account_id, contest_id, registration_time) VALUES ($1, $2, $3, $4);
-
--- name: GetContestRegistrations :many
-SELECT * FROM contest_registrations WHERE contest_id = $1;
-
 
 ------ Daily Task
 

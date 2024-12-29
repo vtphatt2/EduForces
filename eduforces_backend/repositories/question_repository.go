@@ -58,11 +58,6 @@ func (r *QuestionRepository) ListQuestions(ctx context.Context) ([]sqlc.Question
 func (r *QuestionRepository) DeleteQuestion(ctx context.Context, questionID uuid.UUID) error {
 	return r.queries.DeleteQuestion(ctx, questionID)
 }
-
-// func (r *QuestionRepository) GetPhotosForQuestion(ctx context.Context, questionID uuid.UUID) ([]sqlc.QuestionPhoto, error) {
-//     return r.queries.GetPhotosForQuestion(ctx, questionID)
-// }
-
-func (r *QuestionRepository) AddPhotoToQuestion(ctx context.Context, params sqlc.AddPhotoToQuestionParams) error {
-	return r.queries.AddPhotoToQuestion(ctx, params)
+func (r *QuestionRepository) ListQuestionOfContest(ctx context.Context, contestID uuid.NullUUID) ([]sqlc.Question, error) {
+	return r.queries.ListQuestionsOfContest(ctx, contestID)
 }

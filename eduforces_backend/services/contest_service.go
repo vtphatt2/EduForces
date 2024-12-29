@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"strconv"
@@ -30,9 +31,22 @@ type Question struct {
 type CreateContestRequest struct {
 	Name        string     `json:"name"`
 	Description string     `json:"description"`
-	Duration    int64      `json:"duration"`
+	StartTime   time.Time  `json:"start_time"`
+	Duration    int32      `json:"duration"`
 	Difficulty  int32      `json:"difficulty"`
 	Questions   []Question `json:"questions"`
+}
+
+type Contest struct {
+	ContestID   uuid.UUID     `json:"contest_id"`
+	Name        string        `json:"name"`
+	Description string        `json:"description"`
+	StartTime   time.Time     `json:"start_time"`
+	Duration    int32         `json:"duration"`
+	Difficulty  int32         `json:"difficulty"`
+	AuthorID    uuid.NullUUID `json:"author_id"`
+	UpdatedAt   time.Time     `json:"updated_at"`
+	Questions   []Question    `json:"questions"`
 }
 
 func NewContestService(ContestRepository *repositories.ContestRepository, QuestionRepository *repositories.QuestionRepository, AccountRepository *repositories.AccountRepository) *ContestService {
@@ -50,14 +64,18 @@ func (s *ContestService) CreateContest(ctx context.Context, req CreateContestReq
 		return sqlc.CreateContestParams{}, err
 	}
 
+	if account.Role != sqlc.RoleEnumCoordinator {
+		return sqlc.CreateContestParams{}, errors.New("only coordinator can create contest")
+	}
+
 	contestParams := sqlc.CreateContestParams{
 		ContestID:   uuid.New(),
 		Name:        req.Name,
 		Description: req.Description,
-		UploadTime:  time.Now(),
+		StartTime:   req.StartTime,
 		Duration:    req.Duration,
 		Difficulty:  req.Difficulty,
-		Author:      account.Name,
+		AuthorID:    uuid.NullUUID{UUID: account.AccountID, Valid: true},
 		UpdatedAt:   time.Now(),
 	}
 
@@ -86,20 +104,24 @@ func (s *ContestService) CreateContest(ctx context.Context, req CreateContestReq
 			subjectCount[subject] += 1
 		} else {
 			if exists, err := s.QuestionRepository.CheckContestExistsWithSubject(ctx, subject); err != nil {
+				log.Println("Error checking if contest exists with subject:", err)
 				return sqlc.CreateContestParams{}, err
 			} else if exists {
 				q, err := s.QuestionRepository.GetLatestQuestionWithSubject(ctx, subject)
 				if err != nil {
+					log.Println("Error getting latest question with subject:", err)
 					return sqlc.CreateContestParams{}, err
 				}
 				index := strings.Index(q.QuestionTag, "-")
-				substr := q.QuestionTag[index:]
+				substr := q.QuestionTag[index+1:]
 				num, err := strconv.Atoi(substr)
 				if err != nil {
+					log.Println("Error converting substring to integer:", substr, err)
 					return sqlc.CreateContestParams{}, err
 				}
-				subjectCount[subject] = (int32)(num + 1)
-			} else
+				subjectCount[subject] = (int32)(num)
+			}
+			subjectCount[subject] += 1
 		}
 
 		questionParam := sqlc.CreateQuestionParams{
@@ -107,13 +129,14 @@ func (s *ContestService) CreateContest(ctx context.Context, req CreateContestReq
 			Description:   question.Description,
 			Answers:       question.Answers,
 			CorrectAnswer: question.CorrectAnswer,
-			UpdatedAt:     question.UpdatedAt,
+			UpdatedAt:     time.Now(),
 			Subject:       question.Subject,
 			QuestionTag:   fmt.Sprintf("%s%d", questionTag, subjectCount[subject]),
 		}
 		// Create question in db
 		err = s.QuestionRepository.CreateQuestion(ctx, questionParam)
 		if err != nil {
+			log.Println("Error creating question in db:", err)
 			return sqlc.CreateContestParams{}, err
 		}
 	}
@@ -121,8 +144,39 @@ func (s *ContestService) CreateContest(ctx context.Context, req CreateContestReq
 	return contestParams, nil
 }
 
-func (s *ContestService) GetContest(ctx context.Context, contestID uuid.UUID) (*sqlc.Contest, error) {
-	return s.ContestRepository.GetContest(ctx, contestID)
+func (s *ContestService) GetContest(ctx context.Context, contestID uuid.UUID) (Contest, error) {
+	contest, err := s.ContestRepository.GetContest(ctx, contestID)
+	if err != nil {
+		return Contest{}, err
+	}
+
+	// questions, err := s.QuestionRepository.ListQuestionOfContest(ctx, uuid.NullUUID{UUID: contestID, Valid: true})
+	// if err != nil {
+	// 	return Contest{}, err
+	// }
+
+	// var questionList []Question
+	// for _, q := range questions {
+	// 	questionList = append(questionList, Question{
+	// 		Description:   q.Description,
+	// 		Answers:       q.Answers,
+	// 		CorrectAnswer: q.CorrectAnswer,
+	// 		UpdatedAt:     q.UpdatedAt,
+	// 		Subject:       q.Subject,
+	// 	})
+	// }
+
+	return Contest{
+		ContestID:   contest.ContestID,
+		Name:        contest.Name,
+		Description: contest.Description,
+		StartTime:   contest.StartTime,
+		Duration:    contest.Duration,
+		Difficulty:  contest.Difficulty,
+		AuthorID:    contest.AuthorID,
+		UpdatedAt:   contest.UpdatedAt,
+		Questions:   nil,
+	}, nil
 }
 
 func (s *ContestService) UpdateContestDescription(ctx context.Context, contestID uuid.UUID, description string) error {
@@ -137,57 +191,26 @@ func (s *ContestService) UpdateContestDescription(ctx context.Context, contestID
 	return s.ContestRepository.UpdateContestDescription(ctx, params)
 }
 
-func (s *ContestService) ListContests(ctx context.Context) ([]sqlc.Contest, error) {
-	return s.ContestRepository.ListContests(ctx)
+func (s *ContestService) ListContests(ctx context.Context, accountID uuid.UUID) ([]sqlc.Contest, error) {
+	account, err := s.AccountRepository.GetAccount(ctx, accountID)
+	if err != nil {
+		log.Fatal("Cannot find account id")
+		return nil, err
+	}
+
+	switch account.Role {
+	case sqlc.RoleEnumAdmin:
+		return s.ContestRepository.ListContests(ctx)
+	case sqlc.RoleEnumCoordinator:
+		authorID := uuid.NullUUID{UUID: accountID, Valid: true}
+		return s.ContestRepository.ListContestsOfAuthor(ctx, authorID)
+	case sqlc.RoleEnumUser:
+		return s.ContestRepository.ListContests(ctx)
+	default:
+		return nil, fmt.Errorf("unknown role: %s", account.Role)
+	}
 }
 
 func (s *ContestService) DeleteContest(ctx context.Context, contestID uuid.UUID) error {
 	return s.ContestRepository.DeleteContest(ctx, contestID)
-}
-
-func (s *ContestService) GetContestDetails(ctx context.Context, contestID uuid.UUID) (*sqlc.ContestDetail, error) {
-	return s.ContestRepository.GetContestDetails(ctx, contestID)
-}
-
-func (s *ContestService) AddContestDetail(ctx context.Context, contestID uuid.UUID, isPublic bool) error {
-	contestDetailID := uuid.New()
-
-	params := sqlc.AddContestDetailParams{
-		ContestDetailID: contestDetailID,
-		ContestID:       uuid.NullUUID{},
-		IsPublic:        isPublic,
-	}
-
-	return s.ContestRepository.AddContestDetail(ctx, params)
-}
-
-func (s *ContestService) AddContestQuestion(ctx context.Context, contestDetailID, questionID uuid.UUID) error {
-	params := sqlc.AddContestQuestionParams{
-		ContestDetailID: contestDetailID,
-		QuestionID:      questionID,
-	}
-
-	return s.ContestRepository.AddContestQuestion(ctx, params)
-}
-
-func (s *ContestService) GetContestQuestions(ctx context.Context, contestDetailID uuid.UUID) ([]sqlc.Question, error) {
-	return s.ContestRepository.GetContestQuestions(ctx, contestDetailID)
-}
-
-func (s *ContestService) RegisterForContest(ctx context.Context, accountID, contestID uuid.NullUUID) error {
-	registrationID := uuid.New()
-	registrationTime := time.Now()
-
-	params := sqlc.RegisterForContestParams{
-		RegistrationID:   registrationID,
-		AccountID:        accountID,
-		ContestID:        contestID,
-		RegistrationTime: registrationTime,
-	}
-
-	return s.ContestRepository.RegisterForContest(ctx, params)
-}
-
-func (s *ContestService) GetContestRegistrations(ctx context.Context, contestID uuid.UUID) ([]sqlc.ContestRegistration, error) {
-	return s.ContestRepository.GetContestRegistrations(ctx, contestID)
 }
