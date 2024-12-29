@@ -65,6 +65,10 @@ const LoginPage: React.FC = () => {
         .catch((error) => console.error("Error during login:", error));
     }
   }, [navigate, setIsLoggedIn, setUsername]);
+  if (localStorage.getItem("session_id") !== null) {
+    navigate("/");
+    return null;
+  }
   return (
     <div className="logo-text-container">
       <div className="intro-text">
