@@ -186,3 +186,11 @@ func (s *AuthService) UpdateAccountRole(ctx context.Context, accountID uuid.UUID
 func (s *AuthService) UpdateDeactivation(ctx context.Context, accountID uuid.UUID, isDeactivated bool) error {
 	return s.repo.UpdateDeactivation(ctx, accountID, isDeactivated)
 }
+
+func (s *AuthService) ListAccountsByDeactivationStatus(ctx context.Context, isDeactivated bool) ([]sqlc.Account, error) {
+	return s.repo.ListAccountsByDeactivationStatus(ctx, isDeactivated)
+}
+
+func (s *AuthService) ListAccounts(ctx context.Context) ([]sqlc.Account, error) {
+	return s.repo.ListAccounts(ctx)
+}

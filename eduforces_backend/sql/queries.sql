@@ -1,5 +1,9 @@
 ----- Account
 
+-- filter accounts by deactivation status
+-- name: ListAccountsByDeactivationStatus :many
+SELECT * FROM accounts WHERE is_deactivated = $1;
+
 -- name: GetAccount :one
 SELECT * FROM accounts WHERE account_id = $1;
 
