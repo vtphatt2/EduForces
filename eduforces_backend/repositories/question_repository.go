@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/vtphatt2/EduForces/models/sqlc"
@@ -65,13 +66,37 @@ func (r *QuestionRepository) ListQuestionOfContest(ctx context.Context, contestI
 type FilterQuestionsParams struct {
 	Subjects  []string  `json:"subjects"`
 	AccountID uuid.UUID `json:"account_id"`
-	Done      bool      `json:"done"`
+	Done      int32     `json:"done"`
 }
 
 func (r *QuestionRepository) FilterQuestions(ctx context.Context, params FilterQuestionsParams) ([]sqlc.Question, error) {
+	fmt.Println("donerepos=", params.Done)
 	return r.queries.FilterQuestionsBySubjectsAndDoneStatus(ctx, sqlc.FilterQuestionsBySubjectsAndDoneStatusParams{
 		Column1:   params.Subjects,
 		AccountID: params.AccountID,
 		Column3:   params.Done,
+	})
+}
+
+func (r *QuestionRepository) UpdateUserDoneStatus(ctx context.Context, params sqlc.UpdateUserDoneStatusParams) error {
+	return r.queries.UpdateUserDoneStatus(ctx, params)
+}
+
+func (r *QuestionRepository) UserDoneQuestionExists(ctx context.Context, accountID uuid.UUID, questionID uuid.UUID) (bool, error) {
+	exists, err := r.queries.UserDoneQuestionExists(ctx, sqlc.UserDoneQuestionExistsParams{
+		AccountID:  accountID,
+		QuestionID: questionID,
+	})
+	if err != nil {
+		return false, err
+	}
+	return exists, nil
+}
+
+func (r *QuestionRepository) CreateUserDoneQuestion(ctx context.Context, accountID uuid.UUID, questionID uuid.UUID, done int32) error {
+	return r.queries.CreateUserDoneQuestion(ctx, sqlc.CreateUserDoneQuestionParams{
+		AccountID:  accountID,
+		QuestionID: questionID,
+		Done:       done,
 	})
 }

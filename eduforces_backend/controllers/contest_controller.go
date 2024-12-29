@@ -83,7 +83,7 @@ func (cc *ContestController) ScheduleContestStatusUpdates(c context.Context) {
 func (cc *ContestController) FilterQuestions(c *gin.Context) {
 	var request struct {
 		Subjects []string `json:"subjects" binding:"required"`
-		Done     bool     `json:"done"`
+		Done     int32    `json:"done"`
 	}
 
 	if err := c.ShouldBindJSON(&request); err != nil {
@@ -98,6 +98,7 @@ func (cc *ContestController) FilterQuestions(c *gin.Context) {
 		return
 	}
 
+	fmt.Println("donecontrol=", request.Done)
 	questions, err := cc.ContestService.FilterQuestions(c.Request.Context(), services.FilterQuestionsParams{
 		Subjects:  request.Subjects,
 		AccountID: uuid.MustParse(user.(string)),
@@ -109,4 +110,37 @@ func (cc *ContestController) FilterQuestions(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, questions)
+}
+
+func (cc *ContestController) UpdateUserDoneStatus(c *gin.Context) {
+	var request struct {
+		QuestionID string `json:"question_id" binding:"required,uuid"`
+		Done       int32  `json:"done" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		c.Abort()
+		return
+	}
+
+	questionID, err := uuid.Parse(request.QuestionID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid question ID"})
+		return
+	}
+
+	err = cc.ContestService.UpdateUserDoneStatus(context.Background(), uuid.MustParse(user.(string)), questionID, request.Done)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "success"})
 }
