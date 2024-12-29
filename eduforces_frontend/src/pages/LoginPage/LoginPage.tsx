@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react';
-import appLogo from '../../assets/logo_new.webp';
-import './LoginPage.css';
-import Button from '../../components/Button';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import React, { useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import appLogo from "../../assets/logo_new.webp";
+import "./LoginPage.css";
+import Button from "../../components/Button";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 // Environment variables for sensitive data
 const clientId = "566103442161-qsml3c9actk0pgir7jpj8mhtt3m5vg5k.apps.googleusercontent.com";
@@ -12,35 +13,42 @@ const redirectUri = 'http://localhost:5173/login';
 
 // Function to handle the click event for Google OAuth2 login
 const handleClick = () => {
-  const scope = 'openid email profile';
-  const responseType = 'code';
+  const scope = "openid email profile";
+  const responseType = "code";
 
   const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=${responseType}&scope=${scope}`;
-  
+
   // Redirect the user to Google's login page
   window.location.href = googleAuthUrl;
 };
 
 const LoginPage: React.FC = () => {
+  const location = useLocation();
+  useEffect(() => {
+    if (location.state?.fromLockIcon) {
+      (document.getElementsByClassName("btn-signin")[0] as HTMLElement).click();
+      location.state.fromLockIcon = false;
+    }
+  }, [location.state]);
   const { setIsLoggedIn, setUsername } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const authCode = urlParams.get('code');
-    console.log('Auth code:', authCode);
+    const authCode = urlParams.get("code");
+    console.log("Auth code:", authCode);
 
     if (authCode) {
       // Send the authorization code to the backend
       fetch(backendAuthEndpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code: authCode }),
       })
         .then((response) => response.json())
         .then((data) => {
           if (data.success) {
-            console.log('Login successful:', data);
+            console.log("Login successful:", data);
 
             // Store the session ID in local storage
             localStorage.setItem("session_id", data.session_id);
@@ -49,15 +57,14 @@ const LoginPage: React.FC = () => {
             setIsLoggedIn(true);
             setUsername(data.user.username);
             // Redirect to the home page or dashboard
-            navigate('/');
+            navigate("/");
           } else {
-            console.error('Login failed:', data.message);
+            console.error("Login failed:", data.message);
           }
         })
-        .catch((error) => console.error('Error during login:', error));
+        .catch((error) => console.error("Error during login:", error));
     }
   }, [navigate, setIsLoggedIn, setUsername]);
-
   return (
     <div className="logo-text-container">
       <div className="intro-text">

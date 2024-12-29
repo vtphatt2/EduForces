@@ -5,8 +5,14 @@ export interface PostProps {
   id: string;
 }
 
+export interface PostPropsAPI {
+  title: string;
+  content: string;
+  author_id: string;
+  post_id: string;
+}
 export interface NavPageProps {
-  pageList: number[];
+  numPages: number;
 }
 
 export interface TextAreaProps {
@@ -17,5 +23,5 @@ export interface TextAreaProps {
 
 export interface ForumProps {
   postList: PostProps[];
-  pageList: number[];
+  numPages: number;
 }

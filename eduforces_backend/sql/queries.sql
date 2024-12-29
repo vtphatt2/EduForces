@@ -15,6 +15,9 @@ DELETE FROM accounts WHERE account_id = $1;
 -- name: UpdateAccountName :exec
 UPDATE accounts SET name = $1 WHERE email = $2;
 
+-- name: UpdateAccountUsername :exec
+UPDATE accounts SET username = $1 WHERE account_id = $2;
+
 
 ---- Forum
 
@@ -36,17 +39,63 @@ DELETE FROM posts WHERE post_id = $1;
 -- name: UpdatePostContent :exec
 UPDATE posts SET content = $1 WHERE post_id = $2;
 
+-- -- nameee: GetCommentsForPost :many
+-- SELECT * FROM comments WHERE post_id = $1;
+
 -- name: GetCommentsForPost :many
-SELECT * FROM comments WHERE post_id = $1;
+SELECT *
+FROM comments
+WHERE post_id = $1
+ORDER BY timestamp DESC
+LIMIT $2 OFFSET $3;
+
+-- name: GetCommentDetails :one
+SELECT * FROM comments WHERE comment_id = $1;
 
 -- name: AddCommentToPost :exec
 INSERT INTO comments (comment_id, author_id, content, timestamp, post_id, parent_comment_id) VALUES ($1, $2, $3, $4, $5, $6);
+
+-- name: UpdateComment :exec
+UPDATE comments SET content = $1 WHERE comment_id = $2;
+
+-- name: DeleteComment :exec
+DELETE FROM comments WHERE comment_id = $1;
 
 -- name: GetReactionsForPost :many
 SELECT * FROM reactions WHERE post_id = $1;
 
 -- name: AddReactionToPost :exec
 INSERT INTO reactions (reaction_id, type, account_id, timestamp, post_id, comment_id) VALUES ($1, $2, $3, $4, $5, $6);
+
+-- name: CheckReactionExists :one
+SELECT reaction_id FROM reactions
+WHERE account_id = $1 AND (post_id = $2 OR comment_id = $3);
+
+-- name: DeleteReaction :exec
+DELETE FROM reactions WHERE reaction_id = $1;
+
+-- name: GetReactionForPost :one
+SELECT * FROM reactions WHERE post_id = $1 AND account_id = $2;
+
+-- name: GetReactionForComment :one
+SELECT * FROM reactions WHERE comment_id = $1 AND account_id = $2;
+
+-- name: CountReactionsForComment :one
+SELECT 
+    COALESCE(SUM(CASE WHEN type = 'UPVOTE' THEN 1 ELSE 0 END), 0) AS upvotes,
+    COALESCE(SUM(CASE WHEN type = 'DOWNVOTE' THEN 1 ELSE 0 END), 0) AS downvotes
+FROM reactions
+WHERE comment_id = $1;
+
+-- name: CountReactionsForPost :one
+SELECT 
+    COALESCE(SUM(CASE WHEN type = 'UPVOTE' THEN 1 ELSE 0 END), 0) AS upvotes,
+    COALESCE(SUM(CASE WHEN type = 'DOWNVOTE' THEN 1 ELSE 0 END), 0) AS downvotes
+FROM reactions
+WHERE post_id = $1;
+
+-- name: GetCommentsForComment :many
+SELECT * FROM comments WHERE parent_comment_id = $1;
 
 
 ---Question

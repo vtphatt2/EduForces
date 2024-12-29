@@ -1,8 +1,11 @@
 CREATE TYPE role_enum AS ENUM ('Admin', 'Coordinator', 'User');
 
+CREATE SEQUENCE username_seq;
+
 CREATE TABLE accounts (
     account_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     email TEXT UNIQUE NOT NULL,
+    username TEXT UNIQUE NOT NULL DEFAULT 'user_' || nextval('username_seq'),
     name TEXT NOT NULL,
     role role_enum NOT NULL DEFAULT 'User'
 );

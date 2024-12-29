@@ -100,6 +100,64 @@ func (q *Queries) CheckContestExistsWithSubject(ctx context.Context, subject str
 	return exists, err
 }
 
+const checkReactionExists = `-- name: CheckReactionExists :one
+SELECT reaction_id FROM reactions
+WHERE account_id = $1 AND (post_id = $2 OR comment_id = $3)
+`
+
+type CheckReactionExistsParams struct {
+	AccountID uuid.NullUUID `json:"account_id"`
+	PostID    uuid.NullUUID `json:"post_id"`
+	CommentID uuid.NullUUID `json:"comment_id"`
+}
+
+func (q *Queries) CheckReactionExists(ctx context.Context, arg CheckReactionExistsParams) (uuid.UUID, error) {
+	row := q.db.QueryRowContext(ctx, checkReactionExists, arg.AccountID, arg.PostID, arg.CommentID)
+	var reaction_id uuid.UUID
+	err := row.Scan(&reaction_id)
+	return reaction_id, err
+}
+
+const countReactionsForComment = `-- name: CountReactionsForComment :one
+SELECT 
+    COALESCE(SUM(CASE WHEN type = 'UPVOTE' THEN 1 ELSE 0 END), 0) AS upvotes,
+    COALESCE(SUM(CASE WHEN type = 'DOWNVOTE' THEN 1 ELSE 0 END), 0) AS downvotes
+FROM reactions
+WHERE comment_id = $1
+`
+
+type CountReactionsForCommentRow struct {
+	Upvotes   interface{} `json:"upvotes"`
+	Downvotes interface{} `json:"downvotes"`
+}
+
+func (q *Queries) CountReactionsForComment(ctx context.Context, commentID uuid.NullUUID) (CountReactionsForCommentRow, error) {
+	row := q.db.QueryRowContext(ctx, countReactionsForComment, commentID)
+	var i CountReactionsForCommentRow
+	err := row.Scan(&i.Upvotes, &i.Downvotes)
+	return i, err
+}
+
+const countReactionsForPost = `-- name: CountReactionsForPost :one
+SELECT 
+    COALESCE(SUM(CASE WHEN type = 'UPVOTE' THEN 1 ELSE 0 END), 0) AS upvotes,
+    COALESCE(SUM(CASE WHEN type = 'DOWNVOTE' THEN 1 ELSE 0 END), 0) AS downvotes
+FROM reactions
+WHERE post_id = $1
+`
+
+type CountReactionsForPostRow struct {
+	Upvotes   interface{} `json:"upvotes"`
+	Downvotes interface{} `json:"downvotes"`
+}
+
+func (q *Queries) CountReactionsForPost(ctx context.Context, postID uuid.NullUUID) (CountReactionsForPostRow, error) {
+	row := q.db.QueryRowContext(ctx, countReactionsForPost, postID)
+	var i CountReactionsForPostRow
+	err := row.Scan(&i.Upvotes, &i.Downvotes)
+	return i, err
+}
+
 const createAccount = `-- name: CreateAccount :exec
 INSERT INTO accounts (email, name, role) VALUES ($1, $2, $3)
 `
@@ -262,6 +320,15 @@ func (q *Queries) DeleteAccount(ctx context.Context, accountID uuid.UUID) error 
 	return err
 }
 
+const deleteComment = `-- name: DeleteComment :exec
+DELETE FROM comments WHERE comment_id = $1
+`
+
+func (q *Queries) DeleteComment(ctx context.Context, commentID uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteComment, commentID)
+	return err
+}
+
 const deleteContest = `-- name: DeleteContest :exec
 DELETE FROM contests WHERE contest_id = $1
 `
@@ -289,6 +356,15 @@ func (q *Queries) DeleteQuestion(ctx context.Context, questionID uuid.UUID) erro
 	return err
 }
 
+const deleteReaction = `-- name: DeleteReaction :exec
+DELETE FROM reactions WHERE reaction_id = $1
+`
+
+func (q *Queries) DeleteReaction(ctx context.Context, reactionID uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteReaction, reactionID)
+	return err
+}
+
 const deleteSubmission = `-- name: DeleteSubmission :exec
 DELETE FROM submissions WHERE submission_id = $1
 `
@@ -300,7 +376,7 @@ func (q *Queries) DeleteSubmission(ctx context.Context, submissionID uuid.UUID) 
 
 const getAccount = `-- name: GetAccount :one
 
-SELECT account_id, email, name, role FROM accounts WHERE account_id = $1
+SELECT account_id, email, username, name, role FROM accounts WHERE account_id = $1
 `
 
 // --- Account
@@ -310,6 +386,7 @@ func (q *Queries) GetAccount(ctx context.Context, accountID uuid.UUID) (Account,
 	err := row.Scan(
 		&i.AccountID,
 		&i.Email,
+		&i.Username,
 		&i.Name,
 		&i.Role,
 	)
@@ -318,7 +395,7 @@ func (q *Queries) GetAccount(ctx context.Context, accountID uuid.UUID) (Account,
 
 const getAccountByEmail = `-- name: GetAccountByEmail :one
 
-SELECT account_id, email, name, role FROM accounts WHERE email = $1
+SELECT account_id, email, username, name, role FROM accounts WHERE email = $1
 `
 
 // -- Forum
@@ -328,18 +405,84 @@ func (q *Queries) GetAccountByEmail(ctx context.Context, email string) (Account,
 	err := row.Scan(
 		&i.AccountID,
 		&i.Email,
+		&i.Username,
 		&i.Name,
 		&i.Role,
 	)
 	return i, err
 }
 
-const getCommentsForPost = `-- name: GetCommentsForPost :many
-SELECT comment_id, author_id, content, timestamp, post_id, parent_comment_id FROM comments WHERE post_id = $1
+const getCommentDetails = `-- name: GetCommentDetails :one
+SELECT comment_id, author_id, content, timestamp, post_id, parent_comment_id FROM comments WHERE comment_id = $1
 `
 
-func (q *Queries) GetCommentsForPost(ctx context.Context, postID uuid.NullUUID) ([]Comment, error) {
-	rows, err := q.db.QueryContext(ctx, getCommentsForPost, postID)
+func (q *Queries) GetCommentDetails(ctx context.Context, commentID uuid.UUID) (Comment, error) {
+	row := q.db.QueryRowContext(ctx, getCommentDetails, commentID)
+	var i Comment
+	err := row.Scan(
+		&i.CommentID,
+		&i.AuthorID,
+		&i.Content,
+		&i.Timestamp,
+		&i.PostID,
+		&i.ParentCommentID,
+	)
+	return i, err
+}
+
+const getCommentsForComment = `-- name: GetCommentsForComment :many
+SELECT comment_id, author_id, content, timestamp, post_id, parent_comment_id FROM comments WHERE parent_comment_id = $1
+`
+
+func (q *Queries) GetCommentsForComment(ctx context.Context, parentCommentID uuid.NullUUID) ([]Comment, error) {
+	rows, err := q.db.QueryContext(ctx, getCommentsForComment, parentCommentID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Comment
+	for rows.Next() {
+		var i Comment
+		if err := rows.Scan(
+			&i.CommentID,
+			&i.AuthorID,
+			&i.Content,
+			&i.Timestamp,
+			&i.PostID,
+			&i.ParentCommentID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getCommentsForPost = `-- name: GetCommentsForPost :many
+
+SELECT comment_id, author_id, content, timestamp, post_id, parent_comment_id
+FROM comments
+WHERE post_id = $1
+ORDER BY timestamp DESC
+LIMIT $2 OFFSET $3
+`
+
+type GetCommentsForPostParams struct {
+	PostID uuid.NullUUID `json:"post_id"`
+	Limit  int32         `json:"limit"`
+	Offset int32         `json:"offset"`
+}
+
+// -- nameee: GetCommentsForPost :many
+// SELECT * FROM comments WHERE post_id = $1;
+func (q *Queries) GetCommentsForPost(ctx context.Context, arg GetCommentsForPostParams) ([]Comment, error) {
+	rows, err := q.db.QueryContext(ctx, getCommentsForPost, arg.PostID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -498,6 +641,52 @@ func (q *Queries) GetQuestion(ctx context.Context, questionID uuid.UUID) (Questi
 	return i, err
 }
 
+const getReactionForComment = `-- name: GetReactionForComment :one
+SELECT reaction_id, type, account_id, timestamp, post_id, comment_id FROM reactions WHERE comment_id = $1 AND account_id = $2
+`
+
+type GetReactionForCommentParams struct {
+	CommentID uuid.NullUUID `json:"comment_id"`
+	AccountID uuid.NullUUID `json:"account_id"`
+}
+
+func (q *Queries) GetReactionForComment(ctx context.Context, arg GetReactionForCommentParams) (Reaction, error) {
+	row := q.db.QueryRowContext(ctx, getReactionForComment, arg.CommentID, arg.AccountID)
+	var i Reaction
+	err := row.Scan(
+		&i.ReactionID,
+		&i.Type,
+		&i.AccountID,
+		&i.Timestamp,
+		&i.PostID,
+		&i.CommentID,
+	)
+	return i, err
+}
+
+const getReactionForPost = `-- name: GetReactionForPost :one
+SELECT reaction_id, type, account_id, timestamp, post_id, comment_id FROM reactions WHERE post_id = $1 AND account_id = $2
+`
+
+type GetReactionForPostParams struct {
+	PostID    uuid.NullUUID `json:"post_id"`
+	AccountID uuid.NullUUID `json:"account_id"`
+}
+
+func (q *Queries) GetReactionForPost(ctx context.Context, arg GetReactionForPostParams) (Reaction, error) {
+	row := q.db.QueryRowContext(ctx, getReactionForPost, arg.PostID, arg.AccountID)
+	var i Reaction
+	err := row.Scan(
+		&i.ReactionID,
+		&i.Type,
+		&i.AccountID,
+		&i.Timestamp,
+		&i.PostID,
+		&i.CommentID,
+	)
+	return i, err
+}
+
 const getReactionsForPost = `-- name: GetReactionsForPost :many
 SELECT reaction_id, type, account_id, timestamp, post_id, comment_id FROM reactions WHERE post_id = $1
 `
@@ -605,7 +794,7 @@ func (q *Queries) IsEventDate(ctx context.Context, eventTaskID uuid.UUID) (bool,
 }
 
 const listAccounts = `-- name: ListAccounts :many
-SELECT account_id, email, name, role FROM accounts
+SELECT account_id, email, username, name, role FROM accounts
 `
 
 func (q *Queries) ListAccounts(ctx context.Context) ([]Account, error) {
@@ -620,6 +809,7 @@ func (q *Queries) ListAccounts(ctx context.Context) ([]Account, error) {
 		if err := rows.Scan(
 			&i.AccountID,
 			&i.Email,
+			&i.Username,
 			&i.Name,
 			&i.Role,
 		); err != nil {
@@ -891,6 +1081,34 @@ type UpdateAccountNameParams struct {
 
 func (q *Queries) UpdateAccountName(ctx context.Context, arg UpdateAccountNameParams) error {
 	_, err := q.db.ExecContext(ctx, updateAccountName, arg.Name, arg.Email)
+	return err
+}
+
+const updateAccountUsername = `-- name: UpdateAccountUsername :exec
+UPDATE accounts SET username = $1 WHERE account_id = $2
+`
+
+type UpdateAccountUsernameParams struct {
+	Username  string    `json:"username"`
+	AccountID uuid.UUID `json:"account_id"`
+}
+
+func (q *Queries) UpdateAccountUsername(ctx context.Context, arg UpdateAccountUsernameParams) error {
+	_, err := q.db.ExecContext(ctx, updateAccountUsername, arg.Username, arg.AccountID)
+	return err
+}
+
+const updateComment = `-- name: UpdateComment :exec
+UPDATE comments SET content = $1 WHERE comment_id = $2
+`
+
+type UpdateCommentParams struct {
+	Content   string    `json:"content"`
+	CommentID uuid.UUID `json:"comment_id"`
+}
+
+func (q *Queries) UpdateComment(ctx context.Context, arg UpdateCommentParams) error {
+	_, err := q.db.ExecContext(ctx, updateComment, arg.Content, arg.CommentID)
 	return err
 }
 

@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/vtphatt2/EduForces/services"
 	"github.com/vtphatt2/EduForces/sessions"
 )
@@ -113,4 +114,58 @@ func (ctrl *AuthController) ValidateSessionHandler(c *gin.Context) {
 			"user_id": session.UserID,
 		},
 	})
+}
+
+func (ctrl *AuthController) GetAccountDetails(c *gin.Context) {
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		c.Abort()
+		return
+	}
+
+	account, err := ctrl.service.GetAccountDetails(c.Request.Context(), uuid.MustParse(user.(string)))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if account == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Account not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"account_id": account.AccountID,
+		"email":      account.Email,
+		"name":       account.Name,
+		"username":   account.Username,
+		"role":       account.Role,
+	})
+}
+
+func (ctrl *AuthController) UpdateUsername(c *gin.Context) {
+	var request struct {
+		Username string `json:"username" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		return
+	}
+
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		c.Abort()
+		return
+	}
+
+	err := ctrl.service.UpdateUsername(c.Request.Context(), uuid.MustParse(user.(string)), request.Username)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Username updated successfully"})
 }

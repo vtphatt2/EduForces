@@ -2,15 +2,23 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  margin: 0;
+  margin-left: 5%;
+  margin-right: 5%;
+  margin-top: 50px;
 }
 
-.forumContentContainer {
-  flex: 50%;
+.forumContainer {
+  flex: 70%;
+  display: flex;
+  flex-direction: column;
   margin-right: 32px;
 }
 
 .uploadAndRules {
-  flex: 50%;
+  flex: 30%;
+  display: flex;
+  flex-direction: column;
 }
 
 .forumTitle {
@@ -80,6 +88,8 @@
   border-radius: 15px;
   padding: 12px;
   background-color: #f9f9ff;
+  display: flex;
+  flex-direction: column;
   position: relative;
 }
 
@@ -94,7 +104,6 @@
   color: black;
   resize: none;
   font-family: sans-serif;
-  margin: 0px;
 }
 
 .textCount {
@@ -124,6 +133,7 @@
   border-radius: 40px;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  align-self: center;
 }
 
 .uploadButton:hover {
@@ -165,8 +175,10 @@
 .navPageLinks {
   list-style: none;
   display: flex;
+  flex-direction: row;
   padding: 0px;
   margin: 0px;
+  align-items: center;
 }
 
 .navPageLinks li {
@@ -187,4 +199,15 @@
 
 .navPageLinks .active {
   text-decoration: underline;
+}
+
+#disabled {
+  display: none;
+}
+
+.tripledot {
+  font-size: 20px;
+  font-weight: 700;
+  color: #5d5a88;
+  text-decoration: none;
 }

@@ -43,10 +43,3 @@
 }
   
 
-.registerButtonWrapper {
-    display: flex;
-    position:relative;
-    border-radius: 2.5rem;
-    height: clamp(3rem, 1.5vw, 4rem);
-    justify-content: flex-end; 
-}

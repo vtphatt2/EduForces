@@ -57,3 +57,21 @@ func (r *AccountRepository) ListAccounts(ctx context.Context) ([]sqlc.Account, e
 func (r *AccountRepository) DeleteAccount(ctx context.Context, accountID uuid.UUID) error {
 	return r.queries.DeleteAccount(ctx, accountID)
 }
+
+func (r *AccountRepository) GetAccountDetails(ctx context.Context, accountID uuid.UUID) (*sqlc.Account, error) {
+	account, err := r.queries.GetAccount(ctx, accountID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil // No account found
+		}
+		return nil, err // Other errors
+	}
+	return &account, nil
+}
+
+func (r *AccountRepository) UpdateUsername(ctx context.Context, accountID uuid.UUID, username string) error {
+	return r.queries.UpdateAccountUsername(ctx, sqlc.UpdateAccountUsernameParams{
+		AccountID: accountID,
+		Username:  username,
+	})
+}

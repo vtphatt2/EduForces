@@ -59,6 +59,7 @@ func (ns NullRoleEnum) Value() (driver.Value, error) {
 type Account struct {
 	AccountID uuid.UUID `json:"account_id"`
 	Email     string    `json:"email"`
+	Username  string    `json:"username"`
 	Name      string    `json:"name"`
 	Role      RoleEnum  `json:"role"`
 }
