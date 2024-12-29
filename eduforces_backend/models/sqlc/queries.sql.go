@@ -448,11 +448,9 @@ func (q *Queries) FilterQuestionsBySubjectsAndDoneStatus(ctx context.Context, ar
 }
 
 const getAccount = `-- name: GetAccount :one
-
 SELECT account_id, email, username, name, role, avatar_path, elo_rating, last_active, school, gold_amount, is_deactivated FROM accounts WHERE account_id = $1
 `
 
-// --- Account
 func (q *Queries) GetAccount(ctx context.Context, accountID uuid.UUID) (Account, error) {
 	row := q.db.QueryRowContext(ctx, getAccount, accountID)
 	var i Account
@@ -493,6 +491,45 @@ func (q *Queries) GetAccountByEmail(ctx context.Context, email string) (Account,
 		&i.IsDeactivated,
 	)
 	return i, err
+}
+
+const getAllAccounts = `-- name: GetAllAccounts :many
+SELECT account_id, email, username, name, role, avatar_path, elo_rating, last_active, school, gold_amount, is_deactivated FROM accounts
+`
+
+func (q *Queries) GetAllAccounts(ctx context.Context) ([]Account, error) {
+	rows, err := q.db.QueryContext(ctx, getAllAccounts)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Account
+	for rows.Next() {
+		var i Account
+		if err := rows.Scan(
+			&i.AccountID,
+			&i.Email,
+			&i.Username,
+			&i.Name,
+			&i.Role,
+			&i.AvatarPath,
+			&i.EloRating,
+			&i.LastActive,
+			&i.School,
+			&i.GoldAmount,
+			&i.IsDeactivated,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getAllNotificationsForAccount = `-- name: GetAllNotificationsForAccount :many
@@ -1030,6 +1067,48 @@ SELECT account_id, email, username, name, role, avatar_path, elo_rating, last_ac
 
 func (q *Queries) ListAccounts(ctx context.Context) ([]Account, error) {
 	rows, err := q.db.QueryContext(ctx, listAccounts)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Account
+	for rows.Next() {
+		var i Account
+		if err := rows.Scan(
+			&i.AccountID,
+			&i.Email,
+			&i.Username,
+			&i.Name,
+			&i.Role,
+			&i.AvatarPath,
+			&i.EloRating,
+			&i.LastActive,
+			&i.School,
+			&i.GoldAmount,
+			&i.IsDeactivated,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listAccountsByDeactivationStatus = `-- name: ListAccountsByDeactivationStatus :many
+
+SELECT account_id, email, username, name, role, avatar_path, elo_rating, last_active, school, gold_amount, is_deactivated FROM accounts WHERE is_deactivated = $1
+`
+
+// --- Account
+// filter accounts by deactivation status
+func (q *Queries) ListAccountsByDeactivationStatus(ctx context.Context, isDeactivated bool) ([]Account, error) {
+	rows, err := q.db.QueryContext(ctx, listAccountsByDeactivationStatus, isDeactivated)
 	if err != nil {
 		return nil, err
 	}

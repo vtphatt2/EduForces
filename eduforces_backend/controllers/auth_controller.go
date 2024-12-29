@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/vtphatt2/EduForces/models/sqlc"
 	"github.com/vtphatt2/EduForces/services"
 	"github.com/vtphatt2/EduForces/sessions"
 )
@@ -338,4 +339,24 @@ func (ctrl *AuthController) UpdateAccountDeactivation(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "User deactivation status updated successfully"})
+}
+
+func (ctrl *AuthController) ListAccounts(c *gin.Context) {
+	isDeactivatedQuery := c.Query("is_deactivated")
+	var accounts []sqlc.Account
+	var err error
+
+	if isDeactivatedQuery == "" {
+		accounts, err = ctrl.service.ListAccounts(c.Request.Context())
+	} else {
+		isDeactivated := isDeactivatedQuery == "true"
+		accounts, err = ctrl.service.ListAccountsByDeactivationStatus(c.Request.Context(), isDeactivated)
+	}
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, accounts)
 }

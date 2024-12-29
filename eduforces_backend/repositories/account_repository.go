@@ -127,3 +127,7 @@ func (r *AccountRepository) UpdateAccountRole(ctx context.Context, accountID uui
 		Role:      sqlc.RoleEnum(role),
 	})
 }
+
+func (r *AccountRepository) ListAccountsByDeactivationStatus(ctx context.Context, isDeactivated bool) ([]sqlc.Account, error) {
+	return r.queries.ListAccountsByDeactivationStatus(ctx, isDeactivated)
+}
