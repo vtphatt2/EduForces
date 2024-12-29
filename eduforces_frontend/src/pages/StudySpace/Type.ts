@@ -6,6 +6,18 @@ export interface QuestionProps {
   isDone: boolean;
 }
 
+export interface QuestionPropsAPI {
+  question_id: string;
+  contest_id: string;
+  description: string;
+  answers: string[];
+  correct_answer: string;
+  update_at: string;
+  subject: string;
+  is_public: boolean;
+  question_tag: string;
+}
+
 export interface FilterItemProps {
   label: string;
   isChecked: boolean;

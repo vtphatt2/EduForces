@@ -8,6 +8,7 @@ const QuestionCard: React.FC<QuestionProps> = ({
   id,
   question,
   all_answer,
+  correct_answer,
   isDone,
 }) => {
   const [selectedOption, setSelectedOption] = useState("");
