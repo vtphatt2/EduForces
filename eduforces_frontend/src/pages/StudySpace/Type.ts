@@ -21,4 +21,5 @@ export interface QuestionPropsAPI {
 export interface FilterItemProps {
   label: string;
   isChecked: boolean;
+  onChange: (checked: boolean) => void; // Added onChange prop
 }
