@@ -9,46 +9,17 @@ import { getTrueImageSrc, formatTimestamp } from "../../components/Common";
 const baseUrl = "http://localhost:8080/api/v1";
 
 const AccountManagement: React.FC = () => {
-  // const usersX = [
-  //   {
-  //     avatarSrc: "https://via.placeholder.com/150",
-  //     id: "1",
-  //     name: "John Doe",
-  //     username: "johndoe",
-  //     email: "johndoe@gmail.com",
-  //     lastLogin: "2021-08-01",
-  //     role: "user",
-  //     isActived: false,
-  //   },
-  //   {
-  //     avatarSrc: "https://via.placeholder.com/150",
-  //     id: "2",
-  //     name: "Jane Doe",
-  //     username: "janedoe",
-  //     email: "janedoe@example.com",
-  //     lastLogin: "2021-08-01",
-  //     role: "coordinator",
-  //     isActived: true,
-  //   },
-  //   {
-  //     avatarSrc: "https://via.placeholder.com/150",
-  //     id: "3",
-  //     name: "Admin",
-  //     username: "admin",
-  //     email: "admin@eduforces.com",
-  //     lastLogin: "2021-08-01",
-  //     role: "admin",
-  //     isActived: true,
-  //   },
-  // ];
   const [users, setUsers] = useState<AccountRowProps[]>([]);
   const [roleSelected, setRoleSelected] = useState("all");
   const [activeSelected, setActiveSelected] = useState("all");
 
-  const fetchUsers = async (isDeactivated: boolean | null) => {
+  const fetchUsers = async (role, isDeactivated: boolean | null) => {
+    if (role === "all") {
+      role = "";
+    }
     try {
       const response = await fetch(
-        `${baseUrl}/accounts/list-accounts?isDeactivated=${isDeactivated}`,
+        `${baseUrl}/accounts/list-accounts?isDeactivated=${isDeactivated}?role=${role}`,
         {
           method: "GET",
           headers: {
@@ -69,7 +40,7 @@ const AccountManagement: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchUsers(null);
+    fetchUsers("all", null);
   }, []);
   const changeRole = async (user, e) => {
     try {
@@ -88,7 +59,14 @@ const AccountManagement: React.FC = () => {
       if (!response.ok) {
         throw new Error(`${response.status} - ${response.statusText}`);
       }
-      fetchUsers(null);
+      fetchUsers(
+        roleSelected,
+        activeSelected === "active"
+          ? false
+          : activeSelected === "banned"
+          ? true
+          : null
+      );
     } catch (error) {
       alert(`${error}`);
     }
@@ -110,10 +88,28 @@ const AccountManagement: React.FC = () => {
       if (!response.ok) {
         throw new Error(`${response.status} - ${response.statusText}`);
       }
-      fetchUsers(null);
+      fetchUsers(
+        roleSelected,
+        activeSelected === "active"
+          ? false
+          : activeSelected === "banned"
+          ? true
+          : null
+      );
     } catch (error) {
       alert(`${error}`);
     }
+  };
+  const filterRole = async (role) => {
+    fetchUsers(
+      role,
+      activeSelected === "active"
+        ? false
+        : activeSelected === "banned"
+        ? true
+        : null
+    );
+    setRoleSelected(role);
   };
   return (
     <main className={styles.accountManagement}>
@@ -131,7 +127,7 @@ const AccountManagement: React.FC = () => {
           <select
             className={styles.filterSelect}
             defaultValue="all"
-            onChange={(e) => setRoleSelected(e.target.value)}
+            onChange={(e) => filterRole(e.target.value)}
             value={roleSelected}
           >
             <option value="User">User</option>
