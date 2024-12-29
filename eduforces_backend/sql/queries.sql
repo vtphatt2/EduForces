@@ -3,6 +3,9 @@
 -- name: GetAccount :one
 SELECT * FROM accounts WHERE account_id = $1;
 
+-- name: GetAccountByEmail :one
+SELECT * FROM accounts WHERE email = $1;
+
 -- name: ListAccounts :many
 SELECT * FROM accounts;
 
@@ -34,11 +37,12 @@ UPDATE accounts SET school = $1 WHERE account_id = $2;
 -- name: UpdateAccountDeactivation :exec
 UPDATE accounts SET is_deactivated = $1 WHERE account_id = $2;
 
+-- name: UpdateAvatarPath :exec
+UPDATE accounts
+SET avatar_path = $1
+WHERE account_id = $2;
 
 ---- Forum
-
--- name: GetAccountByEmail :one
-SELECT * FROM accounts WHERE email = $1;
 
 -- name: GetPost :one
 SELECT * FROM posts WHERE post_id = $1;

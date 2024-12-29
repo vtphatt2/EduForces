@@ -66,6 +66,7 @@ type Account struct {
 	EloRating     int32        `json:"elo_rating"`
 	LastActive    sql.NullTime `json:"last_active"`
 	School        string       `json:"school"`
+	GoldAmount    string       `json:"gold_amount"`
 	IsDeactivated bool         `json:"is_deactivated"`
 }
 

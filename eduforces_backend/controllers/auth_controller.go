@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"path/filepath"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -222,6 +223,7 @@ func (ctrl *AuthController) GetAccountDetailsFromID(c *gin.Context) {
 func (ctrl *AuthController) UpdateUsername(c *gin.Context) {
 	var request struct {
 		Username string `json:"username" binding:"required"`
+		School   string `json:"school" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&request); err != nil {
@@ -242,5 +244,69 @@ func (ctrl *AuthController) UpdateUsername(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Username updated successfully"})
+	err = ctrl.service.UpdateSchool(c.Request.Context(), uuid.MustParse(user.(string)), request.School)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Username and School updated successfully"})
 }
+
+func (ctrl *AuthController) UploadAvatar(c *gin.Context) {
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		c.Abort()
+		return
+	}
+
+	file, err := c.FormFile("avatar")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid file"})
+		return
+	}
+
+	// Define the path to save the file
+	avatarPath := filepath.Join("uploads", "avatars", user.(string)+filepath.Ext(file.Filename))
+
+	// Save the file locally
+	if err := c.SaveUploadedFile(file, avatarPath); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save file"})
+		return
+	}
+
+	// Update the avatar path in the database
+	if err := ctrl.service.UpdateAvatarPath(c.Request.Context(), uuid.MustParse(user.(string)), avatarPath); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Avatar uploaded successfully", "avatar_path": avatarPath})
+}
+
+// func (ctrl *AuthController) UpdateSchool(c *gin.Context) {
+// 	var request struct {
+// 		School string `json:"school" binding:"required"`
+// 	}
+
+// 	if err := c.ShouldBindJSON(&request); err != nil {
+// 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+// 		return
+// 	}
+
+// 	user, exists := c.Get("user")
+// 	if !exists {
+// 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+// 		c.Abort()
+// 		return
+// 	}
+
+// 	err := ctrl.service.UpdateSchool(c.Request.Context(), uuid.MustParse(user.(string)), request.School)
+// 	if err != nil {
+// 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+// 		return
+// 	}
+
+// 	c.JSON(http.StatusOK, gin.H{"message": "School updated successfully"})
+// }

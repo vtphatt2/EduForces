@@ -53,14 +53,40 @@ const UserProfile: React.FC = () => {
     content: "10 Gold",
   };
 
-  const changeAvatarClick = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const changeAvatarClick = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
     const file = e.target.files[0];
     const avatar = document.getElementsByClassName(
       styles.avatar
     )[0] as HTMLImageElement;
     avatar.src = URL.createObjectURL(file);
+
+    // Prepare the FormData to send to the backend
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    try {
+      // Make the POST request to upload the image
+      const response = await fetch(`${baseUrl}/accounts/upload-avatar`, {
+        method: 'POST',
+        headers: {
+          Authorization: localStorage.getItem('session_id') || '',
+        },
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Avatar uploaded successfully:', data);
+      } else {
+        console.error('Failed to upload avatar');
+      }
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+    }
   };
+
+  
 
   const changeUserProfile = async () => {
     const username = (

@@ -110,3 +110,10 @@ func (r *AccountRepository) UpdateDeactivation(ctx context.Context, accountID uu
 		IsDeactivated: isDeactivated,
 	})
 }
+
+func (r *AccountRepository) UpdateAvatarPath(ctx context.Context, accountID uuid.UUID, avatarPath string) error {
+	return r.queries.UpdateAvatarPath(ctx, sqlc.UpdateAvatarPathParams{
+		AvatarPath: avatarPath,
+		AccountID:  accountID,
+	})
+}

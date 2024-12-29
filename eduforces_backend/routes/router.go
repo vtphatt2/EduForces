@@ -17,6 +17,8 @@ func RegisterRoutes(
 	// Create a new Gin router
 	router := gin.Default()
 
+	router.Static("/uploads", "./uploads")
+
 	// Apply global middlewares if needed (e.g., CORS, logging)
 	router.Use(middleware.CORSMiddleware())
 
