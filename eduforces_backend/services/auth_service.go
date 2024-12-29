@@ -6,8 +6,10 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	"github.com/google/uuid"
 	"github.com/vtphatt2/EduForces/models/sqlc"
@@ -109,7 +111,38 @@ func (s *AuthService) CreateOrFindUser(ctx context.Context, userInfo *GoogleUser
 		if err != nil {
 			return "", err
 		}
+
+		// Download the user's avatar image
+		avatarResp, err := http.Get(userInfo.Picture)
+		if err != nil {
+			return "", err
+		}
+		defer avatarResp.Body.Close()
+
+		// Define the path to save the file
+		avatarPath := filepath.Join("uploads", "avatars", account.AccountID.String())
+		avatarAccessPath := "uploads/avatars/" + account.AccountID.String()
+
+		// Create the file
+		out, err := os.Create(avatarPath)
+		if err != nil {
+			return "", err
+		}
+		defer out.Close()
+
+		// Write the content to the file
+		_, err = io.Copy(out, avatarResp.Body)
+		if err != nil {
+			return "", err
+		}
+
+		// Update the avatar path in the database
+		if err := s.UpdateAvatarPath(ctx, account.AccountID, avatarAccessPath); err != nil {
+			return "", err
+		}
 	}
+
+	s.UpdateAccountName(ctx, userInfo.Name, userInfo.Email)
 
 	return account.AccountID.String(), nil
 }
@@ -124,4 +157,20 @@ func (s *AuthService) UpdateUsername(ctx context.Context, accountID uuid.UUID, u
 
 func (s *AuthService) UpdateAccountLastActive(ctx context.Context, accountID uuid.UUID, lastActive sql.NullTime) error {
 	return s.repo.UpdateAccountLastActive(ctx, accountID, lastActive)
+}
+
+func (s *AuthService) UpdateAvatarPath(ctx context.Context, accountID uuid.UUID, avatarPath string) error {
+	return s.repo.UpdateAvatarPath(ctx, accountID, avatarPath)
+}
+
+func (s *AuthService) UpdateSchool(ctx context.Context, accountID uuid.UUID, school string) error {
+	return s.repo.UpdateSchool(ctx, accountID, school)
+}
+
+func (s *AuthService) UpdateEloRating(ctx context.Context, accountID uuid.UUID, eloRating int) error {
+	return s.repo.UpdateEloRating(ctx, accountID, eloRating)
+}
+
+func (s *AuthService) UpdateAccountName(ctx context.Context, name string, email string) error {
+	return s.repo.UpdateAccountName(ctx, name, email)
 }

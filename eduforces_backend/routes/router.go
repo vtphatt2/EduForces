@@ -12,10 +12,13 @@ func RegisterRoutes(
 	authCtrl *controllers.AuthController,
 	postCtrl *controllers.PostController,
 	commentCtrl *controllers.CommentController,
+	contestCtrl *controllers.ContestController,
 	sessionManager *sessions.SessionManager, // Pass the session manager here
 ) *gin.Engine {
 	// Create a new Gin router
 	router := gin.Default()
+
+	router.Static("/uploads", "./uploads")
 
 	// Apply global middlewares if needed (e.g., CORS, logging)
 	router.Use(middleware.CORSMiddleware())
@@ -27,7 +30,7 @@ func RegisterRoutes(
 	RegisterAuthRoutes(router, authCtrl, sessionMiddleware)
 	RegisterPostRoutes(router, postCtrl, commentCtrl, sessionMiddleware)
 	RegisterCommentRoutes(router, commentCtrl, sessionMiddleware)
-
+	RegisterContestRoutes(router, contestCtrl, sessionMiddleware)
 	// Return the fully initialized router
 	return router
 }

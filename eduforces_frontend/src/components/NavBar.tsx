@@ -4,6 +4,8 @@ import { FaLock } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 import "./NavBar.css";
 
+const baseUrl = "http://localhost:8080/api/v1";
+
 const NavBar: React.FC = () => {
   const navigate = useNavigate();
   const { isLoggedIn, username, setIsLoggedIn, setUsername } = useAuth();
@@ -15,12 +17,30 @@ const NavBar: React.FC = () => {
     setIsDropdownOpen((prev) => !prev);
   };
 
+  const sendLogoutRequest = async () => {
+    try {
+      const response = await fetch(`${baseUrl}/auth/logout`, {
+        method: "POST",
+        headers: {
+          Authorization: localStorage.getItem("session_id") || "",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to logout");
+      }
+    } catch (error) {
+      alert(`Error: ${error}`);
+    }
+  };
+
   const handleLogout = () => {
     setIsLoggedIn(false);
     setUsername(null);
     setIsDropdownOpen(false);
+    sendLogoutRequest();
     localStorage.removeItem("session_id");
-    localStorage.removeItem("username");
+    localStorage.removeItem("name");
     navigate("/");
   };
 
@@ -47,6 +67,7 @@ const NavBar: React.FC = () => {
     }
     navigate("/login", { state: { fromLockIcon: true } });
   };
+  console.log(username);
   return (
     <nav className="navbar">
       <div className="logo">

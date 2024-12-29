@@ -5,10 +5,14 @@ import HomeContest from "./HomeContest";
 import HomeLeaderboard from "./HomeLeaderboard";
 import styles from "./Home.module.css";
 import { PostPropsAPI } from "../Forum/Type";
+import getAccountDetailById from "../../components/Common";
+import { useNavigate } from "react-router-dom";
 
 const baseUrl = "http://localhost:8080/api/v1";
 
 const Home: React.FC = () => {
+  const navigate = useNavigate();
+
   const [postList, setPostList] = useState<PostPropsAPI[]>([]);
   const getPostList = async () => {
     try {
@@ -20,7 +24,8 @@ const Home: React.FC = () => {
       });
 
       if (localStorage.getItem("session_id") === null) {
-        throw new Error("Please log in first");
+        // throw new Error("Please log in first");
+        navigate("/login");
       }
 
       if (!response.ok) {
@@ -28,13 +33,23 @@ const Home: React.FC = () => {
       }
 
       const data = await response.json();
-      setPostList(data.data);
+      const postListTmp = data.data === null ? [] : data.data;
+      for (let i = 0; i < postListTmp.length; i++) {
+        const author_detail = await getAccountDetailById(
+          postListTmp[i].author_id
+        );
+        postListTmp[i].author_id = author_detail.username;
+      }
+      setPostList(postListTmp);
     } catch (error) {
       alert(`Error: ${error}`);
     }
   };
 
   useEffect(() => {
+    if (!localStorage.getItem("session_id")) {
+      navigate("/login");
+    }
     getPostList();
   }, []);
   const contestList = [

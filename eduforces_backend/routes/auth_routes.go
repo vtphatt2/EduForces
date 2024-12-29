@@ -20,5 +20,6 @@ func RegisterAuthRoutes(router *gin.Engine, authCtrl *controllers.AuthController
 		accountRoutes.GET("/account-details", sessionMiddleware, authCtrl.GetAccountDetails)
 		accountRoutes.GET("/account-details/:id", sessionMiddleware, authCtrl.GetAccountDetailsFromID)
 		accountRoutes.PUT("/update-username", sessionMiddleware, authCtrl.UpdateUsername)
+		accountRoutes.PUT("/upload-avatar", sessionMiddleware, authCtrl.UploadAvatar)
 	}
 }

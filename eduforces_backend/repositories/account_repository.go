@@ -35,10 +35,6 @@ func (r *AccountRepository) GetAccountByEmail(ctx context.Context, email string)
 	return &account, nil
 }
 
-func (r *AccountRepository) UpdateAccountName(ctx context.Context, params sqlc.UpdateAccountNameParams) error {
-	return r.queries.UpdateAccountName(ctx, params)
-}
-
 func (r *AccountRepository) GetAccount(ctx context.Context, accountID uuid.UUID) (*sqlc.Account, error) {
 	account, err := r.queries.GetAccount(ctx, accountID)
 	if err != nil {
@@ -69,6 +65,12 @@ func (r *AccountRepository) GetAccountDetails(ctx context.Context, accountID uui
 	return &account, nil
 }
 
+func (r *AccountRepository) UpdateAccountName(ctx context.Context, name string, email string) error {
+	return r.queries.UpdateAccountName(ctx, sqlc.UpdateAccountNameParams{
+		Name:  name,
+		Email: email,
+	})
+}
 func (r *AccountRepository) UpdateUsername(ctx context.Context, accountID uuid.UUID, username string) error {
 	return r.queries.UpdateAccountUsername(ctx, sqlc.UpdateAccountUsernameParams{
 		AccountID: accountID,
@@ -108,5 +110,13 @@ func (r *AccountRepository) UpdateDeactivation(ctx context.Context, accountID uu
 	return r.queries.UpdateAccountDeactivation(ctx, sqlc.UpdateAccountDeactivationParams{
 		AccountID:     accountID,
 		IsDeactivated: isDeactivated,
+	})
+}
+
+func (r *AccountRepository) UpdateAvatarPath(ctx context.Context, accountID uuid.UUID, avatarPath string) error {
+	fmt.Println("UpdateAvatarPath", accountID, avatarPath)
+	return r.queries.UpdateAvatarPath(ctx, sqlc.UpdateAvatarPathParams{
+		AvatarPath: avatarPath,
+		AccountID:  accountID,
 	})
 }

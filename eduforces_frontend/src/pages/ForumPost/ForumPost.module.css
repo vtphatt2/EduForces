@@ -39,6 +39,18 @@
   overflow-wrap: break-word;
 }
 
+.voteAndAuthor {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.voteContainerOfPost {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .postAuthor {
   font-size: 24px;
   font-weight: 700;
@@ -49,6 +61,11 @@
 
 .authorName {
   color: #ff0000;
+  cursor: pointer;
+}
+
+.authorName:hover {
+  text-decoration: underline;
 }
 
 .profileImage {
@@ -154,9 +171,18 @@
   align-self: center;
   font-size: 18px;
   font-weight: 700;
-  color: #c34d4d;
+  color: #000000;
   margin: 0px;
   text-align: right;
+}
+
+.commentAuthor {
+  cursor: pointer;
+  color: #ff0000;
+}
+
+.commentAuthor:hover {
+  text-decoration: underline;
 }
 
 .commentForm {

@@ -56,6 +56,49 @@ func (ns NullRoleEnum) Value() (driver.Value, error) {
 	return string(ns.RoleEnum), nil
 }
 
+type StatusEnum string
+
+const (
+	StatusEnumPending StatusEnum = "Pending"
+	StatusEnumLive    StatusEnum = "Live"
+	StatusEnumEnded   StatusEnum = "Ended"
+)
+
+func (e *StatusEnum) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = StatusEnum(s)
+	case string:
+		*e = StatusEnum(s)
+	default:
+		return fmt.Errorf("unsupported scan type for StatusEnum: %T", src)
+	}
+	return nil
+}
+
+type NullStatusEnum struct {
+	StatusEnum StatusEnum `json:"status_enum"`
+	Valid      bool       `json:"valid"` // Valid is true if StatusEnum is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullStatusEnum) Scan(value interface{}) error {
+	if value == nil {
+		ns.StatusEnum, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.StatusEnum.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullStatusEnum) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.StatusEnum), nil
+}
+
 type Account struct {
 	AccountID     uuid.UUID    `json:"account_id"`
 	Email         string       `json:"email"`
@@ -66,6 +109,7 @@ type Account struct {
 	EloRating     int32        `json:"elo_rating"`
 	LastActive    sql.NullTime `json:"last_active"`
 	School        string       `json:"school"`
+	GoldAmount    string       `json:"gold_amount"`
 	IsDeactivated bool         `json:"is_deactivated"`
 }
 
@@ -79,25 +123,21 @@ type Comment struct {
 }
 
 type Contest struct {
-	ContestID   uuid.UUID `json:"contest_id"`
-	Name        string    `json:"name"`
-	Description string    `json:"description"`
-	UploadTime  time.Time `json:"upload_time"`
-	Duration    int64     `json:"duration"`
-	Difficulty  int32     `json:"difficulty"`
-	Author      string    `json:"author"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ContestID   uuid.UUID     `json:"contest_id"`
+	Name        string        `json:"name"`
+	Description string        `json:"description"`
+	StartTime   time.Time     `json:"start_time"`
+	Duration    int32         `json:"duration"`
+	Difficulty  int32         `json:"difficulty"`
+	AuthorID    uuid.NullUUID `json:"author_id"`
+	UpdatedAt   time.Time     `json:"updated_at"`
+	Status      StatusEnum    `json:"status"`
 }
 
 type ContestDetail struct {
 	ContestDetailID uuid.UUID     `json:"contest_detail_id"`
 	ContestID       uuid.NullUUID `json:"contest_id"`
 	IsPublic        bool          `json:"is_public"`
-}
-
-type ContestQuestion struct {
-	ContestDetailID uuid.UUID `json:"contest_detail_id"`
-	QuestionID      uuid.UUID `json:"question_id"`
 }
 
 type ContestRegistration struct {
@@ -130,20 +170,15 @@ type Post struct {
 }
 
 type Question struct {
-	QuestionID    uuid.UUID `json:"question_id"`
-	Description   string    `json:"description"`
-	Answers       []string  `json:"answers"`
-	CorrectAnswer string    `json:"correct_answer"`
-	UpdatedAt     time.Time `json:"updated_at"`
-	Subject       string    `json:"subject"`
-}
-
-type QuestionPhoto struct {
-	PhotoID    uuid.UUID     `json:"photo_id"`
-	QuestionID uuid.NullUUID `json:"question_id"`
-	PhotoName  string        `json:"photo_name"`
-	PhotoPath  string        `json:"photo_path"`
-	UpdatedAt  time.Time     `json:"updated_at"`
+	QuestionID    uuid.UUID     `json:"question_id"`
+	ContestID     uuid.NullUUID `json:"contest_id"`
+	Description   string        `json:"description"`
+	Answers       []string      `json:"answers"`
+	CorrectAnswer string        `json:"correct_answer"`
+	UpdatedAt     time.Time     `json:"updated_at"`
+	Subject       string        `json:"subject"`
+	IsPublic      bool          `json:"is_public"`
+	QuestionTag   string        `json:"question_tag"`
 }
 
 type Reaction struct {

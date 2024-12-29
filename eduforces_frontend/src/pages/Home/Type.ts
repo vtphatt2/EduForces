@@ -6,8 +6,9 @@ export interface HomePostProps {
 }
 
 export interface HomeContestProps {
-  title: string;
-  timestamp: string;
+    title: string;
+    timestamp: string;
+    duration?: string;
 }
 
 export interface HomeLeaderboardProps {

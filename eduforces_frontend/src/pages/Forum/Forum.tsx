@@ -6,6 +6,7 @@ import NavBar from "../../components/NavBar";
 import NavPage from "./NavPage";
 import TextArea from "./TextArea";
 import { PostPropsAPI } from "./Type";
+import getAccountDetailById from "../../components/Common";
 
 const baseUrl = "http://localhost:8080/api/v1";
 
@@ -34,14 +35,21 @@ const Forum: React.FC = () => {
       }
 
       if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
+        throw new Error(`${response.status}`);
       }
 
       const data = await response.json();
-      setPostList(data.data);
-      setNumPages(Math.ceil(data.meta.total / 5));
+      const postListTmp = data.data === null ? [] : data.data;
+      for (let i = 0; i < postListTmp.length; i++) {
+        const author_detail = await getAccountDetailById(
+          postListTmp[i].author_id
+        );
+        postListTmp[i].author_id = author_detail.username;
+      }
+      setPostList(postListTmp);
+      setNumPages(Math.ceil(data.meta.total / data.meta.limit));
     } catch (error) {
-      alert(`Error: ${error}`);
+      alert(`${error}`);
     }
   };
 
@@ -96,7 +104,7 @@ const Forum: React.FC = () => {
         <div className={styles.forumContainer}>
           <h1 className={styles.forumTitle}>Posts</h1>
           <section className={styles.postList}>
-            {postList === null ? (
+            {postList === null || postList.length === 0 ? (
               <p style={{ color: "black" }}>No posts found</p>
             ) : (
               postList.map((post) => (

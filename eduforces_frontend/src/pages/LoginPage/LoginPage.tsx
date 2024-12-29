@@ -8,13 +8,13 @@ import { useAuth } from "../../context/AuthContext";
 
 // Environment variables for sensitive data
 const clientId =
-  "909711892201-us0kuhr04lu7jmpdi9usnejpbe2mmklh.apps.googleusercontent.com";
+  "173187182094-lol8u5tku7e1bpi6br0tcfsqd4huqtag.apps.googleusercontent.com"
 const backendAuthEndpoint = "http://localhost:8080/api/v1/auth/google";
 const redirectUri = "http://localhost:5173/login";
 
 // Function to handle the click event for Google OAuth2 login
 const handleClick = () => {
-  const scope = "openid email profile picture";
+  const scope = "openid email profile";
   const responseType = "code";
 
   const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=${responseType}&scope=${scope}`;
@@ -53,10 +53,9 @@ const LoginPage: React.FC = () => {
 
             // Store the session ID in local storage
             localStorage.setItem("session_id", data.session_id);
-            localStorage.setItem("username", data.user.username);
-
+            localStorage.setItem("name", data.user.name);
             setIsLoggedIn(true);
-            setUsername(data.user.username);
+            setUsername(data.user.name);
             // Redirect to the home page or dashboard
             navigate("/");
           } else {
@@ -66,6 +65,10 @@ const LoginPage: React.FC = () => {
         .catch((error) => console.error("Error during login:", error));
     }
   }, [navigate, setIsLoggedIn, setUsername]);
+  if (localStorage.getItem("session_id") !== null) {
+    navigate("/");
+    return null;
+  }
   return (
     <div className="logo-text-container">
       <div className="intro-text">

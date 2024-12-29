@@ -4,6 +4,7 @@ import InfoBox from "./InfoBox";
 import EditableInfoBox from "./EditableInfoBox";
 import NavBar from "../../components/NavBar";
 import Button from "../../components/Button";
+import { getTrueImageSrc } from "../../components/Common";
 
 const baseUrl = "http://localhost:8080/api/v1";
 
@@ -13,6 +14,12 @@ const UserProfile: React.FC = () => {
   const [name, setName] = useState({ title: "Name", content: "" });
   const [email, setEmail] = useState({ title: "Email", content: "" });
   const [role, setRole] = useState({ title: "Role", content: "" });
+  const [school, setSchool] = useState("");
+  const [avatarSrc, setAvatarSrc] = useState(
+    "https://www.w3schools.com/howto/img_avatar.png"
+  );
+  const [elo, setElo] = useState({ title: "Elo", content: "0" });
+  const [property, setProperty] = useState({ title: "Coins", content: "" });
   const fetchUserProfile = async () => {
     try {
       const response = await fetch(`${baseUrl}/accounts/account-details`, {
@@ -32,6 +39,10 @@ const UserProfile: React.FC = () => {
       setName({ title: "Name", content: data.name });
       setEmail({ title: "Email", content: data.email });
       setRole({ title: "Role", content: data.role });
+      setSchool(data.school);
+      setAvatarSrc(getTrueImageSrc(data.avatar_path));
+      setElo({ title: "Elo", content: `${data.elo_rating}` });
+      setProperty({ title: "Coins", content: `${data.gold_amount}` });
     } catch (error) {
       alert(`Error: ${error}`);
     }
@@ -39,39 +50,39 @@ const UserProfile: React.FC = () => {
 
   useEffect(() => {
     fetchUserProfile();
-  }, []);
-  // const user = {
-  //   title: "Username",
-  //   content: "phuloi321",
-  // };
-  // const name = {
-  //   title: "Name",
-  //   content: "Pham Phu Loi",
-  // };
-  // const email = {
-  //   title: "Email",
-  //   content: "phuloi123@gmail.com",
-  // };
-  const elo = {
-    title: "Elo",
-    content: "3200",
-  };
-  // const role = {
-  //   title: "Role",
-  //   content: "User",
-  // };
-  const property = {
-    title: "Property",
-    content: "10 Gold",
-  };
+  }, [user.content, school]);
 
-  const changeAvatarClick = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const changeAvatarClick = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
     const file = e.target.files[0];
     const avatar = document.getElementsByClassName(
       styles.avatar
     )[0] as HTMLImageElement;
     avatar.src = URL.createObjectURL(file);
+
+    // Prepare the FormData to send to the backend
+    const formData = new FormData();
+    formData.append("avatar", file);
+
+    try {
+      // Make the POST request to upload the image
+      const response = await fetch(`${baseUrl}/accounts/upload-avatar`, {
+        method: "PUT",
+        headers: {
+          Authorization: localStorage.getItem("session_id") || "",
+        },
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Avatar uploaded successfully:", data);
+      } else {
+        console.error("Failed to upload avatar");
+      }
+    } catch (error) {
+      console.error("Error uploading avatar:", error);
+    }
   };
 
   const changeUserProfile = async () => {
@@ -83,6 +94,14 @@ const UserProfile: React.FC = () => {
       return;
     }
 
+    const _school = (
+      document.getElementsByTagName("textarea")[1] as HTMLTextAreaElement
+    ).value;
+    if (!_school) {
+      alert("School cannot be empty");
+      return;
+    }
+
     try {
       const response = await fetch(`${baseUrl}/accounts/update-username`, {
         method: "PUT",
@@ -90,7 +109,7 @@ const UserProfile: React.FC = () => {
           "Content-Type": "application/json",
           Authorization: localStorage.getItem("session_id") || "",
         },
-        body: JSON.stringify({ username }),
+        body: JSON.stringify({ username, school: _school }),
       });
 
       if (!response.ok) {
@@ -106,11 +125,7 @@ const UserProfile: React.FC = () => {
   return (
     <main className={styles.userProfile}>
       <NavBar />
-      <img
-        src="https://www.w3schools.com/howto/img_avatar.png"
-        alt="Avatar"
-        className={styles.avatar}
-      />
+      <img src={avatarSrc} alt="Avatar" className={styles.avatar} />
       <input
         id={styles.upload}
         type="file"
@@ -129,6 +144,7 @@ const UserProfile: React.FC = () => {
         <EditableInfoBox title={user.title} content={user.content} />
         <InfoBox title={name.title} content={name.content} />
         <InfoBox title={email.title} content={email.content} />
+        <EditableInfoBox title="School" content={school} />
         <InfoBox title={elo.title} content={elo.content} />
         <InfoBox title={role.title} content={role.content} />
         <InfoBox title={property.title} content={property.content} />

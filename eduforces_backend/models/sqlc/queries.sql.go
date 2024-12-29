@@ -39,58 +39,6 @@ func (q *Queries) AddCommentToPost(ctx context.Context, arg AddCommentToPostPara
 	return err
 }
 
-const addContestDetail = `-- name: AddContestDetail :exec
-INSERT INTO contest_details (contest_detail_id, contest_id, is_public) VALUES ($1, $2, $3)
-`
-
-type AddContestDetailParams struct {
-	ContestDetailID uuid.UUID     `json:"contest_detail_id"`
-	ContestID       uuid.NullUUID `json:"contest_id"`
-	IsPublic        bool          `json:"is_public"`
-}
-
-func (q *Queries) AddContestDetail(ctx context.Context, arg AddContestDetailParams) error {
-	_, err := q.db.ExecContext(ctx, addContestDetail, arg.ContestDetailID, arg.ContestID, arg.IsPublic)
-	return err
-}
-
-const addContestQuestion = `-- name: AddContestQuestion :exec
-INSERT INTO contest_questions (contest_detail_id, question_id) VALUES ($1, $2)
-`
-
-type AddContestQuestionParams struct {
-	ContestDetailID uuid.UUID `json:"contest_detail_id"`
-	QuestionID      uuid.UUID `json:"question_id"`
-}
-
-func (q *Queries) AddContestQuestion(ctx context.Context, arg AddContestQuestionParams) error {
-	_, err := q.db.ExecContext(ctx, addContestQuestion, arg.ContestDetailID, arg.QuestionID)
-	return err
-}
-
-const addPhotoToQuestion = `-- name: AddPhotoToQuestion :exec
-INSERT INTO question_photos (photo_id, question_id, photo_name, photo_path, updated_at) VALUES ($1, $2, $3, $4, $5)
-`
-
-type AddPhotoToQuestionParams struct {
-	PhotoID    uuid.UUID     `json:"photo_id"`
-	QuestionID uuid.NullUUID `json:"question_id"`
-	PhotoName  string        `json:"photo_name"`
-	PhotoPath  string        `json:"photo_path"`
-	UpdatedAt  time.Time     `json:"updated_at"`
-}
-
-func (q *Queries) AddPhotoToQuestion(ctx context.Context, arg AddPhotoToQuestionParams) error {
-	_, err := q.db.ExecContext(ctx, addPhotoToQuestion,
-		arg.PhotoID,
-		arg.QuestionID,
-		arg.PhotoName,
-		arg.PhotoPath,
-		arg.UpdatedAt,
-	)
-	return err
-}
-
 const addReactionToPost = `-- name: AddReactionToPost :exec
 INSERT INTO reactions (reaction_id, type, account_id, timestamp, post_id, comment_id) VALUES ($1, $2, $3, $4, $5, $6)
 `
@@ -135,6 +83,21 @@ func (q *Queries) AddSubmissionDetail(ctx context.Context, arg AddSubmissionDeta
 		arg.Choice,
 	)
 	return err
+}
+
+const checkContestExistsWithSubject = `-- name: CheckContestExistsWithSubject :one
+SELECT EXISTS (
+    SELECT 1
+    FROM questions
+    WHERE subject = $1
+)
+`
+
+func (q *Queries) CheckContestExistsWithSubject(ctx context.Context, subject string) (bool, error) {
+	row := q.db.QueryRowContext(ctx, checkContestExistsWithSubject, subject)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
 }
 
 const checkReactionExists = `-- name: CheckReactionExists :one
@@ -218,18 +181,18 @@ func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) er
 }
 
 const createContest = `-- name: CreateContest :exec
-INSERT INTO contests (contest_id, name, description, upload_time, duration, difficulty, author, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+INSERT INTO contests (contest_id, name, description, start_time, duration, difficulty, author_id, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 `
 
 type CreateContestParams struct {
-	ContestID   uuid.UUID `json:"contest_id"`
-	Name        string    `json:"name"`
-	Description string    `json:"description"`
-	UploadTime  time.Time `json:"upload_time"`
-	Duration    int64     `json:"duration"`
-	Difficulty  int32     `json:"difficulty"`
-	Author      string    `json:"author"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ContestID   uuid.UUID     `json:"contest_id"`
+	Name        string        `json:"name"`
+	Description string        `json:"description"`
+	StartTime   time.Time     `json:"start_time"`
+	Duration    int32         `json:"duration"`
+	Difficulty  int32         `json:"difficulty"`
+	AuthorID    uuid.NullUUID `json:"author_id"`
+	UpdatedAt   time.Time     `json:"updated_at"`
 }
 
 func (q *Queries) CreateContest(ctx context.Context, arg CreateContestParams) error {
@@ -237,10 +200,10 @@ func (q *Queries) CreateContest(ctx context.Context, arg CreateContestParams) er
 		arg.ContestID,
 		arg.Name,
 		arg.Description,
-		arg.UploadTime,
+		arg.StartTime,
 		arg.Duration,
 		arg.Difficulty,
-		arg.Author,
+		arg.AuthorID,
 		arg.UpdatedAt,
 	)
 	return err
@@ -308,26 +271,28 @@ func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) error {
 }
 
 const createQuestion = `-- name: CreateQuestion :exec
-INSERT INTO questions (question_id, description, answers, correct_answer, updated_at, subject) VALUES ($1, $2, $3, $4, $5, $6)
+INSERT INTO questions (contest_id,description, answers, correct_answer, updated_at, subject, question_tag) VALUES ($1, $2, $3, $4, $5, $6,$7)
 `
 
 type CreateQuestionParams struct {
-	QuestionID    uuid.UUID `json:"question_id"`
-	Description   string    `json:"description"`
-	Answers       []string  `json:"answers"`
-	CorrectAnswer string    `json:"correct_answer"`
-	UpdatedAt     time.Time `json:"updated_at"`
-	Subject       string    `json:"subject"`
+	ContestID     uuid.NullUUID `json:"contest_id"`
+	Description   string        `json:"description"`
+	Answers       []string      `json:"answers"`
+	CorrectAnswer string        `json:"correct_answer"`
+	UpdatedAt     time.Time     `json:"updated_at"`
+	Subject       string        `json:"subject"`
+	QuestionTag   string        `json:"question_tag"`
 }
 
 func (q *Queries) CreateQuestion(ctx context.Context, arg CreateQuestionParams) error {
 	_, err := q.db.ExecContext(ctx, createQuestion,
-		arg.QuestionID,
+		arg.ContestID,
 		arg.Description,
 		pq.Array(arg.Answers),
 		arg.CorrectAnswer,
 		arg.UpdatedAt,
 		arg.Subject,
+		arg.QuestionTag,
 	)
 	return err
 }
@@ -418,7 +383,7 @@ func (q *Queries) DeleteSubmission(ctx context.Context, submissionID uuid.UUID) 
 
 const getAccount = `-- name: GetAccount :one
 
-SELECT account_id, email, username, name, role, avatar_path, elo_rating, last_active, school, is_deactivated FROM accounts WHERE account_id = $1
+SELECT account_id, email, username, name, role, avatar_path, elo_rating, last_active, school, gold_amount, is_deactivated FROM accounts WHERE account_id = $1
 `
 
 // --- Account
@@ -435,17 +400,16 @@ func (q *Queries) GetAccount(ctx context.Context, accountID uuid.UUID) (Account,
 		&i.EloRating,
 		&i.LastActive,
 		&i.School,
+		&i.GoldAmount,
 		&i.IsDeactivated,
 	)
 	return i, err
 }
 
 const getAccountByEmail = `-- name: GetAccountByEmail :one
-
-SELECT account_id, email, username, name, role, avatar_path, elo_rating, last_active, school, is_deactivated FROM accounts WHERE email = $1
+SELECT account_id, email, username, name, role, avatar_path, elo_rating, last_active, school, gold_amount, is_deactivated FROM accounts WHERE email = $1
 `
 
-// -- Forum
 func (q *Queries) GetAccountByEmail(ctx context.Context, email string) (Account, error) {
 	row := q.db.QueryRowContext(ctx, getAccountByEmail, email)
 	var i Account
@@ -459,6 +423,7 @@ func (q *Queries) GetAccountByEmail(ctx context.Context, email string) (Account,
 		&i.EloRating,
 		&i.LastActive,
 		&i.School,
+		&i.GoldAmount,
 		&i.IsDeactivated,
 	)
 	return i, err
@@ -564,7 +529,7 @@ func (q *Queries) GetCommentsForPost(ctx context.Context, arg GetCommentsForPost
 }
 
 const getContest = `-- name: GetContest :one
-SELECT contest_id, name, description, upload_time, duration, difficulty, author, updated_at FROM contests WHERE contest_id = $1
+SELECT contest_id, name, description, start_time, duration, difficulty, author_id, updated_at, status FROM contests WHERE contest_id = $1
 `
 
 // ---- Contest
@@ -575,92 +540,14 @@ func (q *Queries) GetContest(ctx context.Context, contestID uuid.UUID) (Contest,
 		&i.ContestID,
 		&i.Name,
 		&i.Description,
-		&i.UploadTime,
+		&i.StartTime,
 		&i.Duration,
 		&i.Difficulty,
-		&i.Author,
+		&i.AuthorID,
 		&i.UpdatedAt,
+		&i.Status,
 	)
 	return i, err
-}
-
-const getContestDetails = `-- name: GetContestDetails :one
-SELECT contest_detail_id, contest_id, is_public FROM contest_details WHERE contest_id = $1
-`
-
-func (q *Queries) GetContestDetails(ctx context.Context, contestID uuid.NullUUID) (ContestDetail, error) {
-	row := q.db.QueryRowContext(ctx, getContestDetails, contestID)
-	var i ContestDetail
-	err := row.Scan(&i.ContestDetailID, &i.ContestID, &i.IsPublic)
-	return i, err
-}
-
-const getContestQuestions = `-- name: GetContestQuestions :many
-SELECT q.question_id, q.description, q.answers, q.correct_answer, q.updated_at, q.subject FROM questions q
-JOIN contest_questions cq ON q.question_id = cq.question_id
-WHERE cq.contest_detail_id = $1
-`
-
-func (q *Queries) GetContestQuestions(ctx context.Context, contestDetailID uuid.UUID) ([]Question, error) {
-	rows, err := q.db.QueryContext(ctx, getContestQuestions, contestDetailID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Question
-	for rows.Next() {
-		var i Question
-		if err := rows.Scan(
-			&i.QuestionID,
-			&i.Description,
-			pq.Array(&i.Answers),
-			&i.CorrectAnswer,
-			&i.UpdatedAt,
-			&i.Subject,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getContestRegistrations = `-- name: GetContestRegistrations :many
-SELECT registration_id, account_id, contest_id, registration_time FROM contest_registrations WHERE contest_id = $1
-`
-
-func (q *Queries) GetContestRegistrations(ctx context.Context, contestID uuid.NullUUID) ([]ContestRegistration, error) {
-	rows, err := q.db.QueryContext(ctx, getContestRegistrations, contestID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []ContestRegistration
-	for rows.Next() {
-		var i ContestRegistration
-		if err := rows.Scan(
-			&i.RegistrationID,
-			&i.AccountID,
-			&i.ContestID,
-			&i.RegistrationTime,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
 }
 
 const getDailyTask = `-- name: GetDailyTask :one
@@ -709,43 +596,37 @@ func (q *Queries) GetEventTask(ctx context.Context, eventTaskID uuid.UUID) (Even
 	return i, err
 }
 
-const getPhotosForQuestion = `-- name: GetPhotosForQuestion :many
-SELECT photo_id, question_id, photo_name, photo_path, updated_at FROM question_photos WHERE question_id = $1
+const getLatestQuestionWithSubject = `-- name: GetLatestQuestionWithSubject :one
+SELECT question_id, contest_id, description, answers, correct_answer, updated_at, subject, is_public, question_tag
+FROM questions
+WHERE subject = $1 -- Replace 'Math' with the desired subject
+ORDER BY updated_at DESC -- Assuming updated_at stores the timestamp of the last update
+LIMIT 1
 `
 
-func (q *Queries) GetPhotosForQuestion(ctx context.Context, questionID uuid.NullUUID) ([]QuestionPhoto, error) {
-	rows, err := q.db.QueryContext(ctx, getPhotosForQuestion, questionID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []QuestionPhoto
-	for rows.Next() {
-		var i QuestionPhoto
-		if err := rows.Scan(
-			&i.PhotoID,
-			&i.QuestionID,
-			&i.PhotoName,
-			&i.PhotoPath,
-			&i.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+func (q *Queries) GetLatestQuestionWithSubject(ctx context.Context, subject string) (Question, error) {
+	row := q.db.QueryRowContext(ctx, getLatestQuestionWithSubject, subject)
+	var i Question
+	err := row.Scan(
+		&i.QuestionID,
+		&i.ContestID,
+		&i.Description,
+		pq.Array(&i.Answers),
+		&i.CorrectAnswer,
+		&i.UpdatedAt,
+		&i.Subject,
+		&i.IsPublic,
+		&i.QuestionTag,
+	)
+	return i, err
 }
 
 const getPost = `-- name: GetPost :one
+
 SELECT post_id, author_id, title, content, timestamp FROM posts WHERE post_id = $1
 `
 
+// -- Forum
 func (q *Queries) GetPost(ctx context.Context, postID uuid.UUID) (Post, error) {
 	row := q.db.QueryRowContext(ctx, getPost, postID)
 	var i Post
@@ -760,21 +641,22 @@ func (q *Queries) GetPost(ctx context.Context, postID uuid.UUID) (Post, error) {
 }
 
 const getQuestion = `-- name: GetQuestion :one
-
-SELECT question_id, description, answers, correct_answer, updated_at, subject FROM questions WHERE question_id = $1
+SELECT question_id, contest_id, description, answers, correct_answer, updated_at, subject, is_public, question_tag FROM questions WHERE question_id = $1
 `
 
-// -Question
 func (q *Queries) GetQuestion(ctx context.Context, questionID uuid.UUID) (Question, error) {
 	row := q.db.QueryRowContext(ctx, getQuestion, questionID)
 	var i Question
 	err := row.Scan(
 		&i.QuestionID,
+		&i.ContestID,
 		&i.Description,
 		pq.Array(&i.Answers),
 		&i.CorrectAnswer,
 		&i.UpdatedAt,
 		&i.Subject,
+		&i.IsPublic,
+		&i.QuestionTag,
 	)
 	return i, err
 }
@@ -950,7 +832,7 @@ func (q *Queries) IsEventDate(ctx context.Context, eventTaskID uuid.UUID) (bool,
 }
 
 const listAccounts = `-- name: ListAccounts :many
-SELECT account_id, email, username, name, role, avatar_path, elo_rating, last_active, school, is_deactivated FROM accounts
+SELECT account_id, email, username, name, role, avatar_path, elo_rating, last_active, school, gold_amount, is_deactivated FROM accounts
 `
 
 func (q *Queries) ListAccounts(ctx context.Context) ([]Account, error) {
@@ -972,6 +854,7 @@ func (q *Queries) ListAccounts(ctx context.Context) ([]Account, error) {
 			&i.EloRating,
 			&i.LastActive,
 			&i.School,
+			&i.GoldAmount,
 			&i.IsDeactivated,
 		); err != nil {
 			return nil, err
@@ -988,7 +871,7 @@ func (q *Queries) ListAccounts(ctx context.Context) ([]Account, error) {
 }
 
 const listContests = `-- name: ListContests :many
-SELECT contest_id, name, description, upload_time, duration, difficulty, author, updated_at FROM contests
+SELECT contest_id, name, description, start_time, duration, difficulty, author_id, updated_at, status FROM contests
 `
 
 func (q *Queries) ListContests(ctx context.Context) ([]Contest, error) {
@@ -1004,11 +887,86 @@ func (q *Queries) ListContests(ctx context.Context) ([]Contest, error) {
 			&i.ContestID,
 			&i.Name,
 			&i.Description,
-			&i.UploadTime,
+			&i.StartTime,
 			&i.Duration,
 			&i.Difficulty,
-			&i.Author,
+			&i.AuthorID,
 			&i.UpdatedAt,
+			&i.Status,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listContestsByStatus = `-- name: ListContestsByStatus :many
+SELECT contest_id, name, description, start_time, duration, difficulty, author_id, updated_at, status FROM contests WHERE status = $1
+`
+
+func (q *Queries) ListContestsByStatus(ctx context.Context, status StatusEnum) ([]Contest, error) {
+	rows, err := q.db.QueryContext(ctx, listContestsByStatus, status)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Contest
+	for rows.Next() {
+		var i Contest
+		if err := rows.Scan(
+			&i.ContestID,
+			&i.Name,
+			&i.Description,
+			&i.StartTime,
+			&i.Duration,
+			&i.Difficulty,
+			&i.AuthorID,
+			&i.UpdatedAt,
+			&i.Status,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listContestsOfAuthor = `-- name: ListContestsOfAuthor :many
+SELECT contest_id, name, description, start_time, duration, difficulty, author_id, updated_at, status FROM contests WHERE author_id = $1
+`
+
+func (q *Queries) ListContestsOfAuthor(ctx context.Context, authorID uuid.NullUUID) ([]Contest, error) {
+	rows, err := q.db.QueryContext(ctx, listContestsOfAuthor, authorID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Contest
+	for rows.Next() {
+		var i Contest
+		if err := rows.Scan(
+			&i.ContestID,
+			&i.Name,
+			&i.Description,
+			&i.StartTime,
+			&i.Duration,
+			&i.Difficulty,
+			&i.AuthorID,
+			&i.UpdatedAt,
+			&i.Status,
 		); err != nil {
 			return nil, err
 		}
@@ -1090,7 +1048,7 @@ func (q *Queries) ListPosts(ctx context.Context) ([]Post, error) {
 }
 
 const listQuestions = `-- name: ListQuestions :many
-SELECT question_id, description, answers, correct_answer, updated_at, subject FROM questions
+SELECT question_id, contest_id, description, answers, correct_answer, updated_at, subject, is_public, question_tag FROM questions
 `
 
 func (q *Queries) ListQuestions(ctx context.Context) ([]Question, error) {
@@ -1104,11 +1062,51 @@ func (q *Queries) ListQuestions(ctx context.Context) ([]Question, error) {
 		var i Question
 		if err := rows.Scan(
 			&i.QuestionID,
+			&i.ContestID,
 			&i.Description,
 			pq.Array(&i.Answers),
 			&i.CorrectAnswer,
 			&i.UpdatedAt,
 			&i.Subject,
+			&i.IsPublic,
+			&i.QuestionTag,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listQuestionsOfContest = `-- name: ListQuestionsOfContest :many
+SELECT question_id, contest_id, description, answers, correct_answer, updated_at, subject, is_public, question_tag FROM questions WHERE contest_id = $1
+`
+
+func (q *Queries) ListQuestionsOfContest(ctx context.Context, contestID uuid.NullUUID) ([]Question, error) {
+	rows, err := q.db.QueryContext(ctx, listQuestionsOfContest, contestID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Question
+	for rows.Next() {
+		var i Question
+		if err := rows.Scan(
+			&i.QuestionID,
+			&i.ContestID,
+			&i.Description,
+			pq.Array(&i.Answers),
+			&i.CorrectAnswer,
+			&i.UpdatedAt,
+			&i.Subject,
+			&i.IsPublic,
+			&i.QuestionTag,
 		); err != nil {
 			return nil, err
 		}
@@ -1153,27 +1151,6 @@ func (q *Queries) ListSubmissions(ctx context.Context) ([]Submission, error) {
 		return nil, err
 	}
 	return items, nil
-}
-
-const registerForContest = `-- name: RegisterForContest :exec
-INSERT INTO contest_registrations (registration_id, account_id, contest_id, registration_time) VALUES ($1, $2, $3, $4)
-`
-
-type RegisterForContestParams struct {
-	RegistrationID   uuid.UUID     `json:"registration_id"`
-	AccountID        uuid.NullUUID `json:"account_id"`
-	ContestID        uuid.NullUUID `json:"contest_id"`
-	RegistrationTime time.Time     `json:"registration_time"`
-}
-
-func (q *Queries) RegisterForContest(ctx context.Context, arg RegisterForContestParams) error {
-	_, err := q.db.ExecContext(ctx, registerForContest,
-		arg.RegistrationID,
-		arg.AccountID,
-		arg.ContestID,
-		arg.RegistrationTime,
-	)
-	return err
 }
 
 const updateAccountAvatar = `-- name: UpdateAccountAvatar :exec
@@ -1274,6 +1251,22 @@ func (q *Queries) UpdateAccountUsername(ctx context.Context, arg UpdateAccountUs
 	return err
 }
 
+const updateAvatarPath = `-- name: UpdateAvatarPath :exec
+UPDATE accounts
+SET avatar_path = $1
+WHERE account_id = $2
+`
+
+type UpdateAvatarPathParams struct {
+	AvatarPath string    `json:"avatar_path"`
+	AccountID  uuid.UUID `json:"account_id"`
+}
+
+func (q *Queries) UpdateAvatarPath(ctx context.Context, arg UpdateAvatarPathParams) error {
+	_, err := q.db.ExecContext(ctx, updateAvatarPath, arg.AvatarPath, arg.AccountID)
+	return err
+}
+
 const updateComment = `-- name: UpdateComment :exec
 UPDATE comments SET content = $1 WHERE comment_id = $2
 `
@@ -1303,6 +1296,20 @@ func (q *Queries) UpdateContestDescription(ctx context.Context, arg UpdateContes
 	return err
 }
 
+const updateContestStatus = `-- name: UpdateContestStatus :exec
+UPDATE contests SET status = $1 WHERE contest_id = $2
+`
+
+type UpdateContestStatusParams struct {
+	Status    StatusEnum `json:"status"`
+	ContestID uuid.UUID  `json:"contest_id"`
+}
+
+func (q *Queries) UpdateContestStatus(ctx context.Context, arg UpdateContestStatusParams) error {
+	_, err := q.db.ExecContext(ctx, updateContestStatus, arg.Status, arg.ContestID)
+	return err
+}
+
 const updateDailyTaskStatus = `-- name: UpdateDailyTaskStatus :exec
 UPDATE daily_tasks SET is_completed = $1 WHERE daily_task_id = $2
 `
@@ -1328,6 +1335,17 @@ type UpdatePostContentParams struct {
 
 func (q *Queries) UpdatePostContent(ctx context.Context, arg UpdatePostContentParams) error {
 	_, err := q.db.ExecContext(ctx, updatePostContent, arg.Content, arg.PostID)
+	return err
+}
+
+const updatePublicQuestion = `-- name: UpdatePublicQuestion :exec
+
+UPDATE questions SET is_public = TRUE WHERE question_id = $1
+`
+
+// -Question
+func (q *Queries) UpdatePublicQuestion(ctx context.Context, questionID uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, updatePublicQuestion, questionID)
 	return err
 }
 

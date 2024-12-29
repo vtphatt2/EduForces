@@ -7,13 +7,15 @@ interface ButtonProps {
   style?: React.CSSProperties;
   color?: string;  
   backgroundColor?: string; 
+  borderColor?: string;
 }
 
-const Button: React.FC<ButtonProps> = ({ label, onClick, color, backgroundColor, style }) => {
+const Button: React.FC<ButtonProps> = ({ label, onClick, color, backgroundColor, borderColor, style }) => {
   const buttonStyle: React.CSSProperties = {
     ...style,
     color: color || 'white',  
     backgroundColor: backgroundColor || '#5D5A88', 
+    borderColor: borderColor || 'none',
   };
 
   return (
