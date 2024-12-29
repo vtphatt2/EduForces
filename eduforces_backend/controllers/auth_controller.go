@@ -299,3 +299,43 @@ func (ctrl *AuthController) UploadAvatar(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Avatar uploaded successfully", "avatar_path": avatarPath})
 }
+
+func (ctrl *AuthController) UpdateAccountRole(c *gin.Context) {
+	var request struct {
+		AccountID string `json:"account_id" binding:"required"`
+		Role      string `json:"role" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		return
+	}
+
+	err := ctrl.service.UpdateAccountRole(c.Request.Context(), uuid.MustParse(request.AccountID), request.Role)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "User role updated successfully"})
+}
+
+func (ctrl *AuthController) UpdateAccountDeactivation(c *gin.Context) {
+	var request struct {
+		AccountID     string `json:"account_id" binding:"required"`
+		IsDeactivated int    `json:"is_deactivated" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		return
+	}
+
+	err := ctrl.service.UpdateDeactivation(c.Request.Context(), uuid.MustParse(request.AccountID), request.IsDeactivated == 1)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "User deactivation status updated successfully"})
+}

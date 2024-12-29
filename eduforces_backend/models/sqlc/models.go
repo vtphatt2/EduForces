@@ -203,3 +203,9 @@ type SubmissionDetail struct {
 	QuestionNumber     string        `json:"question_number"`
 	Choice             string        `json:"choice"`
 }
+
+type UserDoneQuestion struct {
+	AccountID  uuid.UUID `json:"account_id"`
+	QuestionID uuid.UUID `json:"question_id"`
+	Done       bool      `json:"done"`
+}

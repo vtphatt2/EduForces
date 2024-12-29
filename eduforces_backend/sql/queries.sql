@@ -37,6 +37,9 @@ UPDATE accounts SET school = $1 WHERE account_id = $2;
 -- name: UpdateAccountDeactivation :exec
 UPDATE accounts SET is_deactivated = $1 WHERE account_id = $2;
 
+-- name: UpdateAccountRole :exec
+UPDATE accounts SET role = $1 WHERE account_id = $2;
+
 -- name: UpdateAvatarPath :exec
 UPDATE accounts
 SET avatar_path = $1
@@ -149,6 +152,17 @@ SELECT EXISTS (
 
 -- name: ListQuestions :many
 SELECT * FROM questions;
+
+-- name: FilterQuestionsBySubjectsAndDoneStatus :many
+SELECT q.*
+FROM questions q
+LEFT JOIN user_done_question udq ON q.question_id = udq.question_id AND udq.account_id = $2
+WHERE q.subject = ANY($1::text[])
+AND (
+    ($3::boolean IS NULL) OR
+    (udq.done = $3::boolean) OR
+    (udq.done IS NULL AND $3::boolean = false)
+);
 
 
 

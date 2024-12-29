@@ -125,3 +125,12 @@ CREATE TABLE questions (
     is_public BOOLEAN NOT NULL DEFAULT FALSE,
     question_tag VARCHAR NOT NULL
 );
+
+CREATE TABLE user_done_question (
+    account_id UUID NOT NULL,
+    question_id UUID NOT NULL,
+    done BOOLEAN NOT NULL,
+    PRIMARY KEY (account_id, question_id),
+    FOREIGN KEY (account_id) REFERENCES accounts(account_id),
+    FOREIGN KEY (question_id) REFERENCES questions(question_id)
+);

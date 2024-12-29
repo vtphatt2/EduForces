@@ -221,13 +221,13 @@ func (s *ContestService) ScheduleContestStatusUpdates(ctx context.Context) {
 
 	// Schedule function to update Pending contests to Live
 	c.AddFunc("@every 1s", func() {
-		log.Println("Updating Pending contests to Live")
+		// log.Println("Updating Pending contests to Live")
 		s.updatePendingContestsToLive(context.Background())
 	})
 
 	// Schedule function to update Live contests to Ended
 	c.AddFunc("@every 1s", func() {
-		log.Println("Updating Live contests to Ended")
+		// log.Println("Updating Live contests to Ended")
 		s.updateLiveContestsToEnded(context.Background())
 	})
 
@@ -280,4 +280,18 @@ func (s *ContestService) updateLiveContestsToEnded(ctx context.Context) {
 			}
 		}
 	}
+}
+
+type FilterQuestionsParams struct {
+	Subjects  []string  `json:"subjects"`
+	AccountID uuid.UUID `json:"account_id"`
+	Done      bool      `json:"done"`
+}
+
+func (s *ContestService) FilterQuestions(ctx context.Context, params FilterQuestionsParams) ([]sqlc.Question, error) {
+	return s.QuestionRepository.FilterQuestions(ctx, repositories.FilterQuestionsParams{
+		Subjects:  params.Subjects,
+		AccountID: params.AccountID,
+		Done:      params.Done,
+	})
 }

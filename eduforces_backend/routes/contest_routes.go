@@ -16,4 +16,8 @@ func RegisterContestRoutes(router *gin.Engine, contestCtrl *controllers.ContestC
 		// contestRoutes.PUT("/:id", sessionMiddleware, postCtrl.UpdatePost)
 		// contestRoutes.DELETE("/:id", sessionMiddleware, postCtrl.DeletePost)
 	}
+	questionRoutes := router.Group("/api/v1/questions")
+	{
+		questionRoutes.GET("/filter", sessionMiddleware, contestCtrl.FilterQuestions)
+	}
 }

@@ -120,3 +120,10 @@ func (r *AccountRepository) UpdateAvatarPath(ctx context.Context, accountID uuid
 		AccountID:  accountID,
 	})
 }
+
+func (r *AccountRepository) UpdateAccountRole(ctx context.Context, accountID uuid.UUID, role string) error {
+	return r.queries.UpdateAccountRole(ctx, sqlc.UpdateAccountRoleParams{
+		AccountID: accountID,
+		Role:      sqlc.RoleEnum(role),
+	})
+}

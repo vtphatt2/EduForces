@@ -61,3 +61,17 @@ func (r *QuestionRepository) DeleteQuestion(ctx context.Context, questionID uuid
 func (r *QuestionRepository) ListQuestionOfContest(ctx context.Context, contestID uuid.NullUUID) ([]sqlc.Question, error) {
 	return r.queries.ListQuestionsOfContest(ctx, contestID)
 }
+
+type FilterQuestionsParams struct {
+	Subjects  []string  `json:"subjects"`
+	AccountID uuid.UUID `json:"account_id"`
+	Done      bool      `json:"done"`
+}
+
+func (r *QuestionRepository) FilterQuestions(ctx context.Context, params FilterQuestionsParams) ([]sqlc.Question, error) {
+	return r.queries.FilterQuestionsBySubjectsAndDoneStatus(ctx, sqlc.FilterQuestionsBySubjectsAndDoneStatusParams{
+		Column1:   params.Subjects,
+		AccountID: params.AccountID,
+		Column3:   params.Done,
+	})
+}

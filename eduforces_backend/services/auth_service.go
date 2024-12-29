@@ -96,6 +96,9 @@ func (s *AuthService) CreateOrFindUser(ctx context.Context, userInfo *GoogleUser
 
 	// If the user doesn't exist, create a new one
 	if account == nil {
+		if userInfo.Email == "" {
+			return "", fmt.Errorf("email is required")
+		}
 		err = s.repo.CreateAccount(ctx, sqlc.CreateAccountParams{
 			Email:      userInfo.Email,
 			Name:       userInfo.Name,
@@ -173,4 +176,13 @@ func (s *AuthService) UpdateEloRating(ctx context.Context, accountID uuid.UUID, 
 
 func (s *AuthService) UpdateAccountName(ctx context.Context, name string, email string) error {
 	return s.repo.UpdateAccountName(ctx, name, email)
+}
+
+func (s *AuthService) UpdateAccountRole(ctx context.Context, accountID uuid.UUID, role string) error {
+	// Update the account role
+	return s.repo.UpdateAccountRole(ctx, accountID, role)
+}
+
+func (s *AuthService) UpdateDeactivation(ctx context.Context, accountID uuid.UUID, isDeactivated bool) error {
+	return s.repo.UpdateDeactivation(ctx, accountID, isDeactivated)
 }

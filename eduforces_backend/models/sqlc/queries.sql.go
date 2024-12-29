@@ -381,6 +381,57 @@ func (q *Queries) DeleteSubmission(ctx context.Context, submissionID uuid.UUID) 
 	return err
 }
 
+const filterQuestionsBySubjectsAndDoneStatus = `-- name: FilterQuestionsBySubjectsAndDoneStatus :many
+SELECT q.question_id, q.contest_id, q.description, q.answers, q.correct_answer, q.updated_at, q.subject, q.is_public, q.question_tag
+FROM questions q
+LEFT JOIN user_done_question udq ON q.question_id = udq.question_id AND udq.account_id = $2
+WHERE q.subject = ANY($1::text[])
+AND (
+    ($3::boolean IS NULL) OR
+    (udq.done = $3::boolean) OR
+    (udq.done IS NULL AND $3::boolean = false)
+)
+`
+
+type FilterQuestionsBySubjectsAndDoneStatusParams struct {
+	Column1   []string  `json:"column_1"`
+	AccountID uuid.UUID `json:"account_id"`
+	Column3   bool      `json:"column_3"`
+}
+
+func (q *Queries) FilterQuestionsBySubjectsAndDoneStatus(ctx context.Context, arg FilterQuestionsBySubjectsAndDoneStatusParams) ([]Question, error) {
+	rows, err := q.db.QueryContext(ctx, filterQuestionsBySubjectsAndDoneStatus, pq.Array(arg.Column1), arg.AccountID, arg.Column3)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Question
+	for rows.Next() {
+		var i Question
+		if err := rows.Scan(
+			&i.QuestionID,
+			&i.ContestID,
+			&i.Description,
+			pq.Array(&i.Answers),
+			&i.CorrectAnswer,
+			&i.UpdatedAt,
+			&i.Subject,
+			&i.IsPublic,
+			&i.QuestionTag,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getAccount = `-- name: GetAccount :one
 
 SELECT account_id, email, username, name, role, avatar_path, elo_rating, last_active, school, gold_amount, is_deactivated FROM accounts WHERE account_id = $1
@@ -1220,6 +1271,20 @@ type UpdateAccountNameParams struct {
 
 func (q *Queries) UpdateAccountName(ctx context.Context, arg UpdateAccountNameParams) error {
 	_, err := q.db.ExecContext(ctx, updateAccountName, arg.Name, arg.Email)
+	return err
+}
+
+const updateAccountRole = `-- name: UpdateAccountRole :exec
+UPDATE accounts SET role = $1 WHERE account_id = $2
+`
+
+type UpdateAccountRoleParams struct {
+	Role      RoleEnum  `json:"role"`
+	AccountID uuid.UUID `json:"account_id"`
+}
+
+func (q *Queries) UpdateAccountRole(ctx context.Context, arg UpdateAccountRoleParams) error {
+	_, err := q.db.ExecContext(ctx, updateAccountRole, arg.Role, arg.AccountID)
 	return err
 }
 

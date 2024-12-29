@@ -79,3 +79,34 @@ func (cc *ContestController) GetContest(c *gin.Context) {
 func (cc *ContestController) ScheduleContestStatusUpdates(c context.Context) {
 	cc.ContestService.ScheduleContestStatusUpdates(c)
 }
+
+func (cc *ContestController) FilterQuestions(c *gin.Context) {
+	var request struct {
+		Subjects []string `json:"subjects" binding:"required"`
+		Done     bool     `json:"done"`
+	}
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		return
+	}
+
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		c.Abort()
+		return
+	}
+
+	questions, err := cc.ContestService.FilterQuestions(c.Request.Context(), services.FilterQuestionsParams{
+		Subjects:  request.Subjects,
+		AccountID: uuid.MustParse(user.(string)),
+		Done:      request.Done,
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, questions)
+}
