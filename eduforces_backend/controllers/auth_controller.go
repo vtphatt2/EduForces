@@ -72,14 +72,27 @@ func (ctrl *AuthController) GoogleAuthHandler(c *gin.Context) {
 	}
 
 	// Return the user profile information and session details to the frontend
+
+	account, err := ctrl.service.GetAccountDetails(c.Request.Context(), parsedUserID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if account == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Account not found"})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"success":    true,
 		"message":    "Login successful",
 		"session_id": sessionID,
 		"user": gin.H{
-			"email":    userInfo.Email,
-			"name":     userInfo.Name,
-			"username": userInfo.Name,
+			"account_id": account.AccountID,
+			"email":      account.Email,
+			"name":       account.Name,
+			"username":   account.Username,
 		},
 	})
 }
@@ -186,6 +199,7 @@ func (ctrl *AuthController) GetAccountDetails(c *gin.Context) {
 		"last_active":    account.LastActive,
 		"school":         account.School,
 		"is_deactivated": account.IsDeactivated,
+		"gold_amount":    account.GoldAmount,
 	})
 }
 
@@ -268,7 +282,8 @@ func (ctrl *AuthController) UploadAvatar(c *gin.Context) {
 	}
 
 	// Define the path to save the file
-	avatarPath := filepath.Join("uploads", "avatars", user.(string)+filepath.Ext(file.Filename))
+	avatarPath := filepath.Join("uploads", "avatars", user.(string))
+	avatarAccessPath := "uploads/avatars/" + user.(string)
 
 	// Save the file locally
 	if err := c.SaveUploadedFile(file, avatarPath); err != nil {
@@ -277,36 +292,10 @@ func (ctrl *AuthController) UploadAvatar(c *gin.Context) {
 	}
 
 	// Update the avatar path in the database
-	if err := ctrl.service.UpdateAvatarPath(c.Request.Context(), uuid.MustParse(user.(string)), avatarPath); err != nil {
+	if err := ctrl.service.UpdateAvatarPath(c.Request.Context(), uuid.MustParse(user.(string)), avatarAccessPath); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Avatar uploaded successfully", "avatar_path": avatarPath})
 }
-
-// func (ctrl *AuthController) UpdateSchool(c *gin.Context) {
-// 	var request struct {
-// 		School string `json:"school" binding:"required"`
-// 	}
-
-// 	if err := c.ShouldBindJSON(&request); err != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
-// 		return
-// 	}
-
-// 	user, exists := c.Get("user")
-// 	if !exists {
-// 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
-// 		c.Abort()
-// 		return
-// 	}
-
-// 	err := ctrl.service.UpdateSchool(c.Request.Context(), uuid.MustParse(user.(string)), request.School)
-// 	if err != nil {
-// 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-// 		return
-// 	}
-
-// 	c.JSON(http.StatusOK, gin.H{"message": "School updated successfully"})
-// }

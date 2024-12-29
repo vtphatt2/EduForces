@@ -19,6 +19,7 @@ const OtherUserProfile: React.FC = () => {
     "https://www.w3schools.com/howto/img_avatar.png"
   );
   const [elo, setElo] = useState({ title: "Elo", content: "0" });
+  const [property, setProperty] = useState({ title: "Coins", content: "" });
   const fetchUserProfile = React.useCallback(async () => {
     try {
       const response = await fetch(
@@ -42,44 +43,15 @@ const OtherUserProfile: React.FC = () => {
       setSchool(data.school);
       setAvatarSrc(getTrueImageSrc(data.avatar_path));
       setElo({ title: "Elo", content: `${data.elo_rating}` });
+      setProperty({ title: "Coins", content: `${data.gold_amount}` });
     } catch (error) {
       alert(`Error: ${error}`);
     }
   }, [userId]);
 
-  const fetchCurrentUserId = async () => {
-    try {
-      const response = await fetch(`${baseUrl}/accounts/account-details`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: localStorage.getItem("session_id") || "",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch current user profile");
-      }
-
-      const data = await response.json();
-      return data.account_id;
-    } catch (error) {
-      alert(`Error: ${error}`);
-      return null;
-    }
-  };
-
   useEffect(() => {
-    fetchCurrentUserId().then((currentUserId) => {
-      if (currentUserId === userId) {
-        navigate("/user");
-      } else fetchUserProfile();
-    });
-  }, [fetchUserProfile, navigate, userId]);
-  const property = {
-    title: "Property",
-    content: "10 Gold",
-  };
+    fetchUserProfile();
+    }, [fetchUserProfile, navigate, userId]);
 
   return (
     <main className={styles.userProfile}>

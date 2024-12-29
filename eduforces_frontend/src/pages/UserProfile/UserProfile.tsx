@@ -19,6 +19,7 @@ const UserProfile: React.FC = () => {
     "https://www.w3schools.com/howto/img_avatar.png"
   );
   const [elo, setElo] = useState({ title: "Elo", content: "0" });
+  const [property, setProperty] = useState({ title: "Coins", content: "" });
   const fetchUserProfile = async () => {
     try {
       const response = await fetch(`${baseUrl}/accounts/account-details`, {
@@ -41,6 +42,7 @@ const UserProfile: React.FC = () => {
       setSchool(data.school);
       setAvatarSrc(getTrueImageSrc(data.avatar_path));
       setElo({ title: "Elo", content: `${data.elo_rating}` });
+      setProperty({ title: "Coins", content: `${data.gold_amount}` });
     } catch (error) {
       alert(`Error: ${error}`);
     }
@@ -49,10 +51,6 @@ const UserProfile: React.FC = () => {
   useEffect(() => {
     fetchUserProfile();
   }, [user.content, school]);
-  const property = {
-    title: "Property",
-    content: "10 Gold",
-  };
 
   const changeAvatarClick = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
