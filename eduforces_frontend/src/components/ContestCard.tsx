@@ -6,8 +6,8 @@ interface ContestCardProps {
   date: string;
   duration: string;
   status: "live" | "upcoming" | "ended";
-  buttonText: string;
-  onButtonClick: () => void;
+  buttonText?: string;
+  onButtonClick?: () => void;
 }
 
 const ContestCard: React.FC<ContestCardProps> = ({

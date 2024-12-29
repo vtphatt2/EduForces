@@ -30,8 +30,11 @@
     font-family: 'Poppins', sans-serif;
 }
 
-
-
+.buttonWrapper {
+    margin: 0;
+    margin-left: 5rem;
+    margin-right: 5rem;
+}
 
 
 body {
@@ -40,7 +43,7 @@ body {
 
 .contestLiveContainer {
     display: flex;
-    height: 90vh; /* Full viewport height to fix the layout */
+    height: 82vh; /* Full viewport height to fix the layout */
     overflow: hidden; /* Hide the scrollbar */
 }
 

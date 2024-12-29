@@ -8,6 +8,7 @@ import Home from "./pages/Home/Home";
 import ForumPost from "./pages/ForumPost/ForumPost";
 import Forum from "./pages/Forum/Forum";
 import Contest from "./pages/Contest/Contest";
+import ContestLive from "./pages/ContestLive/ContestLive";
 import ContestPage from "./pages/Contest/ContestPage";
 import StudySpace from "./pages/StudySpace/StudySpace";
 import UserProfile from "./pages/UserProfile/UserProfile";
@@ -28,6 +29,7 @@ const App: React.FC = () => {
             <Route path="/forum" element={<Forum />} />
             <Route path="/post" element={<ForumPost />} />
             <Route path="/contest" element={<ContestPage />} />
+            <Route path="/contest-live/:id" element={<ContestLive />} />
             <Route path="/study-space" element={<StudySpace />} />
             <Route path="/contest-create" element={<ContestCreate />} />
             <Route path="/contest-coordinator" element={<ContestCoordinator />} />

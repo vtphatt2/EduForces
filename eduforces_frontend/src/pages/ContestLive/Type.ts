@@ -1,7 +1,8 @@
 export interface QuestionProps {
     questionNumber: number;  
     title: string;           
-    answerList: string[];    
+    answerList: string[];
+    correctAnswer: string;    
     userAnswer?: string;     
     isAnswered?: boolean;     
     isFlagged?: boolean;      
