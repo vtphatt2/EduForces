@@ -125,3 +125,11 @@ func (s *AuthService) UpdateUsername(ctx context.Context, accountID uuid.UUID, u
 func (s *AuthService) UpdateAccountLastActive(ctx context.Context, accountID uuid.UUID, lastActive sql.NullTime) error {
 	return s.repo.UpdateAccountLastActive(ctx, accountID, lastActive)
 }
+
+func (s *AuthService) UpdateAvatarPath(ctx context.Context, accountID uuid.UUID, avatarPath string) error {
+	return s.repo.UpdateAvatarPath(ctx, accountID, avatarPath)
+}
+
+func (s *AuthService) UpdateSchool(ctx context.Context, accountID uuid.UUID, school string) error {
+	return s.repo.UpdateSchool(ctx, accountID, school)
+}

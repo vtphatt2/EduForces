@@ -12,6 +12,7 @@ CREATE TABLE accounts (
     elo_rating INT NOT NULL DEFAULT 1500,
     last_active TIMESTAMP,
     school TEXT NOT NULL DEFAULT 'Unknown',
+    gold_amount NUMERIC NOT NULL DEFAULT 0,
     is_deactivated BOOLEAN NOT NULL DEFAULT FALSE
 );
 

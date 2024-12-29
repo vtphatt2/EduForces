@@ -418,7 +418,7 @@ func (q *Queries) DeleteSubmission(ctx context.Context, submissionID uuid.UUID) 
 
 const getAccount = `-- name: GetAccount :one
 
-SELECT account_id, email, username, name, role, avatar_path, elo_rating, last_active, school, is_deactivated FROM accounts WHERE account_id = $1
+SELECT account_id, email, username, name, role, avatar_path, elo_rating, last_active, school, gold_amount, is_deactivated FROM accounts WHERE account_id = $1
 `
 
 // --- Account
@@ -435,17 +435,16 @@ func (q *Queries) GetAccount(ctx context.Context, accountID uuid.UUID) (Account,
 		&i.EloRating,
 		&i.LastActive,
 		&i.School,
+		&i.GoldAmount,
 		&i.IsDeactivated,
 	)
 	return i, err
 }
 
 const getAccountByEmail = `-- name: GetAccountByEmail :one
-
-SELECT account_id, email, username, name, role, avatar_path, elo_rating, last_active, school, is_deactivated FROM accounts WHERE email = $1
+SELECT account_id, email, username, name, role, avatar_path, elo_rating, last_active, school, gold_amount, is_deactivated FROM accounts WHERE email = $1
 `
 
-// -- Forum
 func (q *Queries) GetAccountByEmail(ctx context.Context, email string) (Account, error) {
 	row := q.db.QueryRowContext(ctx, getAccountByEmail, email)
 	var i Account
@@ -459,6 +458,7 @@ func (q *Queries) GetAccountByEmail(ctx context.Context, email string) (Account,
 		&i.EloRating,
 		&i.LastActive,
 		&i.School,
+		&i.GoldAmount,
 		&i.IsDeactivated,
 	)
 	return i, err
@@ -743,9 +743,11 @@ func (q *Queries) GetPhotosForQuestion(ctx context.Context, questionID uuid.Null
 }
 
 const getPost = `-- name: GetPost :one
+
 SELECT post_id, author_id, title, content, timestamp FROM posts WHERE post_id = $1
 `
 
+// -- Forum
 func (q *Queries) GetPost(ctx context.Context, postID uuid.UUID) (Post, error) {
 	row := q.db.QueryRowContext(ctx, getPost, postID)
 	var i Post
@@ -950,7 +952,7 @@ func (q *Queries) IsEventDate(ctx context.Context, eventTaskID uuid.UUID) (bool,
 }
 
 const listAccounts = `-- name: ListAccounts :many
-SELECT account_id, email, username, name, role, avatar_path, elo_rating, last_active, school, is_deactivated FROM accounts
+SELECT account_id, email, username, name, role, avatar_path, elo_rating, last_active, school, gold_amount, is_deactivated FROM accounts
 `
 
 func (q *Queries) ListAccounts(ctx context.Context) ([]Account, error) {
@@ -972,6 +974,7 @@ func (q *Queries) ListAccounts(ctx context.Context) ([]Account, error) {
 			&i.EloRating,
 			&i.LastActive,
 			&i.School,
+			&i.GoldAmount,
 			&i.IsDeactivated,
 		); err != nil {
 			return nil, err
@@ -1271,6 +1274,22 @@ type UpdateAccountUsernameParams struct {
 
 func (q *Queries) UpdateAccountUsername(ctx context.Context, arg UpdateAccountUsernameParams) error {
 	_, err := q.db.ExecContext(ctx, updateAccountUsername, arg.Username, arg.AccountID)
+	return err
+}
+
+const updateAvatarPath = `-- name: UpdateAvatarPath :exec
+UPDATE accounts
+SET avatar_path = $1
+WHERE account_id = $2
+`
+
+type UpdateAvatarPathParams struct {
+	AvatarPath string    `json:"avatar_path"`
+	AccountID  uuid.UUID `json:"account_id"`
+}
+
+func (q *Queries) UpdateAvatarPath(ctx context.Context, arg UpdateAvatarPathParams) error {
+	_, err := q.db.ExecContext(ctx, updateAvatarPath, arg.AvatarPath, arg.AccountID)
 	return err
 }
 
