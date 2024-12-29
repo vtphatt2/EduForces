@@ -150,21 +150,21 @@ func (s *ContestService) GetContest(ctx context.Context, contestID uuid.UUID) (C
 		return Contest{}, err
 	}
 
-	// questions, err := s.QuestionRepository.ListQuestionOfContest(ctx, uuid.NullUUID{UUID: contestID, Valid: true})
-	// if err != nil {
-	// 	return Contest{}, err
-	// }
+	questions, err := s.QuestionRepository.ListQuestionOfContest(ctx, uuid.NullUUID{UUID: contestID, Valid: true})
+	if err != nil {
+		return Contest{}, err
+	}
 
-	// var questionList []Question
-	// for _, q := range questions {
-	// 	questionList = append(questionList, Question{
-	// 		Description:   q.Description,
-	// 		Answers:       q.Answers,
-	// 		CorrectAnswer: q.CorrectAnswer,
-	// 		UpdatedAt:     q.UpdatedAt,
-	// 		Subject:       q.Subject,
-	// 	})
-	// }
+	var questionList []Question
+	for _, q := range questions {
+		questionList = append(questionList, Question{
+			Description:   q.Description,
+			Answers:       q.Answers,
+			CorrectAnswer: q.CorrectAnswer,
+			UpdatedAt:     q.UpdatedAt,
+			Subject:       q.Subject,
+		})
+	}
 
 	return Contest{
 		ContestID:   contest.ContestID,
@@ -175,7 +175,7 @@ func (s *ContestService) GetContest(ctx context.Context, contestID uuid.UUID) (C
 		Difficulty:  contest.Difficulty,
 		AuthorID:    contest.AuthorID,
 		UpdatedAt:   contest.UpdatedAt,
-		Questions:   nil,
+		Questions:   questionList,
 	}, nil
 }
 
