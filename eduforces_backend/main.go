@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 
 	"github.com/joho/godotenv"
@@ -33,20 +34,25 @@ func main() {
 	// Initialize repositories
 	accountRepo := repositories.NewAccountRepository(queries) // Pass the queries instance to the repository
 	postRepo := repositories.NewPostRepository(queries)       // Initialize PostRepository
+	contestRepo := repositories.NewContestRepository(queries)
+	questionRepo := repositories.NewQuestionRepository(queries)
 	commentRepo := repositories.NewCommentRepository(queries)
-
 	// Initialize services
 	authService := services.NewAuthService(accountRepo)
 	postService := services.NewPostService(postRepo, accountRepo) // Initialize PostService with both postRepo and accountRepo
 	commentService := services.NewCommentService(commentRepo, accountRepo)
 
+	contestService := services.NewContestService(contestRepo, questionRepo, accountRepo)
 	// Initialize controllers
 	authController := controllers.NewAuthController(authService, sessionManager)
 	postController := controllers.NewPostController(postService) // Initialize PostController
 	commenController := controllers.NewCommentController(commentService, sessionManager)
-
+	contestController := controllers.NewContestController(contestService)
 	// Register routes
-	router := routes.RegisterRoutes(authController, postController, commenController, sessionManager)
+	router := routes.RegisterRoutes(authController, postController, commenController, contestController, sessionManager)
+
+	// Schedule update status contest
+	contestController.ScheduleContestStatusUpdates(context.Background())
 
 	// Start the server
 	log.Println("Server is running on port 8080")

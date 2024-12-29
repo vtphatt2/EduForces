@@ -11,6 +11,8 @@ import Contest from "./pages/Contest/Contest";
 import StudySpace from "./pages/StudySpace/StudySpace";
 import UserProfile from "./pages/UserProfile/UserProfile";
 import OtherUserProfile from "./pages/UserProfile/OtherUserProfile";
+import ContestCoordinator from "./pages/ContestCoordinator/ContestCoordinator";
+import ContestCreate from "./pages/ContestCreate/ContestCreate";
 
 const App: React.FC = () => {
   return (
@@ -25,6 +27,8 @@ const App: React.FC = () => {
             <Route path="/post" element={<ForumPost />} />
             <Route path="/contest" element={<Contest />} />
             <Route path="/study-space" element={<StudySpace />} />
+            <Route path="/contest-create" element={<ContestCreate />} />
+            <Route path="/contestCoordinator" element={<ContestCoordinator />} />
             <Route path="/user" element={<UserProfile />} />
             <Route path="/profile" element={<OtherUserProfile />} />
           </Routes>

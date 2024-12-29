@@ -67,6 +67,7 @@ const NavBar: React.FC = () => {
     }
     navigate("/login", { state: { fromLockIcon: true } });
   };
+  console.log(username);
   return (
     <nav className="navbar">
       <div className="logo">

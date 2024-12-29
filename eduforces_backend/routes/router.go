@@ -12,6 +12,7 @@ func RegisterRoutes(
 	authCtrl *controllers.AuthController,
 	postCtrl *controllers.PostController,
 	commentCtrl *controllers.CommentController,
+	contestCtrl *controllers.ContestController,
 	sessionManager *sessions.SessionManager, // Pass the session manager here
 ) *gin.Engine {
 	// Create a new Gin router
@@ -29,7 +30,7 @@ func RegisterRoutes(
 	RegisterAuthRoutes(router, authCtrl, sessionMiddleware)
 	RegisterPostRoutes(router, postCtrl, commentCtrl, sessionMiddleware)
 	RegisterCommentRoutes(router, commentCtrl, sessionMiddleware)
-
+	RegisterContestRoutes(router, contestCtrl, sessionMiddleware)
 	// Return the fully initialized router
 	return router
 }
