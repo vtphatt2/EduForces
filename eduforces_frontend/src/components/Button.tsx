@@ -1,5 +1,5 @@
-import React from 'react';
-import './Button.css';
+import React from "react";
+import "./Button.css";
 
 interface ButtonProps {
   label: string;
@@ -8,9 +8,18 @@ interface ButtonProps {
   color?: string;  
   backgroundColor?: string; 
   borderColor?: string;
+  id?: string;
 }
 
-const Button: React.FC<ButtonProps> = ({ label, onClick, color, backgroundColor, borderColor, style }) => {
+const Button: React.FC<ButtonProps> = ({
+  label,
+  onClick,
+  color,
+  backgroundColor,
+  style,
+  id,
+  borderColor
+}) => {
   const buttonStyle: React.CSSProperties = {
     ...style,
     color: color || 'white',  
@@ -19,7 +28,12 @@ const Button: React.FC<ButtonProps> = ({ label, onClick, color, backgroundColor,
   };
 
   return (
-    <button onClick={onClick} className="btn-signin" style={buttonStyle}>
+    <button
+      onClick={onClick}
+      className="btn-signin"
+      style={buttonStyle}
+      id={id}
+    >
       {label}
     </button>
   );

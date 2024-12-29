@@ -1,0 +1,102 @@
+.content {
+  display: flex;
+  flex-direction: row;
+  margin: 5% 10%;
+}
+
+.questionContainer {
+  flex: 7;
+  margin-right: 20px;
+}
+
+.filterContainer {
+  flex: 3;
+}
+
+.title {
+  color: #5d5a88;
+  font-size: 32px;
+  font-weight: 700;
+  margin-top: 50px;
+}
+
+.questionCard {
+  margin-bottom: 28px;
+  border: solid 1px #adabc3;
+  border-radius: 10px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  padding-left: 50px;
+  position: relative;
+}
+
+.questionId {
+  color: #5d5a88;
+  font-size: 34px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.question {
+  color: #9795b5;
+  font-weight: 400;
+  font-size: 18px;
+  white-space: pre-line;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.allOptions {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.option {
+  color: black;
+  font-size: 18px;
+  font-weight: 400;
+  margin: 0;
+}
+
+.foldIcon {
+  position: absolute;
+  right: 25px;
+  top: 25px;
+  width: 24px;
+  height: 24px;
+}
+
+.doneIcon {
+  position: absolute;
+  left: 20px;
+  top: 25px;
+  width: 24px;
+  height: 24px;
+}
+
+#hide {
+  display: none !important;
+}
+
+.allFilter {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  border: solid 1px #adabc3;
+  border-radius: 10px;
+  padding: 25px;
+}
+
+.filterTitle {
+  color: #5d5a88;
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.filterItem {
+  color: black;
+}
