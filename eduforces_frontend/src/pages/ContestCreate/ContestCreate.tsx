@@ -1,11 +1,21 @@
 import React, { useState, useRef } from "react";
-import { ContestCreateProps } from "./Type";
+import { useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { QuestionProps } from "./Type";
 import Button from "../../components/Button.tsx";
 import Question from "./Question";
 import styles from "./ContestCreate.module.css";
 
-const ContestCreate: React.FC<ContestCreateProps> = () => {
+const ContestCreate: React.FC = () => {
+  const location = useLocation();
+  const { id, title, timestamp, duration } = location.state || {};
+  console.log("Contest Details:", { id, title, timestamp, duration });
+
+  // State for contest details
+  const [contestName, setContestName] = useState(title);
+  const [startTime, setStartTime] = useState(timestamp);
+  const [contestDuration, setContestDuration] = useState(duration);
+
   let [questionList, setQuestionList] = useState<QuestionProps[]>([
     {
       id: 10001,
@@ -46,15 +56,6 @@ const ContestCreate: React.FC<ContestCreateProps> = () => {
 
   const generateId = useRef(10200); // Use useRef to persist the generateId value
 
-  const navigateBack = () => {
-    // Logic to navigate back (e.g., use history or router)
-    console.log("Navigate back");
-  };
-
-  const handleCreateContest = () => {
-    console.log("Contest created with questions:", questionList);
-  };
-
 
   const handleCreateQuestion = () => {
     const newQuestionNumber = questionList.length + 1;
@@ -66,7 +67,6 @@ const ContestCreate: React.FC<ContestCreateProps> = () => {
       correctAnswer: "",
     };
     setQuestionList([...questionList, newQuestion]);
-    console.log("ID", generateId);
   };
 
   const handleUpdateQuestion = (
@@ -88,6 +88,35 @@ const ContestCreate: React.FC<ContestCreateProps> = () => {
     );
   }
 
+  const navigate = useNavigate();
+  const navigateBack = () => {
+    const userConfirmed = window.confirm(
+      "You have unsaved changes. Are you sure you want to go back? Unsaved changes will be lost."
+    );
+    if (userConfirmed) {
+      navigate("/"); // Replace with the actual path to ContestCoordinator page
+    }
+  };
+
+  const handleSaveClick = () => {
+    // Collect the data to be saved
+    const contestData = {
+      id,
+      title, // Add logic to fetch the updated title from the textarea
+      timestamp, // Add logic to fetch the updated timestamp from the textarea
+      duration, // Add logic to fetch the updated duration from the textarea
+      questionList, // Current question list
+    };
+
+    console.log("Saving Contest Data:", contestData); // Debugging log
+
+    // Save data logic (e.g., API call or updating state)
+    // Example: await saveContest(contestData);
+
+    // Navigate back to ContestCoordinator page
+    navigate("/");
+  };
+
 
   return (
     <div>
@@ -105,6 +134,8 @@ const ContestCreate: React.FC<ContestCreateProps> = () => {
             <textarea
               className={styles.textArea}
               placeholder="Enter contest name"
+              value={contestName}
+              onChange={(e) => setContestName(e.target.value)}
             />
           </div>
 
@@ -113,6 +144,8 @@ const ContestCreate: React.FC<ContestCreateProps> = () => {
             <textarea
               className={styles.textArea}
               placeholder="Enter start time in this format: YYYY-MM-DD HH:MM:SS"
+              value={startTime}
+              onChange={(e) => setStartTime(e.target.value)}
             />
           </div>
 
@@ -121,10 +154,12 @@ const ContestCreate: React.FC<ContestCreateProps> = () => {
             <textarea
               className={styles.textArea}
               placeholder="Enter duration in minutes: ex: 60"
+              value={contestDuration}
+              onChange={(e) => setContestDuration(e.target.value)}
             />
           </div>
         </div>
-        <Button label="Create" onClick={handleCreateContest} />
+        <Button label="Save" onClick={handleSaveClick} />
       </header>
 
       <div className={styles.questionContainer}>
