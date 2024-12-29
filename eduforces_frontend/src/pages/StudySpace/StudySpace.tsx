@@ -124,19 +124,16 @@ const StudySpace: React.FC = () => {
   //   },
   // ];
   const [questionsList, setQuestionsList] = useState([] as QuestionPropsAPI[]);
-  const fetchQuestions = async (subject: string[], done: boolean | null) => {
+  const fetchQuestions = async (subject: string[], done: number) => {
     try {
-      const response = await fetch(
-        `${baseUrl}/questions/?subject=${subject}&done=${done}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: localStorage.getItem("session_id") || "",
-          },
-          body: JSON.stringify({ subject, done }),
-        }
-      );
+      const response = await fetch(`${baseUrl}/questions/filter`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: localStorage.getItem("session_id") || "",
+        },
+        body: JSON.stringify({ subject, done }),
+      });
       if (!response.ok) {
         throw new Error(response.statusText);
       }
@@ -157,7 +154,7 @@ const StudySpace: React.FC = () => {
         "Geography",
         "English",
       ],
-      null
+      3
     );
   }, []);
   return (

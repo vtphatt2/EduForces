@@ -41,7 +41,7 @@ const NavBar: React.FC = () => {
     sendLogoutRequest();
     localStorage.removeItem("session_id");
     localStorage.removeItem("name");
-    navigate("/");
+    navigate("/login");
   };
 
   useEffect(() => {

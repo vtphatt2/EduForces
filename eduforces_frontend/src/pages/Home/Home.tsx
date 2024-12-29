@@ -14,7 +14,7 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
 
   const [postList, setPostList] = useState<PostPropsAPI[]>([]);
-  const getPostList = async () => {
+  const getPostList = React.useCallback(async () => {
     try {
       const response = await fetch(`${baseUrl}/posts?page=1&limit=5`, {
         method: "GET",
@@ -24,8 +24,7 @@ const Home: React.FC = () => {
       });
 
       if (localStorage.getItem("session_id") === null) {
-        // throw new Error("Please log in first");
-        navigate("/login");
+        throw new Error("Please log in first");
       }
 
       if (!response.ok) {
@@ -44,14 +43,15 @@ const Home: React.FC = () => {
     } catch (error) {
       alert(`Error: ${error}`);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (!localStorage.getItem("session_id")) {
       navigate("/login");
+      return;
     }
     getPostList();
-  }, []);
+  }, [getPostList, navigate]);
   const contestList = [
     { title: "THPTQG Mock Test 1", timestamp: "21:00 2024-09-20" },
     { title: "Math MCQ Mock Test 21", timestamp: "18:00 2024-09-25" },

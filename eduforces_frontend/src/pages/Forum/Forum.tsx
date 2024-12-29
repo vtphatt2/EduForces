@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import styles from "./Forum.module.css";
 import { Post } from "./Post";
 import NavBar from "../../components/NavBar";
@@ -12,6 +12,7 @@ const baseUrl = "http://localhost:8080/api/v1";
 
 const Forum: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const currentPage = parseInt(
     new URLSearchParams(location.search).get("page") || "1",
     10
@@ -54,8 +55,12 @@ const Forum: React.FC = () => {
   };
 
   useEffect(() => {
+    if (localStorage.getItem("session_id") === null) {
+      navigate("/login");
+      return;
+    }
     getPostList(currentPage, 5);
-  }, [currentPage]);
+  }, [currentPage, navigate]);
 
   const uploadPost = async () => {
     const title = (
