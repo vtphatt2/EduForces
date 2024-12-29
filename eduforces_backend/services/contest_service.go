@@ -285,7 +285,7 @@ func (s *ContestService) updateLiveContestsToEnded(ctx context.Context) {
 
 	for _, contest := range contests {
 		log.Printf("Checking contest: %s with end time: %s", contest.ContestID, contest.StartTime.Add(time.Duration(contest.Duration)*time.Minute))
-		if contest.StartTime.Add(time.Duration(contest.Duration) * time.Minute).Before(time.Now().UTC()) {
+		if contest.StartTime.Add(time.Duration(contest.Duration) * time.Minute).Before(time.Now()) {
 			log.Printf("Updating contest: %s to Ended", contest.ContestID)
 			err := s.ContestRepository.UpdateContestStatus(ctx, sqlc.UpdateContestStatusParams{
 				Status:    sqlc.StatusEnumEnded,
@@ -295,6 +295,12 @@ func (s *ContestService) updateLiveContestsToEnded(ctx context.Context) {
 				log.Println("Error updating contest status to Ended:", err)
 			} else {
 				log.Printf("Successfully updated contest: %s to Ended", contest.ContestID)
+				err := s.QuestionRepository.UpdateQuestionToPublic(ctx, uuid.NullUUID{UUID: contest.ContestID, Valid: true})
+				if err != nil {
+					log.Println("Error updating questions to public:", err)
+				} else {
+					log.Printf("Successfully updated questions of contest: %s to public", contest.ContestID)
+				}
 			}
 		}
 	}

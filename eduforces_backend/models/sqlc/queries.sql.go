@@ -1373,6 +1373,15 @@ func (q *Queries) UpdateQuestionDescription(ctx context.Context, arg UpdateQuest
 	return err
 }
 
+const updateQuestionToPublic = `-- name: UpdateQuestionToPublic :exec
+UPDATE questions SET is_public = TRUE WHERE contest_id = $1
+`
+
+func (q *Queries) UpdateQuestionToPublic(ctx context.Context, contestID uuid.NullUUID) error {
+	_, err := q.db.ExecContext(ctx, updateQuestionToPublic, contestID)
+	return err
+}
+
 const updateSubmissionTime = `-- name: UpdateSubmissionTime :exec
 UPDATE submissions SET time = $1 WHERE submission_id = $2
 `

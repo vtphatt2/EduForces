@@ -150,8 +150,6 @@ SELECT EXISTS (
 -- name: ListQuestions :many
 SELECT * FROM questions;
 
-
-
 -- name: CreateQuestion :exec
 INSERT INTO questions (contest_id,description, answers, correct_answer, updated_at, subject, question_tag) VALUES ($1, $2, $3, $4, $5, $6,$7);
 
@@ -160,6 +158,9 @@ DELETE FROM questions WHERE question_id = $1;
 
 -- name: DeleteQuestionsByContestId :exec
 DELETE FROM questions WHERE contest_id = $1;
+
+-- name: UpdateQuestionToPublic :exec
+UPDATE questions SET is_public = TRUE WHERE contest_id = $1;
 
 -- name: UpdateQuestionDescription :exec
 UPDATE questions SET description = $1, updated_at = $2 WHERE question_id = $3;
