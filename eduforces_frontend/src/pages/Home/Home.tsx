@@ -29,7 +29,7 @@ const Home: React.FC = () => {
       }
 
       const data = await response.json();
-      const postListTmp = data.data;
+      const postListTmp = data.data === null ? [] : data.data;
       for (let i = 0; i < postListTmp.length; i++) {
         const author_detail = await getAccountDetailById(
           postListTmp[i].author_id

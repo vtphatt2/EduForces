@@ -10,7 +10,9 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [username, setUsername] = useState<string | null>(null);
 
@@ -38,10 +40,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const validateSession = async (sessionID: string): Promise<{ user: any }> => {
     try {
-      const response = await fetch("http://localhost:8080/api/v1/auth/validate-session", {
-        method: "GET",
-        headers: { Authorization: `${sessionID}` },
-      });
+      const response = await fetch(
+        "http://localhost:8080/api/v1/auth/validate-session",
+        {
+          method: "GET",
+          headers: { Authorization: `${sessionID}` },
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Invalid session");
@@ -60,8 +65,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const getUsername = (): string | null => {
-    return localStorage.getItem("username");
-  }
+    return localStorage.getItem("name");
+  };
 
   const clearSession = () => {
     localStorage.removeItem("session_id"); // Clear session ID from local storage
@@ -70,7 +75,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, username, setIsLoggedIn, setUsername }}>
+    <AuthContext.Provider
+      value={{ isLoggedIn, username, setIsLoggedIn, setUsername }}
+    >
       {children}
     </AuthContext.Provider>
   );
