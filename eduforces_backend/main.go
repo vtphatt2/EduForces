@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 
 	"github.com/joho/godotenv"
@@ -46,10 +47,12 @@ func main() {
 	authController := controllers.NewAuthController(authService, sessionManager)
 	postController := controllers.NewPostController(postService) // Initialize PostController
 	commenController := controllers.NewCommentController(commentService, sessionManager)
-
 	contestController := controllers.NewContestController(contestService)
 	// Register routes
 	router := routes.RegisterRoutes(authController, postController, commenController, contestController, sessionManager)
+
+	// Schedule update status contest
+	contestController.ScheduleContestStatusUpdates(context.Background())
 
 	// Start the server
 	log.Println("Server is running on port 8080")

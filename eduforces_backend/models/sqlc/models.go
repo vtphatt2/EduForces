@@ -56,6 +56,49 @@ func (ns NullRoleEnum) Value() (driver.Value, error) {
 	return string(ns.RoleEnum), nil
 }
 
+type StatusEnum string
+
+const (
+	StatusEnumPending StatusEnum = "Pending"
+	StatusEnumLive    StatusEnum = "Live"
+	StatusEnumEnded   StatusEnum = "Ended"
+)
+
+func (e *StatusEnum) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = StatusEnum(s)
+	case string:
+		*e = StatusEnum(s)
+	default:
+		return fmt.Errorf("unsupported scan type for StatusEnum: %T", src)
+	}
+	return nil
+}
+
+type NullStatusEnum struct {
+	StatusEnum StatusEnum `json:"status_enum"`
+	Valid      bool       `json:"valid"` // Valid is true if StatusEnum is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullStatusEnum) Scan(value interface{}) error {
+	if value == nil {
+		ns.StatusEnum, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.StatusEnum.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullStatusEnum) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.StatusEnum), nil
+}
+
 type Account struct {
 	AccountID     uuid.UUID    `json:"account_id"`
 	Email         string       `json:"email"`
@@ -88,6 +131,7 @@ type Contest struct {
 	Difficulty  int32         `json:"difficulty"`
 	AuthorID    uuid.NullUUID `json:"author_id"`
 	UpdatedAt   time.Time     `json:"updated_at"`
+	Status      StatusEnum    `json:"status"`
 }
 
 type ContestDetail struct {

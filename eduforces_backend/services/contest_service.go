@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/robfig/cron/v3"
 	"github.com/vtphatt2/EduForces/models/sqlc"
 	"github.com/vtphatt2/EduForces/repositories"
 )
@@ -213,4 +214,70 @@ func (s *ContestService) ListContests(ctx context.Context, accountID uuid.UUID) 
 
 func (s *ContestService) DeleteContest(ctx context.Context, contestID uuid.UUID) error {
 	return s.ContestRepository.DeleteContest(ctx, contestID)
+}
+
+func (s *ContestService) ScheduleContestStatusUpdates(ctx context.Context) {
+	c := cron.New()
+
+	// Schedule function to update Pending contests to Live
+	c.AddFunc("@every 1s", func() {
+		log.Println("Updating Pending contests to Live")
+		s.updatePendingContestsToLive(context.Background())
+	})
+
+	// Schedule function to update Live contests to Ended
+	c.AddFunc("@every 1s", func() {
+		log.Println("Updating Live contests to Ended")
+		s.updateLiveContestsToEnded(context.Background())
+	})
+
+	c.Start()
+}
+
+func (s *ContestService) updatePendingContestsToLive(ctx context.Context) {
+	contests, err := s.ContestRepository.ListContestsByStatus(ctx, sqlc.StatusEnumPending)
+	if err != nil {
+		log.Println("Error listing pending contests:", err)
+		return
+	}
+
+	for _, contest := range contests {
+		log.Printf("Checking contest: %s with start time: %s", contest.ContestID, contest.StartTime)
+		if contest.StartTime.Before(time.Now()) {
+			log.Printf("Updating contest: %s to Live", contest.ContestID)
+			err := s.ContestRepository.UpdateContestStatus(ctx, sqlc.UpdateContestStatusParams{
+				Status:    sqlc.StatusEnumLive,
+				ContestID: contest.ContestID,
+			})
+			if err != nil {
+				log.Println("Error updating contest status to Live:", err)
+			} else {
+				log.Printf("Successfully updated contest: %s to Live", contest.ContestID)
+			}
+		}
+	}
+}
+
+func (s *ContestService) updateLiveContestsToEnded(ctx context.Context) {
+	contests, err := s.ContestRepository.ListContestsByStatus(ctx, sqlc.StatusEnumLive)
+	if err != nil {
+		log.Println("Error listing live contests:", err)
+		return
+	}
+
+	for _, contest := range contests {
+		log.Printf("Checking contest: %s with end time: %s", contest.ContestID, contest.StartTime.Add(time.Duration(contest.Duration)*time.Minute))
+		if contest.StartTime.Add(time.Duration(contest.Duration) * time.Minute).Before(time.Now().UTC()) {
+			log.Printf("Updating contest: %s to Ended", contest.ContestID)
+			err := s.ContestRepository.UpdateContestStatus(ctx, sqlc.UpdateContestStatusParams{
+				Status:    sqlc.StatusEnumEnded,
+				ContestID: contest.ContestID,
+			})
+			if err != nil {
+				log.Println("Error updating contest status to Ended:", err)
+			} else {
+				log.Printf("Successfully updated contest: %s to Ended", contest.ContestID)
+			}
+		}
+	}
 }

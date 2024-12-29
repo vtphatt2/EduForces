@@ -47,3 +47,10 @@ func (r *ContestRepository) ListContestsOfAuthor(ctx context.Context, authorID u
 func (r *ContestRepository) DeleteContest(ctx context.Context, contestID uuid.UUID) error {
 	return r.queries.DeleteContest(ctx, contestID)
 }
+func (r *ContestRepository) UpdateContestStatus(ctx context.Context, params sqlc.UpdateContestStatusParams) error {
+	return r.queries.UpdateContestStatus(ctx, params)
+}
+
+func (r *ContestRepository) ListContestsByStatus(ctx context.Context, status sqlc.StatusEnum) ([]sqlc.Contest, error) {
+	return r.queries.ListContestsByStatus(ctx, status)
+}

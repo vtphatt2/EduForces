@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -41,7 +42,7 @@ func (cc *ContestController) CreateContest(c *gin.Context) {
 }
 
 func (cc *ContestController) ListContests(c *gin.Context) {
-	fmt.Println("ListContest function called")
+	fmt.Println("GetContest function called")
 	user, exists := c.Get("user")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
@@ -74,4 +75,7 @@ func (cc *ContestController) GetContest(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, contest)
+}
+func (cc *ContestController) ScheduleContestStatusUpdates(c context.Context) {
+	cc.ContestService.ScheduleContestStatusUpdates(c)
 }

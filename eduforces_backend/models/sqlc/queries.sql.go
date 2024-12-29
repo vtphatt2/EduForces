@@ -529,7 +529,7 @@ func (q *Queries) GetCommentsForPost(ctx context.Context, arg GetCommentsForPost
 }
 
 const getContest = `-- name: GetContest :one
-SELECT contest_id, name, description, start_time, duration, difficulty, author_id, updated_at FROM contests WHERE contest_id = $1
+SELECT contest_id, name, description, start_time, duration, difficulty, author_id, updated_at, status FROM contests WHERE contest_id = $1
 `
 
 // ---- Contest
@@ -545,6 +545,7 @@ func (q *Queries) GetContest(ctx context.Context, contestID uuid.UUID) (Contest,
 		&i.Difficulty,
 		&i.AuthorID,
 		&i.UpdatedAt,
+		&i.Status,
 	)
 	return i, err
 }
@@ -870,7 +871,7 @@ func (q *Queries) ListAccounts(ctx context.Context) ([]Account, error) {
 }
 
 const listContests = `-- name: ListContests :many
-SELECT contest_id, name, description, start_time, duration, difficulty, author_id, updated_at FROM contests
+SELECT contest_id, name, description, start_time, duration, difficulty, author_id, updated_at, status FROM contests
 `
 
 func (q *Queries) ListContests(ctx context.Context) ([]Contest, error) {
@@ -891,6 +892,44 @@ func (q *Queries) ListContests(ctx context.Context) ([]Contest, error) {
 			&i.Difficulty,
 			&i.AuthorID,
 			&i.UpdatedAt,
+			&i.Status,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listContestsByStatus = `-- name: ListContestsByStatus :many
+SELECT contest_id, name, description, start_time, duration, difficulty, author_id, updated_at, status FROM contests WHERE status = $1
+`
+
+func (q *Queries) ListContestsByStatus(ctx context.Context, status StatusEnum) ([]Contest, error) {
+	rows, err := q.db.QueryContext(ctx, listContestsByStatus, status)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Contest
+	for rows.Next() {
+		var i Contest
+		if err := rows.Scan(
+			&i.ContestID,
+			&i.Name,
+			&i.Description,
+			&i.StartTime,
+			&i.Duration,
+			&i.Difficulty,
+			&i.AuthorID,
+			&i.UpdatedAt,
+			&i.Status,
 		); err != nil {
 			return nil, err
 		}
@@ -906,7 +945,7 @@ func (q *Queries) ListContests(ctx context.Context) ([]Contest, error) {
 }
 
 const listContestsOfAuthor = `-- name: ListContestsOfAuthor :many
-SELECT contest_id, name, description, start_time, duration, difficulty, author_id, updated_at FROM contests WHERE author_id = $1
+SELECT contest_id, name, description, start_time, duration, difficulty, author_id, updated_at, status FROM contests WHERE author_id = $1
 `
 
 func (q *Queries) ListContestsOfAuthor(ctx context.Context, authorID uuid.NullUUID) ([]Contest, error) {
@@ -927,6 +966,7 @@ func (q *Queries) ListContestsOfAuthor(ctx context.Context, authorID uuid.NullUU
 			&i.Difficulty,
 			&i.AuthorID,
 			&i.UpdatedAt,
+			&i.Status,
 		); err != nil {
 			return nil, err
 		}
@@ -1253,6 +1293,20 @@ type UpdateContestDescriptionParams struct {
 
 func (q *Queries) UpdateContestDescription(ctx context.Context, arg UpdateContestDescriptionParams) error {
 	_, err := q.db.ExecContext(ctx, updateContestDescription, arg.Description, arg.UpdatedAt, arg.ContestID)
+	return err
+}
+
+const updateContestStatus = `-- name: UpdateContestStatus :exec
+UPDATE contests SET status = $1 WHERE contest_id = $2
+`
+
+type UpdateContestStatusParams struct {
+	Status    StatusEnum `json:"status"`
+	ContestID uuid.UUID  `json:"contest_id"`
+}
+
+func (q *Queries) UpdateContestStatus(ctx context.Context, arg UpdateContestStatusParams) error {
+	_, err := q.db.ExecContext(ctx, updateContestStatus, arg.Status, arg.ContestID)
 	return err
 }
 

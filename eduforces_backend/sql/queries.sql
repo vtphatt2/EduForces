@@ -150,6 +150,8 @@ SELECT EXISTS (
 -- name: ListQuestions :many
 SELECT * FROM questions;
 
+
+
 -- name: CreateQuestion :exec
 INSERT INTO questions (contest_id,description, answers, correct_answer, updated_at, subject, question_tag) VALUES ($1, $2, $3, $4, $5, $6,$7);
 
@@ -190,6 +192,12 @@ SELECT * FROM contests WHERE contest_id = $1;
 
 -- name: ListContests :many
 SELECT * FROM contests;
+
+-- name: ListContestsByStatus :many
+SELECT * FROM contests WHERE status = $1;
+
+-- name: UpdateContestStatus :exec
+UPDATE contests SET status = $1 WHERE contest_id = $2;
 
 -- name: ListContestsOfAuthor :many
 SELECT * FROM contests WHERE author_id = $1;
