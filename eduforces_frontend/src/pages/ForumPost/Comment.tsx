@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useLocation } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import styles from "./ForumPost.module.css";
 import { CommentProps } from "./Type";
 
@@ -9,9 +9,10 @@ export const Comment: React.FC<CommentProps> = ({
   id,
   content,
   author,
+  author_id,
   timestamp,
-  fetchDataFunction,
 }) => {
+  const navigate = useNavigate();
   const location = useLocation();
   const query = new URLSearchParams(location.search);
   const postId = query.get("id");
@@ -24,11 +25,12 @@ export const Comment: React.FC<CommentProps> = ({
     });
     try {
       const fetchVote = await fetch(
-        `${baseUrl}/${postId}/comments/${id}/add-reaction`,
+        `${baseUrl}/posts/${postId}/comments/${id}/add-reaction`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: localStorage.getItem("session_id") || "",
           },
           body: jsonData,
         }
@@ -36,7 +38,6 @@ export const Comment: React.FC<CommentProps> = ({
       if (!fetchVote.ok) {
         throw new Error(`Error: ${fetchVote.status}`);
       }
-      fetchDataFunction();
       fetchVoteCount();
       fetchMyVote();
     } catch (error) {
@@ -44,10 +45,10 @@ export const Comment: React.FC<CommentProps> = ({
     }
   };
 
-  const fetchVoteCount = async () => {
+  const fetchVoteCount = React.useCallback(async () => {
     try {
       const response = await fetch(
-        `${baseUrl}/${postId}/comments/${id}/count-reaction`,
+        `${baseUrl}/posts/${postId}/comments/${id}/count-reaction`,
         {
           method: "GET",
           headers: {
@@ -59,18 +60,16 @@ export const Comment: React.FC<CommentProps> = ({
         throw new Error(`Error: ${response.status}`);
       }
       const data = await response.json();
-      setVotes(data.data.upvotes - data.data.downvotes);
+      setVotes(data.upvotes - data.downvotes);
     } catch (error) {
       alert("Error: " + error);
     }
-  };
+  }, [postId, id]);
 
-  fetchVoteCount();
-
-  const fetchMyVote = async () => {
+  const fetchMyVote = React.useCallback(async () => {
     try {
       const response = await fetch(
-        `${baseUrl}/${postId}/comments/${id}/get-reaction`,
+        `${baseUrl}/posts/${postId}/comments/${id}/get-reaction`,
         {
           method: "GET",
           headers: {
@@ -82,13 +81,17 @@ export const Comment: React.FC<CommentProps> = ({
         throw new Error(`Error: ${response.status}`);
       }
       const data = await response.json();
-      setMyVote(data.type);
+      setMyVote(data.data.String);
     } catch (error) {
       alert("Error: " + error);
     }
-  };
+  }, [postId, id]);
 
-  fetchMyVote();
+  useEffect(() => {
+    fetchVoteCount();
+    fetchMyVote();
+  }, [votes, my_vote, fetchVoteCount, fetchMyVote]);
+
   return (
     <article className={styles.commentContainer}>
       <div className={styles.commentContent}>
@@ -114,7 +117,13 @@ export const Comment: React.FC<CommentProps> = ({
         </div>
       </div>
       <div className={styles.commentMeta}>
-        <span className={styles.commentAuthor}>by {author}</span>
+        by{" "}
+        <span
+          className={styles.commentAuthor}
+          onClick={() => navigate(`/profile?id=${author_id}`)}
+        >
+          {author}
+        </span>
         <br />
         <time className={styles.commentTimestamp}>{timestamp}</time>
       </div>

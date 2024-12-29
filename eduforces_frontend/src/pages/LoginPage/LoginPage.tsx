@@ -7,9 +7,10 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
 // Environment variables for sensitive data
-const clientId = "566103442161-qsml3c9actk0pgir7jpj8mhtt3m5vg5k.apps.googleusercontent.com";
-const backendAuthEndpoint = 'http://localhost:8080/api/v1/auth/google';
-const redirectUri = 'http://localhost:5173/login';
+const clientId =
+  "173187182094-lol8u5tku7e1bpi6br0tcfsqd4huqtag.apps.googleusercontent.com";
+const backendAuthEndpoint = "http://localhost:8080/api/v1/auth/google";
+const redirectUri = "http://localhost:5173/login";
 
 // Function to handle the click event for Google OAuth2 login
 const handleClick = () => {
@@ -53,7 +54,6 @@ const LoginPage: React.FC = () => {
             // Store the session ID in local storage
             localStorage.setItem("session_id", data.session_id);
             localStorage.setItem("username", data.user.username);
-
             setIsLoggedIn(true);
             setUsername(data.user.username);
             // Redirect to the home page or dashboard
@@ -65,6 +65,10 @@ const LoginPage: React.FC = () => {
         .catch((error) => console.error("Error during login:", error));
     }
   }, [navigate, setIsLoggedIn, setUsername]);
+  if (localStorage.getItem("session_id") !== null) {
+    navigate("/");
+    return null;
+  }
   return (
     <div className="logo-text-container">
       <div className="intro-text">

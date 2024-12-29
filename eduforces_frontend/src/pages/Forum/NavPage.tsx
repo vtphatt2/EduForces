@@ -50,7 +50,7 @@ const NavPage: React.FC<NavPageProps> = ({ numPages }) => {
         >
           ...
         </li>
-        <li id={currentPage === numPages ? styles.disabled : ""}>
+        <li id={currentPage >= numPages ? styles.disabled : ""}>
           <NavLink to={`/forum?page=${currentPage + 1}`}>
             <img src="right.svg" alt="next" />
           </NavLink>

@@ -3,14 +3,18 @@
 -- name: GetAccount :one
 SELECT * FROM accounts WHERE account_id = $1;
 
+-- name: GetAccountByEmail :one
+SELECT * FROM accounts WHERE email = $1;
+
 -- name: ListAccounts :many
 SELECT * FROM accounts;
 
 -- name: CreateAccount :exec
-INSERT INTO accounts (email, name, role) VALUES ($1, $2, $3);
+INSERT INTO accounts (email, name, role, avatar_path)
+VALUES ($1, $2, $3, $4);
 
 -- name: DeleteAccount :exec
-DELETE FROM accounts WHERE account_id = $1; 
+DELETE FROM accounts WHERE account_id = $1;
 
 -- name: UpdateAccountName :exec
 UPDATE accounts SET name = $1 WHERE email = $2;
@@ -18,11 +22,27 @@ UPDATE accounts SET name = $1 WHERE email = $2;
 -- name: UpdateAccountUsername :exec
 UPDATE accounts SET username = $1 WHERE account_id = $2;
 
+-- name: UpdateAccountAvatar :exec
+UPDATE accounts SET avatar_path = $1 WHERE account_id = $2;
+
+-- name: UpdateAccountEloRating :exec
+UPDATE accounts SET elo_rating = $1 WHERE account_id = $2;
+
+-- name: UpdateAccountLastActive :exec
+UPDATE accounts SET last_active = $1 WHERE account_id = $2;
+
+-- name: UpdateAccountSchool :exec
+UPDATE accounts SET school = $1 WHERE account_id = $2;
+
+-- name: UpdateAccountDeactivation :exec
+UPDATE accounts SET is_deactivated = $1 WHERE account_id = $2;
+
+-- name: UpdateAvatarPath :exec
+UPDATE accounts
+SET avatar_path = $1
+WHERE account_id = $2;
 
 ---- Forum
-
--- name: GetAccountByEmail :one
-SELECT * FROM accounts WHERE email = $1;
 
 -- name: GetPost :one
 SELECT * FROM posts WHERE post_id = $1;
@@ -69,6 +89,10 @@ INSERT INTO reactions (reaction_id, type, account_id, timestamp, post_id, commen
 
 -- name: CheckReactionExists :one
 SELECT reaction_id FROM reactions
+WHERE account_id = $1 AND (post_id = $2 OR comment_id = $3);
+
+-- name: GetReactionExist :one
+SELECT type FROM reactions
 WHERE account_id = $1 AND (post_id = $2 OR comment_id = $3);
 
 -- name: DeleteReaction :exec

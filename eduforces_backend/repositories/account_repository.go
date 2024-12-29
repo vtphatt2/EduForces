@@ -75,3 +75,45 @@ func (r *AccountRepository) UpdateUsername(ctx context.Context, accountID uuid.U
 		Username:  username,
 	})
 }
+
+func (r *AccountRepository) UpdateAvatar(ctx context.Context, accountID uuid.UUID, avatarPath string) error {
+	return r.queries.UpdateAccountAvatar(ctx, sqlc.UpdateAccountAvatarParams{
+		AccountID:  accountID,
+		AvatarPath: avatarPath,
+	})
+}
+
+func (r *AccountRepository) UpdateEloRating(ctx context.Context, accountID uuid.UUID, eloRating int) error {
+	return r.queries.UpdateAccountEloRating(ctx, sqlc.UpdateAccountEloRatingParams{
+		AccountID: accountID,
+		EloRating: int32(eloRating),
+	})
+}
+
+func (r *AccountRepository) UpdateAccountLastActive(ctx context.Context, accountID uuid.UUID, lastActive sql.NullTime) error {
+	return r.queries.UpdateAccountLastActive(ctx, sqlc.UpdateAccountLastActiveParams{
+		AccountID:  accountID,
+		LastActive: lastActive,
+	})
+}
+
+func (r *AccountRepository) UpdateSchool(ctx context.Context, accountID uuid.UUID, school string) error {
+	return r.queries.UpdateAccountSchool(ctx, sqlc.UpdateAccountSchoolParams{
+		AccountID: accountID,
+		School:    school,
+	})
+}
+
+func (r *AccountRepository) UpdateDeactivation(ctx context.Context, accountID uuid.UUID, isDeactivated bool) error {
+	return r.queries.UpdateAccountDeactivation(ctx, sqlc.UpdateAccountDeactivationParams{
+		AccountID:     accountID,
+		IsDeactivated: isDeactivated,
+	})
+}
+
+func (r *AccountRepository) UpdateAvatarPath(ctx context.Context, accountID uuid.UUID, avatarPath string) error {
+	return r.queries.UpdateAvatarPath(ctx, sqlc.UpdateAvatarPathParams{
+		AvatarPath: avatarPath,
+		AccountID:  accountID,
+	})
+}

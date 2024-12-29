@@ -96,3 +96,12 @@ func (ps *PostService) AddReactionForPostOrComment(ctx context.Context, accountI
 func (ps *PostService) CountReactionsForPost(ctx context.Context, postID uuid.UUID) (sqlc.CountReactionsForPostRow, error) {
 	return ps.PostRepository.CountReactionsForPost(ctx, postID)
 }
+
+func (ps *PostService) GetReactionForPostOrComment(ctx context.Context, accountID uuid.UUID, postID, commentID uuid.UUID) (sql.NullString, error) {
+	arg := sqlc.GetReactionExistParams{
+		AccountID: uuid.NullUUID{UUID: accountID, Valid: true},
+		PostID:    uuid.NullUUID{UUID: postID, Valid: postID != uuid.Nil},
+		CommentID: uuid.NullUUID{UUID: commentID, Valid: commentID != uuid.Nil},
+	}
+	return ps.PostRepository.GetReactionForPostOrComment(ctx, arg)
+}
