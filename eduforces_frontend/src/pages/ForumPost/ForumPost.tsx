@@ -7,7 +7,10 @@ import { UserInfo } from "./UserInfo";
 import Button from "../../components/Button";
 import NavBar from "../../components/NavBar";
 import { PostPropsAPI, CommentPropsAPI, ForumPostProps } from "./Type";
-import getAccountDetailById, { formatTimestamp } from "../../components/Common";
+import getAccountDetailById, {
+  formatTimestamp,
+  getTrueImageSrc,
+} from "../../components/Common";
 
 const baseUrl = "http://localhost:8080/api/v1";
 
@@ -50,7 +53,7 @@ const ForumPost: React.FC = () => {
       setUserInfo({
         elo: accountDetail.elo_rating,
         university: accountDetail.school,
-        avatarSrc: accountDetail.avatar_path,
+        avatarSrc: getTrueImageSrc(accountDetail.avatar_path),
       });
       setPost({
         post_id: postData.post_id,

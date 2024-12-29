@@ -44,5 +44,13 @@ const formatTimestamp = (timestamp: string) => {
   const minute = String(date.getMinutes()).padStart(2, "0");
   return `${hour}:${minute} ${day}/${month}/${year}`;
 };
-export { formatTimestamp };
+
+const getTrueImageSrc = (src: string) => {
+  if (src.startsWith("http")) {
+    return src;
+  }
+  return "http://localhost:8080/" + src;
+};
+
+export { formatTimestamp, getTrueImageSrc };
 export default getAccountDetailById;

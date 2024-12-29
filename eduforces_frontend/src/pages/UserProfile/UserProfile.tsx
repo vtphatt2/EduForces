@@ -4,6 +4,7 @@ import InfoBox from "./InfoBox";
 import EditableInfoBox from "./EditableInfoBox";
 import NavBar from "../../components/NavBar";
 import Button from "../../components/Button";
+import { getTrueImageSrc } from "../../components/Common";
 
 const baseUrl = "http://localhost:8080/api/v1";
 
@@ -38,7 +39,7 @@ const UserProfile: React.FC = () => {
       setEmail({ title: "Email", content: data.email });
       setRole({ title: "Role", content: data.role });
       setSchool(data.school);
-      setAvatarSrc(data.avatar_path);
+      setAvatarSrc(getTrueImageSrc(data.avatar_path));
       setElo({ title: "Elo", content: `${data.elo_rating}` });
     } catch (error) {
       alert(`Error: ${error}`);
@@ -63,30 +64,28 @@ const UserProfile: React.FC = () => {
 
     // Prepare the FormData to send to the backend
     const formData = new FormData();
-    formData.append('avatar', file);
+    formData.append("avatar", file);
 
     try {
       // Make the POST request to upload the image
       const response = await fetch(`${baseUrl}/accounts/upload-avatar`, {
-        method: 'POST',
+        method: "PUT",
         headers: {
-          Authorization: localStorage.getItem('session_id') || '',
+          Authorization: localStorage.getItem("session_id") || "",
         },
         body: formData,
       });
 
       if (response.ok) {
         const data = await response.json();
-        console.log('Avatar uploaded successfully:', data);
+        console.log("Avatar uploaded successfully:", data);
       } else {
-        console.error('Failed to upload avatar');
+        console.error("Failed to upload avatar");
       }
     } catch (error) {
-      console.error('Error uploading avatar:', error);
+      console.error("Error uploading avatar:", error);
     }
   };
-
-  
 
   const changeUserProfile = async () => {
     const username = (

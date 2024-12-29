@@ -35,7 +35,7 @@ const Forum: React.FC = () => {
       }
 
       if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
+        throw new Error(`${response.status}`);
       }
 
       const data = await response.json();
@@ -49,7 +49,7 @@ const Forum: React.FC = () => {
       setPostList(postListTmp);
       setNumPages(Math.ceil(data.meta.total / data.meta.limit));
     } catch (error) {
-      alert(`Error: ${error}`);
+      alert(`${error}`);
     }
   };
 

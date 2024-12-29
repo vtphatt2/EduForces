@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import styles from "./UserProfile.module.css";
 import InfoBox from "./InfoBox";
 import NavBar from "../../components/NavBar";
+import { getTrueImageSrc } from "../../components/Common";
 
 const baseUrl = "http://localhost:8080/api/v1";
 
@@ -39,7 +40,7 @@ const OtherUserProfile: React.FC = () => {
       setUser({ title: "Username", content: data.username });
       setName({ title: "Name", content: data.name });
       setSchool(data.school);
-      setAvatarSrc(data.avatar_path);
+      setAvatarSrc(getTrueImageSrc(data.avatar_path));
       setElo({ title: "Elo", content: `${data.elo_rating}` });
     } catch (error) {
       alert(`Error: ${error}`);
